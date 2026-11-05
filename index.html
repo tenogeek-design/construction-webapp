@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#25282d">
+
+    <title>Construction — Послуги</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+</head>
+
+<body>
+
+    <header class="header">
+        <div class="logo">
+            <span class="logo-icon">C</span>
+            <span>CONSTRUCTION</span>
+        </div>
+        <span class="location">WARSAW, POLAND</span>
+    </header>
+
+    <main class="container">
+
+        <section class="hero">
+            <span class="tag">ДЕМОНТАЖ • РЕМОНТ • ПІДГОТОВКА</span>
+
+            <h1>
+                Ваш об'єкт.<br>
+                <span>Наша робота.</span>
+            </h1>
+
+            <p>
+                Професійні демонтажні роботи та підготовка
+                приміщень до ремонту у Варшаві.
+            </p>
+
+            <button class="primary-button" onclick="openServices()">
+                Замовити послугу
+                <span>→</span>
+            </button>
+        </section>
+
+        <section class="services" id="services">
+            <div class="section-heading">
+                <span class="tag">ЩО МИ РОБИМО</span>
+                <h2>Наші послуги</h2>
+            </div>
+
+            <div class="service-card" onclick="selectService('Демонтаж')">
+                <div class="service-number">01</div>
+                <div>
+                    <h3>Демонтаж</h3>
+                    <p>Стіни, підлога, плитка, стяжка</p>
+                </div>
+                <span class="arrow">↗</span>
+            </div>
+
+            <div class="service-card" onclick="selectService('Вивіз сміття')">
+                <div class="service-number">02</div>
+                <div>
+                    <h3>Вивіз сміття</h3>
+                    <p>Будівельне сміття та залишки матеріалів</p>
+                </div>
+                <span class="arrow">↗</span>
+            </div>
+
+            <div class="service-card" onclick="selectService('Підготовка приміщення')">
+                <div class="service-number">03</div>
+                <div>
+                    <h3>Підготовка приміщення</h3>
+                    <p>Підготовка об'єкта до ремонту</p>
+                </div>
+                <span class="arrow">↗</span>
+            </div>
+        </section>
+
+        <footer>
+            <span>CONSTRUCTION</span>
+            <span>WARSAW © 2026</span>
+        </footer>
+
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>
