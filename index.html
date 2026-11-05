@@ -1,90 +1,144 @@
-
 <!DOCTYPE html>
-<html lang="uk">
+<html lang="pl">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#25282d">
-
-    <title>Construction — Послуги</title>
-
-    <link rel="stylesheet" href="style.css">
-
-    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#202226">
+  <title>CONSTRUCTION — Kalkulator usług</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
-
 <body>
-
-    <header class="header">
-        <div class="logo">
-            <span class="logo-icon">C</span>
-            <span>CONSTRUCTION</span>
-        </div>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#" id="homeLink" aria-label="CONSTRUCTION home">
+        <span class="brand-mark">C</span>
+        <span class="brand-name">CONSTRUCTION</span>
+      </a>
+      <div class="top-actions">
         <span class="location">WARSAW, POLAND</span>
+        <select id="languageSelect" class="language-select" aria-label="Language">
+          <option value="pl">PL</option>
+          <option value="uk">UA</option>
+        </select>
+      </div>
     </header>
 
-    <main class="container">
-
+    <main>
+      <section id="homePage" class="page active">
         <section class="hero">
-            <span class="tag">ДЕМОНТАЖ • РЕМОНТ • ПІДГОТОВКА</span>
-
-            <h1>
-                Ваш об'єкт.<br>
-                <span>Наша робота.</span>
-            </h1>
-
-            <p>
-                Професійні демонтажні роботи та підготовка
-                приміщень до ремонту у Варшаві.
-            </p>
-
-            <button class="primary-button" onclick="openServices()">
-                Замовити послугу
-                <span>→</span>
-            </button>
+          <div class="eyebrow" data-i18n="heroTag">DEMONTAŻ • REMONT • PRZYGOTOWANIE</div>
+          <h1 data-i18n-html="heroTitle">Twój obiekt.<br><span>Nasza praca.</span></h1>
+          <p data-i18n="heroText">Prace demontażowe, remontowe i przygotowanie pomieszczeń w Warszawie.</p>
+          <button class="button button-primary" id="heroCalculator">
+            <span data-i18n="calculate">Oblicz koszt</span><span aria-hidden="true">↗</span>
+          </button>
         </section>
 
-        <section class="services" id="services">
-            <div class="section-heading">
-                <span class="tag">ЩО МИ РОБИМО</span>
-                <h2>Наші послуги</h2>
-            </div>
-
-            <div class="service-card" onclick="selectService('Демонтаж')">
-                <div class="service-number">01</div>
-                <div>
-                    <h3>Демонтаж</h3>
-                    <p>Стіни, підлога, плитка, стяжка</p>
-                </div>
-                <span class="arrow">↗</span>
-            </div>
-
-            <div class="service-card" onclick="selectService('Вивіз сміття')">
-                <div class="service-number">02</div>
-                <div>
-                    <h3>Вивіз сміття</h3>
-                    <p>Будівельне сміття та залишки матеріалів</p>
-                </div>
-                <span class="arrow">↗</span>
-            </div>
-
-            <div class="service-card" onclick="selectService('Підготовка приміщення')">
-                <div class="service-number">03</div>
-                <div>
-                    <h3>Підготовка приміщення</h3>
-                    <p>Підготовка об'єкта до ремонту</p>
-                </div>
-                <span class="arrow">↗</span>
-            </div>
+        <section class="home-cards">
+          <button class="home-card" data-page="aboutPage">
+            <span class="card-index">01</span>
+            <span><strong data-i18n="about">Kim jesteśmy</strong><small data-i18n="aboutShort">Poznaj naszą firmę</small></span>
+            <span class="card-arrow">↗</span>
+          </button>
+          <button class="home-card featured" data-page="calculatorPage">
+            <span class="card-index">02</span>
+            <span><strong data-i18n="calculator">Kalkulator cen</strong><small data-i18n="calculatorShort">Wstępna wycena prac</small></span>
+            <span class="card-arrow">↗</span>
+          </button>
+          <button class="home-card" data-page="contactPage">
+            <span class="card-index">03</span>
+            <span><strong data-i18n="contact">Kontakt</strong><small data-i18n="contactShort">Skontaktuj się z nami</small></span>
+            <span class="card-arrow">↗</span>
+          </button>
         </section>
+      </section>
 
-        <footer>
-            <span>CONSTRUCTION</span>
-            <span>WARSAW © 2026</span>
-        </footer>
+      <section id="aboutPage" class="page">
+        <button class="back-button" data-page="homePage">← <span data-i18n="back">Powrót</span></button>
+        <div class="section-heading">
+          <div class="eyebrow" data-i18n="about">KIM JESTEŚMY</div>
+          <h2 data-i18n="aboutHeading">Pracujemy konkretnie.</h2>
+          <p data-i18n="aboutPlaceholder">Tutaj dodamy opis firmy, doświadczenie, zdjęcia realizacji i informacje o zespole.</p>
+        </div>
+      </section>
 
+      <section id="contactPage" class="page">
+        <button class="back-button" data-page="homePage">← <span data-i18n="back">Powrót</span></button>
+        <div class="section-heading">
+          <div class="eyebrow" data-i18n="contact">KONTAKT</div>
+          <h2 data-i18n="contactHeading">Porozmawiajmy o Twoim obiekcie.</h2>
+          <p data-i18n="contactPlaceholder">Dane kontaktowe dodamy przed uruchomieniem przyjmowania zamówień.</p>
+        </div>
+      </section>
+
+      <section id="calculatorPage" class="page">
+        <button class="back-button" data-page="homePage">← <span data-i18n="back">Powrót</span></button>
+        <div class="section-heading">
+          <div class="eyebrow" data-i18n="calculator">KALKULATOR CEN</div>
+          <h2 data-i18n="calculatorHeading">Zbuduj swoją wycenę.</h2>
+          <p data-i18n="calculatorIntro">Wybierz zakres prac, podaj ilości i zobacz wstępny koszt.</p>
+        </div>
+
+        <div class="mode-grid">
+          <button class="mode-card selected" data-mode="demo">
+            <span class="mode-number">01</span><strong data-i18n="modeDemo">Demontaż</strong>
+            <small data-i18n="modeDemoDesc">Prace rozbiórkowe</small>
+          </button>
+          <button class="mode-card" data-mode="reno">
+            <span class="mode-number">02</span><strong data-i18n="modeReno">Remont / Montaż</strong>
+            <small data-i18n="modeRenoDesc">Prace remontowe i montażowe</small>
+          </button>
+          <button class="mode-card mode-wide" data-mode="both">
+            <span class="mode-number">03</span><strong data-i18n="modeBoth">Demontaż + Montaż</strong>
+            <small data-i18n="modeBothDesc">Kompleksowy zakres prac</small>
+          </button>
+        </div>
+
+        <div class="calculator-layout">
+          <div class="work-panel">
+            <div class="panel-title">
+              <div><div class="eyebrow" data-i18n="chooseWorks">WYBIERZ PRACE</div><h3 data-i18n="workList">Lista usług</h3></div>
+              <span class="test-label" data-i18n="testPrices">CENY TESTOWE</span>
+            </div>
+            <div id="workList" class="work-list"></div>
+          </div>
+
+          <aside class="summary-panel">
+            <div class="eyebrow" data-i18n="yourEstimate">TWOJA WYCENA</div>
+            <h3 data-i18n="summary">Podsumowanie</h3>
+            <div id="selectedList" class="selected-list">
+              <p class="empty-state" data-i18n="empty">Nie wybrano jeszcze żadnych prac.</p>
+            </div>
+            <div class="total-row"><span data-i18n="estimatedTotal">Szacunkowa suma</span><strong id="totalPrice">0 zł</strong></div>
+
+            <div class="option-group">
+              <div class="option-title" data-i18n="delivery">Dostawa / transport</div>
+              <label class="check-row"><input type="checkbox" id="ourDelivery"><span data-i18n="ourDelivery">Nasza dostawa / transport</span></label>
+              <label class="check-row"><input type="checkbox" id="clientDelivery"><span data-i18n="clientDelivery">Własna dostawa / transport</span></label>
+            </div>
+            <div class="option-group">
+              <div class="option-title" data-i18n="tools">Narzędzia</div>
+              <label class="check-row"><input type="checkbox" id="ourTools"><span data-i18n="ourTools">Nasz sprzęt</span></label>
+              <label class="check-row"><input type="checkbox" id="clientTools"><span data-i18n="clientTools">Własny sprzęt</span></label>
+            </div>
+            <div class="option-group">
+              <div class="option-title" data-i18n="clientType">Kto zleca pracę?</div>
+              <label class="check-row"><input type="checkbox" id="ownerDirect"><span data-i18n="ownerDirect">Bezpośrednio od właściciela nieruchomości</span></label>
+            </div>
+            <p class="estimate-note" data-i18n="estimateNote">To wstępna wycena. Ostateczna cena może zostać ustalona po obejrzeniu obiektu.</p>
+            <button class="button button-primary button-full" id="copyEstimate"><span data-i18n="copyEstimate">Kopiuj wycenę</span><span>↗</span></button>
+          </aside>
+        </div>
+      </section>
     </main>
 
-    <script src="script.js"></script>
+    <footer class="footer">
+      <span>CONSTRUCTION</span>
+      <span data-i18n="copyright">© 2026 CONSTRUCTION. Wszelkie prawa zastrzeżone.</span>
+    </footer>
+  </div>
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+  <script src="script.js"></script>
 </body>
 </html>
