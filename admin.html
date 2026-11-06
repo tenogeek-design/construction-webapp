@@ -92,7 +92,7 @@
       <header class="topbar">
         <div>
           <div class="breadcrumb">CONSTRUCTION / ADMIN</div>
-          <h1>Панель управления</h1>
+          <h1 id="pageTitle">Панель управления</h1>
         </div>
 
         <div class="topbar-actions">
@@ -107,7 +107,10 @@
         </div>
       </header>
 
+      <!-- DASHBOARD -->
+
       <section id="dashboard" class="dashboard-section">
+
         <div class="welcome">
           <div>
             <span class="eyebrow">ОБЗОР КОМПАНИИ</span>
@@ -118,12 +121,13 @@
         </div>
 
         <div class="stats-grid">
+
           <article class="stat-card">
             <div class="stat-heading">
               <span>Новые заявки</span>
               <span class="stat-icon orange">▤</span>
             </div>
-            <strong>0</strong>
+            <strong id="dashboardNewRequests">0</strong>
             <small>Ожидают обработки</small>
           </article>
 
@@ -153,9 +157,11 @@
             <strong>0</strong>
             <small>Активные задачи</small>
           </article>
+
         </div>
 
         <div class="dashboard-grid">
+
           <section class="panel">
             <div class="panel-header">
               <div>
@@ -167,8 +173,8 @@
 
             <div class="empty-state">
               <div class="empty-icon">▤</div>
-              <strong>Пока нет данных</strong>
-              <p>Здесь будут отображаться последние заявки.</p>
+              <strong>Загрузка заявок...</strong>
+              <p>Получаем данные из базы.</p>
             </div>
           </section>
 
@@ -187,6 +193,7 @@
               <p>Созданные объекты появятся здесь.</p>
             </div>
           </section>
+
         </div>
 
         <section class="panel activity-panel">
@@ -207,14 +214,182 @@
 
         <footer class="footer">
           <span>CONSTRUCTION GROUP</span>
-          <span>Admin Panel · Version 1.0</span>
+          <span>Admin Panel · Version 1.1</span>
         </footer>
+
+      </section>
+
+      <!-- REQUESTS -->
+
+      <section id="requests" class="dashboard-section" style="display:none;">
+
+        <div class="welcome">
+          <div>
+            <span class="eyebrow">УПРАВЛЕНИЕ ОБРАЩЕНИЯМИ</span>
+            <h2>Заявки клиентов</h2>
+            <p>Все обращения клиентов CONSTRUCTION GROUP.</p>
+          </div>
+        </div>
+
+        <div class="stats-grid">
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Всего заявок</span>
+              <span class="stat-icon orange">▤</span>
+            </div>
+            <strong id="requestsTotal">0</strong>
+            <small>Загружено из базы</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Новые</span>
+              <span class="stat-icon blue">◷</span>
+            </div>
+            <strong id="requestsNew">0</strong>
+            <small>Ожидают обработки</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Принятые</span>
+              <span class="stat-icon green">✓</span>
+            </div>
+            <strong id="requestsAccepted">0</strong>
+            <small>Подтверждённые заявки</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Отклонённые</span>
+              <span class="stat-icon purple">×</span>
+            </div>
+            <strong id="requestsRejected">0</strong>
+            <small>Отклонённые обращения</small>
+          </article>
+
+        </div>
+
+        <section class="panel">
+
+          <div class="panel-header">
+            <div>
+              <h3>Все заявки</h3>
+              <p>Поиск и фильтрация обращений</p>
+            </div>
+
+            <button
+              type="button"
+              id="refreshRequests"
+              class="text-link"
+              style="cursor:pointer;background:none;border:none;"
+            >
+              ↻ Обновить
+            </button>
+          </div>
+
+          <div style="
+            display:flex;
+            gap:12px;
+            flex-wrap:wrap;
+            padding:16px;
+          ">
+
+            <input
+              id="requestSearch"
+              type="search"
+              placeholder="Поиск: номер, имя или телефон"
+              style="
+                flex:1;
+                min-width:220px;
+                padding:12px;
+                border-radius:6px;
+              "
+            >
+
+            <select
+              id="requestStatusFilter"
+              style="
+                min-width:180px;
+                padding:12px;
+                border-radius:6px;
+              "
+            >
+              <option value="">Все статусы</option>
+              <option value="NOWA">Новая</option>
+              <option value="KONTAKT">Контакт</option>
+              <option value="USTALENIA">Согласование</option>
+              <option value="ZAAKCEPTOWANA">Принята</option>
+              <option value="ODRZUCONA">Отклонена</option>
+            </select>
+
+          </div>
+
+          <div
+            id="requestsLoading"
+            style="padding:20px;"
+          >
+            Загружаем заявки...
+          </div>
+
+          <div
+            id="requestsTableContainer"
+            style="overflow-x:auto;"
+          ></div>
+
+          <div
+            id="requestsEmpty"
+            style="display:none;padding:20px;"
+          >
+            Заявки не найдены.
+          </div>
+
+        </section>
+
+        <!-- REQUEST DETAILS -->
+
+        <section
+          id="requestDetails"
+          class="panel"
+          style="display:none;margin-top:20px;"
+        >
+
+          <div class="panel-header">
+            <div>
+              <h3 id="requestDetailsTitle">Карточка заявки</h3>
+              <p>Подробная информация об обращении</p>
+            </div>
+
+            <button
+              type="button"
+              id="closeRequestDetails"
+              class="text-link"
+              style="cursor:pointer;background:none;border:none;"
+            >
+              Закрыть ✕
+            </button>
+          </div>
+
+          <div
+            id="requestDetailsContent"
+            style="padding:20px;"
+          ></div>
+
+        </section>
+
+        <footer class="footer">
+          <span>CONSTRUCTION GROUP</span>
+          <span>Requests Management · Version 1.1</span>
+        </footer>
+
       </section>
 
     </main>
   </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="admin.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+
 </body>
 </html>
