@@ -332,7 +332,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       createField("Описание", description)
     );
 
-    // Загрузка списка объектов
     try {
       const { data, error } = await client
         .from("projects")
@@ -461,6 +460,592 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ======================================
+  // РАСХОДЫ: СОЗДАНИЕ ЗАЯВКИ И УПРАВЛЕНИЕ
+  // ======================================
+
+  async function loadExpenseProjects() {
+    const { data, error } = await client
+      .from("projects")
+      .select("id, name, status")
+      .in("status", ["planned", "active", "paused"])
+      .order("name");
+
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function openExpenseForm() {
+    let projects;
+
+    try {
+      projects = await loadExpenseProjects();
+    } catch (error) {
+      showMessage("Не удалось загрузить объекты: " + error.message, true);
+      return;
+    }
+
+    if (!projects.length) {
+      showMessage("Нет доступных объектов. Для заявки на расход нужен объект.", true);
+      return;
+    }
+
+    const overlay = document.createElement("div");
+
+    Object.assign(overlay.style, {
+      position: "fixed",
+      inset: "0",
+      background: "rgba(0,0,0,.78)",
+      zIndex: "100000",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "16px",
+      overflowY: "auto"
+    });
+
+    const modal = document.createElement("div");
+
+    Object.assign(modal.style, {
+      width: "100%",
+      maxWidth: "540px",
+      maxHeight: "90vh",
+      overflowY: "auto",
+      boxSizing: "border-box",
+      padding: "24px",
+      borderRadius: "12px",
+      border: "1px solid #444",
+      background: "#292c31",
+      color: "#f5f5f4"
+    });
+
+    const heading = document.createElement("h2");
+    heading.textContent = "Новая заявка на расход";
+    heading.style.marginTop = "0";
+
+    const note = document.createElement("p");
+    note.textContent =
+      "Заявка сначала отправляется на проверку. Баланс изменится только после утверждения и оплаты владельцем.";
+
+    Object.assign(note.style, {
+      color: "#a4a7ad",
+      lineHeight: "1.5"
+    });
+
+    const form = document.createElement("form");
+
+    const projectSelect = document.createElement("select");
+
+    projects.forEach(project => {
+      const option = document.createElement("option");
+      option.value = project.id;
+      option.textContent = project.name;
+      projectSelect.appendChild(option);
+    });
+
+    const titleInput = document.createElement("input");
+    titleInput.type = "text";
+    titleInput.required = true;
+    titleInput.maxLength = 160;
+    titleInput.placeholder = "Например: покупка мешков для мусора";
+
+    const amountInput = document.createElement("input");
+    amountInput.type = "number";
+    amountInput.required = true;
+    amountInput.min = "0.01";
+    amountInput.step = "0.01";
+    amountInput.placeholder = "0.00";
+
+    const categorySelect = document.createElement("select");
+
+    [
+      ["materials", "Материалы"],
+      ["tools", "Инструменты"],
+      ["transport", "Транспорт"],
+      ["fuel", "Топливо"],
+      ["debris", "Вывоз мусора"],
+      ["food", "Питание и вода"],
+      ["other", "Другое"]
+    ].forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      categorySelect.appendChild(option);
+    });
+
+    const paymentSelect = document.createElement("select");
+
+    [
+      ["cash", "Наличные компании"],
+      ["bank", "Банковский счёт"],
+      ["personal", "Личные деньги сотрудника"]
+    ].forEach(([value, label]) => {
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = label;
+      paymentSelect.appendChild(option);
+    });
+
+    const descriptionInput = document.createElement("textarea");
+    descriptionInput.rows = 3;
+    descriptionInput.maxLength = 2000;
+    descriptionInput.placeholder = "Дополнительные подробности...";
+
+    form.append(
+      createField("Объект *", projectSelect),
+      createField("На что потрачены деньги *", titleInput),
+      createField("Сумма, PLN *", amountInput),
+      createField("Категория", categorySelect),
+      createField("Способ оплаты", paymentSelect),
+      createField("Описание", descriptionInput)
+    );
+
+    const receiptNote = document.createElement("p");
+    receiptNote.textContent =
+      "Фотография чека будет подключена после настройки хранилища чеков в Supabase.";
+
+    Object.assign(receiptNote.style, {
+      color: "#a4a7ad",
+      fontSize: "12px",
+      lineHeight: "1.5"
+    });
+
+    form.appendChild(receiptNote);
+
+    const errorText = document.createElement("p");
+    errorText.style.color = "#ff6b6b";
+    errorText.style.whiteSpace = "pre-wrap";
+
+    const actions = document.createElement("div");
+
+    Object.assign(actions.style, {
+      display: "flex",
+      justifyContent: "flex-end",
+      gap: "10px",
+      marginTop: "18px"
+    });
+
+    const cancel = document.createElement("button");
+    cancel.type = "button";
+    cancel.textContent = "Отмена";
+
+    const submit = document.createElement("button");
+    submit.type = "submit";
+    submit.textContent = "Отправить заявку";
+
+    [cancel, submit].forEach(button => {
+      Object.assign(button.style, {
+        padding: "11px 14px",
+        border: "0",
+        borderRadius: "7px",
+        cursor: "pointer",
+        fontWeight: "600"
+      });
+    });
+
+    cancel.style.background = "#444";
+    cancel.style.color = "#fff";
+    submit.style.background = "#ff812e";
+    submit.style.color = "#202226";
+
+    actions.append(cancel, submit);
+    form.append(errorText, actions);
+    modal.append(heading, note, form);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    const close = () => overlay.remove();
+
+    cancel.addEventListener("click", close);
+
+    overlay.addEventListener("click", event => {
+      if (event.target === overlay) close();
+    });
+
+    form.addEventListener("submit", async event => {
+      event.preventDefault();
+
+      const amount = Number(amountInput.value);
+
+      if (
+        !Number.isFinite(amount) ||
+        amount <= 0 ||
+        Math.round(amount * 100) !== amount * 100
+      ) {
+        errorText.textContent =
+          "Введи корректную сумму с точностью до 2 знаков.";
+        return;
+      }
+
+      submit.disabled = true;
+      submit.textContent = "Отправляем...";
+      errorText.textContent = "";
+
+      try {
+        const { data, error } = await client.rpc(
+          "submit_expense",
+          {
+            p_project_id: projectSelect.value,
+            p_title: titleInput.value.trim(),
+            p_amount: amount,
+            p_payment_method: paymentSelect.value,
+            p_description: descriptionInput.value.trim() || null,
+            p_category: categorySelect.value,
+            p_receipt_path: null
+          }
+        );
+
+        if (error) throw error;
+
+        close();
+
+        showMessage(
+          "Заявка на расход создана. ID: " + data
+        );
+
+        await loadExpenseRequests();
+
+      } catch (error) {
+        console.error("Expense submission error:", error);
+
+        errorText.textContent =
+          error.message +
+          "\nПроверь, что у текущего пользователя есть активная запись сотрудника и доступ к выбранному объекту.";
+
+        submit.disabled = false;
+        submit.textContent = "Отправить заявку";
+      }
+    });
+  }
+
+  function addExpensePanel() {
+    let panel = document.getElementById(
+      "financeExpenseRequests"
+    );
+
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "financeExpenseRequests";
+
+      Object.assign(panel.style, {
+        marginTop: "20px",
+        padding: "20px",
+        border: "1px solid #3b3f46",
+        borderRadius: "10px",
+        background: "#292c31",
+        color: "#f5f5f4"
+      });
+
+      const history = document.getElementById("financeHistory");
+      const historyCard = history?.closest(".panel, .card");
+
+      if (historyCard?.parentElement) {
+        historyCard.parentElement.insertBefore(panel, historyCard);
+      } else {
+        section.appendChild(panel);
+      }
+    }
+
+    return panel;
+  }
+
+  async function loadExpenseRequests() {
+    const panel = addExpensePanel();
+    panel.replaceChildren();
+
+    const heading = document.createElement("h3");
+    heading.textContent = "Заявки на расходы";
+    heading.style.marginTop = "0";
+
+    const subtitle = document.createElement("p");
+    subtitle.textContent =
+      "Ожидающие проверки, утверждённые и оплаченные расходы.";
+    subtitle.style.color = "#a4a7ad";
+
+    const refresh = document.createElement("button");
+    refresh.type = "button";
+    refresh.textContent = "Обновить заявки";
+
+    Object.assign(refresh.style, {
+      padding: "8px 12px",
+      marginBottom: "12px",
+      border: "1px solid #ff812e",
+      borderRadius: "6px",
+      background: "transparent",
+      color: "#ff812e",
+      cursor: "pointer"
+    });
+
+    refresh.addEventListener("click", loadExpenseRequests);
+
+    panel.append(heading, subtitle, refresh);
+
+    const { data, error } = await client
+      .from("expense_requests")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(100);
+
+    if (error) {
+      const message = document.createElement("p");
+      message.textContent =
+        "Не удалось загрузить заявки: " + error.message;
+      message.style.color = "#ff7373";
+      panel.appendChild(message);
+
+      console.error("Expense requests loading error:", error);
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      const empty = document.createElement("p");
+      empty.textContent = "Заявок на расходы пока нет.";
+      panel.appendChild(empty);
+      return;
+    }
+
+    const balanceResult = accountsCache.length
+      ? { data: accountsCache }
+      : await client.rpc("get_finance_balances");
+
+    if (balanceResult.error) {
+      throw balanceResult.error;
+    }
+
+    const accountData = balanceResult.data || [];
+
+    const statusLabels = {
+      pending: "Ожидает проверки",
+      approved: "Утверждён",
+      rejected: "Отклонён",
+      paid: "Оплачен"
+    };
+
+    data.forEach(expense => {
+      const card = document.createElement("article");
+
+      Object.assign(card.style, {
+        padding: "14px",
+        marginTop: "12px",
+        border: "1px solid #444",
+        borderRadius: "8px",
+        background: "#24272c"
+      });
+
+      const title = document.createElement("strong");
+      title.textContent = expense.title || "Расход";
+      title.style.display = "block";
+
+      const details = document.createElement("p");
+      details.textContent =
+        `${money(expense.amount)} · ${expense.category || "Без категории"} · ${statusLabels[expense.status] || expense.status}`;
+
+      details.style.margin = "8px 0";
+
+      const info = document.createElement("small");
+
+      info.textContent =
+        `Дата: ${expense.expense_date || expense.created_at?.slice(0, 10) || "—"} · Объект ID: ${expense.project_id || "—"} · Сотрудник ID: ${expense.employee_id || "—"}`;
+
+      info.style.color = "#a4a7ad";
+      info.style.display = "block";
+
+      card.append(title, details, info);
+
+      if (expense.description) {
+        const description = document.createElement("p");
+        description.textContent = expense.description;
+        card.appendChild(description);
+      }
+
+      if (expense.receipt_path) {
+        const receipt = document.createElement("p");
+        receipt.textContent =
+          "Чек приложен: " + expense.receipt_path;
+        receipt.style.color = "#a4a7ad";
+        card.appendChild(receipt);
+      }
+
+      const buttons = document.createElement("div");
+
+      Object.assign(buttons.style, {
+        display: "flex",
+        flexWrap: "wrap",
+        gap: "8px",
+        marginTop: "12px"
+      });
+
+      if (expense.status === "pending") {
+        const approve = document.createElement("button");
+        approve.type = "button";
+        approve.textContent = "Утвердить";
+
+        approve.style.cssText =
+          "padding:9px 12px;border:0;border-radius:6px;background:#22a06b;color:white;cursor:pointer";
+
+        approve.addEventListener("click", async () => {
+          if (!confirm("Утвердить эту заявку на расход?")) return;
+
+          approve.disabled = true;
+
+          try {
+            const { error } = await client.rpc(
+              "approve_expense",
+              {
+                p_expense_id: expense.id,
+                p_action: "approved",
+                p_reason: null
+              }
+            );
+
+            if (error) throw error;
+
+            showMessage(
+              "Расход утверждён. Для списания нажми «Оплатить»."
+            );
+
+            await loadExpenseRequests();
+
+          } catch (err) {
+            showMessage(
+              "Ошибка утверждения: " + err.message,
+              true
+            );
+
+            approve.disabled = false;
+          }
+        });
+
+        const reject = document.createElement("button");
+        reject.type = "button";
+        reject.textContent = "Отклонить";
+
+        reject.style.cssText =
+          "padding:9px 12px;border:0;border-radius:6px;background:#a83e3e;color:white;cursor:pointer";
+
+        reject.addEventListener("click", async () => {
+          const reason = prompt("Укажи причину отклонения:");
+
+          if (!reason || !reason.trim()) return;
+
+          reject.disabled = true;
+
+          try {
+            const { error } = await client.rpc(
+              "approve_expense",
+              {
+                p_expense_id: expense.id,
+                p_action: "rejected",
+                p_reason: reason.trim()
+              }
+            );
+
+            if (error) throw error;
+
+            showMessage("Заявка отклонена.");
+
+            await loadExpenseRequests();
+
+          } catch (err) {
+            showMessage(
+              "Ошибка отклонения: " + err.message,
+              true
+            );
+
+            reject.disabled = false;
+          }
+        });
+
+        buttons.append(approve, reject);
+      }
+
+      if (
+        expense.status === "approved" &&
+        !expense.finance_transaction_id
+      ) {
+        const pay = document.createElement("button");
+        pay.type = "button";
+        pay.textContent = "Оплатить со счёта";
+
+        pay.style.cssText =
+          "padding:9px 12px;border:0;border-radius:6px;background:#ff812e;color:#202226;cursor:pointer";
+
+        pay.addEventListener("click", async () => {
+          const compatibleAccounts = accountData.filter(account =>
+            account.currency === expense.currency
+          );
+
+          if (!compatibleAccounts.length) {
+            showMessage(
+              "Нет подходящего активного счёта.",
+              true
+            );
+            return;
+          }
+
+          const options = compatibleAccounts.map(
+            (account, index) =>
+              `${index + 1}. ${account.account_name} (${money(account.balance)})`
+          ).join("\n");
+
+          const choice = Number(prompt(
+            "Выбери счёт для оплаты:\n" +
+            options +
+            "\nВведи номер счёта:"
+          ));
+
+          if (
+            !Number.isInteger(choice) ||
+            choice < 1 ||
+            choice > compatibleAccounts.length
+          ) return;
+
+          if (!confirm(
+            `Списать ${money(expense.amount)} со счёта ${compatibleAccounts[choice - 1].account_name}?`
+          )) return;
+
+          pay.disabled = true;
+
+          try {
+            const { data: transactionId, error } =
+              await client.rpc("pay_expense", {
+                p_expense_id: expense.id,
+                p_account_id:
+                  compatibleAccounts[choice - 1].account_id
+              });
+
+            if (error) throw error;
+
+            showMessage(
+              "Расход оплачен. Операция: " + transactionId
+            );
+
+            await Promise.all([
+              loadFinance(),
+              loadExpenseRequests()
+            ]);
+
+          } catch (err) {
+            showMessage(
+              "Ошибка оплаты: " + err.message,
+              true
+            );
+
+            pay.disabled = false;
+          }
+        });
+
+        buttons.appendChild(pay);
+      }
+
+      if (buttons.childElementCount) {
+        card.appendChild(buttons);
+      }
+
+      panel.appendChild(card);
+    });
+  }
+
+  // ======================================
   // КНОПКИ
   // ======================================
 
@@ -469,6 +1054,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (incomeButton) {
     incomeButton.disabled = false;
+
     incomeButton.addEventListener("click", async () => {
       try {
         await openIncomeForm();
@@ -487,11 +1073,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     expenseButton.removeAttribute("disabled");
     expenseButton.style.pointerEvents = "auto";
 
-    expenseButton.addEventListener("click", () => {
-      showMessage(
-        "Форма расхода ещё не подключена. Деньги не списаны.",
-        true
-      );
+    expenseButton.addEventListener("click", async () => {
+      try {
+        await openExpenseForm();
+      } catch (error) {
+        console.error("Expense form error:", error);
+        showMessage(error.message, true);
+      }
     });
   }
 
@@ -530,6 +1118,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await loadFinance();
+
+  try {
+    await loadExpenseRequests();
+  } catch (error) {
+    console.error(
+      "Expense requests initialization error:",
+      error
+    );
+  }
 
   console.log("CONSTRUCTION GROUP FINANCE initialized");
 });
