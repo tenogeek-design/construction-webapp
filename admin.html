@@ -1,506 +1,214 @@
 
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#202226">
-  <title>CONSTRUCTION GROUP — Admin</title>
-  <link rel="stylesheet" href="admin.css">
-</head>
-<body>
-  <div class="admin-layout">
-
-    <aside class="sidebar">
-      <a href="admin.html" class="brand">
-        <span class="brand-icon">C</span>
-        <span>
-          <strong>CONSTRUCTION</strong>
-          <small>GROUP ADMIN</small>
-        </span>
-      </a>
-
-      <div class="sidebar-label">ГЛАВНОЕ</div>
-
-      <nav class="navigation">
-        <a href="#dashboard" class="nav-item active">
-          <span>▦</span> Dashboard
-        </a>
-        <a href="#requests" class="nav-item">
-          <span>▤</span> Заявки
-          <span class="nav-count">0</span>
-        </a>
-        <a href="#employees" class="nav-item">
-          <span>♙</span> Сотрудники
-        </a>
-        <a href="#projects" class="nav-item">
-          <span>▧</span> Объекты
-        </a>
-        <a href="#tasks" class="nav-item">
-          <span>☑</span> Задачи
-        </a>
-        <a href="#time" class="nav-item">
-          <span>◷</span> Учёт времени
-        </a>
-      </nav>
-
-      <div class="sidebar-label">УПРАВЛЕНИЕ</div>
-
-      <nav class="navigation">
-        <a href="#payroll" class="nav-item">
-          <span>₴</span> Зарплаты
-        </a>
-        <a href="#finance" class="nav-item">
-          <span>▣</span> Финансы
-        </a>
-        <a href="#services" class="nav-item">
-          <span>◇</span> Услуги и цены
-        </a>
-        <a href="#clients" class="nav-item">
-          <span>♧</span> Клиенты
-        </a>
-        <a href="#documents" class="nav-item">
-          <span>▤</span> Документы
-        </a>
-      </nav>
-
-      <div class="sidebar-label">СИСТЕМА</div>
-
-      <nav class="navigation">
-        <a href="#notifications" class="nav-item">
-          <span>♢</span> Уведомления
-        </a>
-        <a href="#analytics" class="nav-item">
-          <span>▥</span> Аналитика
-        </a>
-        <a href="#settings" class="nav-item">
-          <span>⚙</span> Настройки
-        </a>
-      </nav>
-
-      <div class="sidebar-bottom">
-        <div class="system-status">
-          <span class="status-dot"></span>
-          <span>Система готова</span>
-        </div>
-        <small>CONSTRUCTION GROUP © 2026</small>
-      </div>
-    </aside>
-
-    <main class="main-content">
-
-      <header class="topbar">
-        <div>
-          <div class="breadcrumb">CONSTRUCTION / ADMIN</div>
-          <h1 id="pageTitle">Панель управления</h1>
-        </div>
-
-        <div class="topbar-actions">
-          <button class="icon-button" aria-label="Уведомления">♢</button>
-          <div class="profile">
-            <div class="avatar">A</div>
-            <div>
-              <strong>Администратор</strong>
-              <small>Administrator</small>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <!-- DASHBOARD -->
-
-      <section id="dashboard" class="dashboard-section">
-
-        <div class="welcome">
-          <div>
-            <span class="eyebrow">ОБЗОР КОМПАНИИ</span>
-            <h2>Добро пожаловать в CONSTRUCTION</h2>
-            <p>Управление компанией в одном месте.</p>
-          </div>
-          <div class="date-label" id="currentDate"></div>
-        </div>
-
-        <div class="stats-grid">
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Новые заявки</span>
-              <span class="stat-icon orange">▤</span>
-            </div>
-            <strong id="dashboardNewRequests">0</strong>
-            <small>Ожидают обработки</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Активные объекты</span>
-              <span class="stat-icon blue">▧</span>
-            </div>
-            <strong>0</strong>
-            <small>В работе</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Сотрудники</span>
-              <span class="stat-icon green">♙</span>
-            </div>
-            <strong>0</strong>
-            <small>В базе компании</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Задачи</span>
-              <span class="stat-icon purple">☑</span>
-            </div>
-            <strong>0</strong>
-            <small>Активные задачи</small>
-          </article>
-
-        </div>
-
-        <div class="dashboard-grid">
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Последние заявки</h3>
-                <p>Новые обращения клиентов</p>
-              </div>
-              <a href="#requests" class="text-link">Все заявки →</a>
-            </div>
-
-            <div class="empty-state">
-              <div class="empty-icon">▤</div>
-              <strong>Загрузка заявок...</strong>
-              <p>Получаем данные из базы.</p>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Активные объекты</h3>
-                <p>Текущие строительные проекты</p>
-              </div>
-              <a href="#projects" class="text-link">Все объекты →</a>
-            </div>
-
-            <div class="empty-state">
-              <div class="empty-icon">▧</div>
-              <strong>Нет активных объектов</strong>
-              <p>Созданные объекты появятся здесь.</p>
-            </div>
-          </section>
-
-        </div>
-
-        <section class="panel activity-panel">
-          <div class="panel-header">
-            <div>
-              <h3>Последние действия</h3>
-              <p>История активности системы</p>
-            </div>
-            <span class="live-indicator">
-              <span class="status-dot"></span> DEMO
-            </span>
-          </div>
-
-          <div class="empty-state compact">
-            <p>История действий появится после подключения базы данных.</p>
-          </div>
-        </section>
-
-        <footer class="footer">
-          <span>CONSTRUCTION GROUP</span>
-          <span>Admin Panel · Version 1.1</span>
-        </footer>
-
-      </section>
-
-      <!-- REQUESTS -->
-
-      <section id="requests" class="dashboard-section" style="display:none;">
-
-        <div class="welcome">
-          <div>
-            <span class="eyebrow">УПРАВЛЕНИЕ ОБРАЩЕНИЯМИ</span>
-            <h2>Заявки клиентов</h2>
-            <p>Все обращения клиентов CONSTRUCTION GROUP.</p>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Всего заявок</span>
-              <span class="stat-icon orange">▤</span>
-            </div>
-            <strong id="requestsTotal">0</strong>
-            <small>Загружено из базы</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Новые</span>
-              <span class="stat-icon blue">◷</span>
-            </div>
-            <strong id="requestsNew">0</strong>
-            <small>Ожидают обработки</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Принятые</span>
-              <span class="stat-icon green">✓</span>
-            </div>
-            <strong id="requestsAccepted">0</strong>
-            <small>Подтверждённые заявки</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Отклонённые</span>
-              <span class="stat-icon purple">×</span>
-            </div>
-            <strong id="requestsRejected">0</strong>
-            <small>Отклонённые обращения</small>
-          </article>
-
-        </div>
-
-        <section class="panel">
-
-          <div class="panel-header">
-            <div>
-              <h3>Все заявки</h3>
-              <p>Поиск и фильтрация обращений</p>
-            </div>
-
-            <button
-              type="button"
-              id="refreshRequests"
-              class="text-link"
-              style="cursor:pointer;background:none;border:none;"
-            >
-              ↻ Обновить
-            </button>
-          </div>
-
-          <div style="
-            display:flex;
-            gap:12px;
-            flex-wrap:wrap;
-            padding:16px;
-          ">
-
-            <input
-              id="requestSearch"
-              type="search"
-              placeholder="Поиск: номер, имя или телефон"
-              style="
-                flex:1;
-                min-width:220px;
-                padding:12px;
-                border-radius:6px;
-              "
-            >
-
-            <select
-              id="requestStatusFilter"
-              style="
-                min-width:180px;
-                padding:12px;
-                border-radius:6px;
-              "
-            >
-              <option value="">Все статусы</option>
-              <option value="NOWA">Новая</option>
-              <option value="KONTAKT">Контакт</option>
-              <option value="USTALENIA">Согласование</option>
-              <option value="ZAAKCEPTOWANA">Принята</option>
-              <option value="ODRZUCONA">Отклонена</option>
-            </select>
-
-          </div>
-
-          <div
-            id="requestsLoading"
-            style="padding:20px;"
-          >
-            Загружаем заявки...
-          </div>
-
-          <div
-            id="requestsTableContainer"
-            style="overflow-x:auto;"
-          ></div>
-
-          <div
-            id="requestsEmpty"
-            style="display:none;padding:20px;"
-          >
-            Заявки не найдены.
-          </div>
-
-        </section>
-
-        <!-- REQUEST DETAILS -->
-
-        <section
-          id="requestDetails"
-          class="panel"
-          style="display:none;margin-top:20px;"
-        >
-
-          <div class="panel-header">
-            <div>
-              <h3 id="requestDetailsTitle">Карточка заявки</h3>
-              <p>Подробная информация об обращении</p>
-            </div>
-
-            <button
-              type="button"
-              id="closeRequestDetails"
-              class="text-link"
-              style="cursor:pointer;background:none;border:none;"
-            >
-              Закрыть ✕
-            </button>
-          </div>
-
-          <div
-            id="requestDetailsContent"
-            style="padding:20px;"
-          ></div>
-
-        </section>
-
-        <footer class="footer">
-          <span>CONSTRUCTION GROUP</span>
-          <span>Requests Management · Version 1.1</span>
-        </footer>
-
-      </section>
-<!-- FINANCE -->
-
-<section
-  id="finance"
-  class="dashboard-section"
-  style="display:none;"
->
-
-  <div class="welcome">
-    <div>
-      <span class="eyebrow">
-        ФИНАНСЫ КОМПАНИИ
-      </span>
-
-      <h2>Финансовое управление</h2>
-
-      <p>
-        Касса, банковские счета,
-        поступления, расходы и переводы.
-      </p>
-    </div>
-  </div>
-
-  <div class="stats-grid">
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Общий баланс</span>
-        <span class="stat-icon orange">▣</span>
-      </div>
-      <strong id="financeTotalBalance">—</strong>
-      <small>Все деньги компании</small>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Наличные</span>
-        <span class="stat-icon green">₴</span>
-      </div>
-      <strong id="financeCashBalance">—</strong>
-      <small>Баланс кассы</small>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Банковские счета</span>
-        <span class="stat-icon blue">▣</span>
-      </div>
-      <strong id="financeBankBalance">—</strong>
-      <small>Деньги в банке</small>
-    </article>
-
-  </div>
-
-  <section class="panel">
-
-    <div class="panel-header">
-      <div>
-        <h3>Финансовые операции</h3>
-        <p>Управление движением денег</p>
-      </div>
-    </div>
-
-    <div class="finance-actions">
-      <button type="button" id="financeIncomeBtn">
-        + Поступление
-      </button>
-
-      <button type="button" id="financeExpenseBtn">
-        − Расход
-      </button>
-
-      <button type="button" id="financeTransferBtn">
-        ⇄ Перевод
-      </button>
-    </div>
-
-    <p id="financeMessage" role="status"
-       style="padding:16px;color:#a4a7ad;">
-      Финансовые операции будут подключены
-      после настройки интерфейса.
-    </p>
-
-  </section>
-
-  <section class="panel" style="margin-top:20px;">
-
-    <div class="panel-header">
-      <div>
-        <h3>История операций</h3>
-        <p>Все движения денег компании</p>
-      </div>
-
-      <button
-        type="button"
-        id="financeRefreshBtn"
-        class="text-link"
-      >
-        ↻ Обновить
-      </button>
-    </div>
-
-    <div
-      id="financeHistory"
-      style="padding:20px;overflow-x:auto;"
-    >
-      История ещё не загружена.
-    </div>
-
-  </section>
-
-</section>
-    </main>
-  </div>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="admin.js"></script>
-
-</body>
-</html>
+"use strict";
+
+document.addEventListener("DOMContentLoaded", async () => {
+  const SUPABASE_URL =
+    "https://yepxskcfxyiyqqhmdpve.supabase.co";
+
+  const SUPABASE_KEY =
+    "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH";
+
+  if (!window.supabase) {
+    console.error("Supabase library is not loaded");
+    return;
+  }
+
+  const client = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+
+  const financeSection = document.getElementById("finance");
+
+  if (!financeSection) {
+    console.error("Finance section not found");
+    return;
+  }
+
+  const formatMoney = value =>
+    new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency: "PLN"
+    }).format(Number(value) || 0);
+
+  function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = String(value);
+  }
+
+  function setMessage(message) {
+    setText("financeMessage", message);
+  }
+
+  async function loadBalances() {
+    const { data, error } = await client.rpc(
+      "get_finance_balances"
+    );
+
+    if (error) throw error;
+
+    const accounts = data || [];
+
+    const sumType = type =>
+      accounts
+        .filter(account =>
+          account.account_type === type &&
+          account.currency === "PLN"
+        )
+        .reduce(
+          (sum, account) => sum + Number(account.balance),
+          0
+        );
+
+    const cash = sumType("cash");
+    const bank = sumType("bank");
+
+    setText("financeCashBalance", formatMoney(cash));
+    setText("financeBankBalance", formatMoney(bank));
+    setText("financeTotalBalance", formatMoney(cash + bank));
+  }
+
+  async function loadHistory() {
+    const history = document.getElementById("financeHistory");
+    if (!history) return;
+
+    const { data, error } = await client.rpc(
+      "get_finance_history",
+      { p_limit: 50 }
+    );
+
+    if (error) throw error;
+
+    history.replaceChildren();
+
+    if (!data || data.length === 0) {
+      history.textContent = "Финансовых операций пока нет.";
+      return;
+    }
+
+    const table = document.createElement("table");
+
+    Object.assign(table.style, {
+      width: "100%",
+      borderCollapse: "collapse",
+      color: "#f5f5f4"
+    });
+
+    const header = document.createElement("tr");
+
+    ["Дата", "Операция", "Сумма", "Счёт", "Описание"]
+      .forEach(label => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        th.style.padding = "12px";
+        th.style.textAlign = "left";
+        th.style.borderBottom = "1px solid #444";
+        header.appendChild(th);
+      });
+
+    const thead = document.createElement("thead");
+    thead.appendChild(header);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    const typeLabels = {
+      income: "Поступление",
+      expense: "Расход",
+      transfer: "Перевод"
+    };
+
+    data.forEach(operation => {
+      const row = document.createElement("tr");
+
+      const accountLabel = operation.transaction_type === "transfer"
+        ? `${operation.from_account || "—"} → ${operation.to_account || "—"}`
+        : operation.transaction_type === "income"
+          ? operation.to_account || "—"
+          : operation.from_account || "—";
+
+      const values = [
+        operation.transaction_date || "—",
+        typeLabels[operation.transaction_type] ||
+          operation.transaction_type,
+        formatMoney(operation.amount),
+        accountLabel,
+        operation.description || "—"
+      ];
+
+      values.forEach(value => {
+        const cell = document.createElement("td");
+        cell.textContent = value;
+        cell.style.padding = "12px";
+        cell.style.borderBottom = "1px solid #383838";
+        row.appendChild(cell);
+      });
+
+      tbody.appendChild(row);
+    });
+
+    table.appendChild(tbody);
+    history.appendChild(table);
+  }
+
+  let loading = false;
+
+  async function loadFinance() {
+    if (loading) return;
+    loading = true;
+
+    setMessage("Загружаем финансы...");
+
+    try {
+      await Promise.all([
+        loadBalances(),
+        loadHistory()
+      ]);
+
+      setMessage("Данные загружены из Supabase.");
+    } catch (error) {
+      console.error("Finance loading error:", error);
+      setMessage(
+        "Ошибка загрузки финансов: " + error.message
+      );
+    } finally {
+      loading = false;
+    }
+  }
+
+  const refreshButton =
+    document.getElementById("financeRefreshBtn");
+
+  if (refreshButton) {
+    refreshButton.addEventListener("click", loadFinance);
+  }
+
+  [
+    "financeIncomeBtn",
+    "financeExpenseBtn",
+    "financeTransferBtn"
+  ].forEach(id => {
+    const button = document.getElementById(id);
+
+    if (button) {
+      button.disabled = true;
+      button.title =
+        "Форма операции будет подключена следующим этапом";
+      button.style.opacity = "0.5";
+      button.style.cursor = "not-allowed";
+    }
+  });
+
+  const observer = new MutationObserver(() => {
+    if (financeSection.style.display !== "none") {
+      loadFinance();
+    }
+  });
+
+  observer.observe(financeSection, {
+    attributes: true,
+    attributeFilter: ["style"]
+  });
+
+  await loadFinance();
+});
