@@ -677,69 +677,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   };
 
   // ==========================================
-  // 11. СОХРАНЕНИЕ СТАТУСА ЗАЯВКИ
+  // 11. ОБНОВЛЕНИЕ ЗАЯВКИ ПОСЛЕ СОХРАНЕНИЯ
   // ==========================================
 
-  async function saveRequestStatus(statusSelect, reasonInput, saveButton) {
-    if (!selectedRequest) return;
-
-    const request = selectedRequest;
-    const newStatus = statusSelect.value;
-    const rejectionReason = reasonInput.value.trim();
-
-    if (!canUpdateRequests) {
-      alert("У вас нет разрешения на изменение заявок.");
-      return;
-    }
-
-    if (
-      (newStatus === "ZAAKCEPTOWANA" ||
-        newStatus === "ODRZUCONA") &&
-      !canApproveRequests
-    ) {
-      alert("У вас нет разрешения на принятие решений по заявкам.");
-      return;
-    }
-
-    if (newStatus === "ODRZUCONA" && !rejectionReason) {
-      alert("Укажите причину отклонения заявки.");
-      reasonInput.focus();
-      return;
-    }
-
-    if (newStatus === request.status &&
-        (newStatus !== "ODRZUCONA" ||
-          rejectionReason === (request.rejection_reason || ""))) {
-      alert("Изменений нет.");
-      return;
-    }
-
-    saveButton.disabled = true;
-    saveButton.textContent = "Сохранение...";
-
-    const { data, error } = await client.rpc(
-      "admin_update_request",
-      {
-        p_request_id: request.id,
-        p_status: newStatus,
-        p_rejection_reason: rejectionReason || null
-      }
-    );
-
-    saveButton.disabled = false;
-    saveButton.textContent = "Сохранить изменения";
-
-    if (error) {
-      console.error("Request update error:", error);
-      alert(`Не удалось сохранить изменения:\n${error.message}`);
-      return;
-    }
-
-    const updatedRequest = Array.isArray(data) ? data[0] : data;
-
+  function applyUpdatedRequest(updatedRequest) {
     if (!updatedRequest) {
       alert("Сервер не вернул обновлённую заявку. Обновите список.");
-      return;
+      return false;
     }
 
     const index = allRequests.findIndex(
@@ -757,11 +701,133 @@ document.addEventListener("DOMContentLoaded", async () => {
     renderRequests();
     openRequestDetails(updatedRequest);
 
-    alert("Изменения заявки сохранены.");
+    return true;
   }
 
   // ==========================================
-  // 12. КОНТАКТЫ КЛИЕНТА
+  // 12. СОХРАНЕНИЕ ОБЫЧНОГО СТАТУСА
+  // ==========================================
+
+  async function saveRequestStatus(statusSelect, saveButton) {
+    if (!selectedRequest) return;
+
+    const request = selectedRequest;
+    const newStatus = statusSelect.value;
+
+    if (!canUpdateRequests) {
+      alert("У вас нет разрешения на изменение заявок.");
+      return;
+    }
+
+    if (newStatus === "ODRZUCONA") {
+      alert("Для отказа используйте отдельную кнопку «Отклонить заявку».");
+      return;
+    }
+
+    if (
+      newStatus === "ZAAKCEPTOWANA" &&
+      !canApproveRequests
+    ) {
+      alert("У вас нет разрешения на принятие заявок.");
+      return;
+    }
+
+    if (newStatus === request.status) {
+      alert("Изменений нет.");
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Сохранение...";
+
+    const { data, error } = await client.rpc(
+      "admin_update_request",
+      {
+        p_request_id: request.id,
+        p_status: newStatus,
+        p_rejection_reason: null
+      }
+    );
+
+    saveButton.disabled = false;
+    saveButton.textContent = "Сохранить статус";
+
+    if (error) {
+      console.error("Request update error:", error);
+      alert(`Не удалось сохранить статус:\n${error.message}`);
+      return;
+    }
+
+    const updatedRequest = Array.isArray(data) ? data[0] : data;
+
+    if (applyUpdatedRequest(updatedRequest)) {
+      alert("Статус заявки успешно изменён.");
+    }
+  }
+
+  // ==========================================
+  // 13. ОТДЕЛЬНОЕ ОТКЛОНЕНИЕ ЗАЯВКИ
+  // ==========================================
+
+  async function rejectRequest(reasonInput, rejectButton) {
+    if (!selectedRequest) return;
+
+    const request = selectedRequest;
+    const reason = reasonInput.value.trim();
+
+    if (!canUpdateRequests || !canApproveRequests) {
+      alert("У вас нет разрешения на отклонение заявок.");
+      return;
+    }
+
+    if (!reason) {
+      alert("Напишите причину отказа.");
+      reasonInput.focus();
+      return;
+    }
+
+    if (
+      request.status === "ODRZUCONA" &&
+      reason === (request.rejection_reason || "")
+    ) {
+      alert("Заявка уже отклонена с этой причиной.");
+      return;
+    }
+
+    if (!confirm("Вы действительно хотите отклонить эту заявку?")) {
+      return;
+    }
+
+    rejectButton.disabled = true;
+    rejectButton.textContent = "Отклонение...";
+
+    const { data, error } = await client.rpc(
+      "admin_update_request",
+      {
+        p_request_id: request.id,
+        p_status: "ODRZUCONA",
+        p_rejection_reason: reason
+      }
+    );
+
+    rejectButton.disabled = false;
+    rejectButton.textContent = "Отклонить заявку";
+
+    if (error) {
+      console.error("Request rejection error:", error);
+      alert(`Не удалось отклонить заявку:\n${error.message}`);
+      return;
+    }
+
+    const updatedRequest = Array.isArray(data) ? data[0] : data;
+
+    if (applyUpdatedRequest(updatedRequest)) {
+      alert("Заявка отклонена. Причина сохранена.");
+    }
+  }
+
+  // ==========================================
+  // 14. КОНТАКТЫ КЛИЕНТА
   // ==========================================
 
   function createContactActions(request) {
@@ -803,7 +869,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "Написать email"
       );
 
-      emailLink.href = `mailto:${encodeURIComponent(request.email)}`;
+      emailLink.href = `mailto:${request.email}`;
 
       Object.assign(emailLink.style, {
         display: "inline-block",
@@ -828,7 +894,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 13. ПАНЕЛЬ УПРАВЛЕНИЯ ЗАЯВКОЙ
+  // 15. ПАНЕЛЬ УПРАВЛЕНИЯ ЗАЯВКОЙ
   // ==========================================
 
   function createRequestManagement(request) {
@@ -864,6 +930,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       return wrapper;
     }
 
+    // Обычное изменение статуса
+
     const statusLabelElement = createElement(
       "label",
       "",
@@ -898,10 +966,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     ];
 
     if (canApproveRequests) {
-      statuses.push(
-        { value: "ZAAKCEPTOWANA", label: "Принята" },
-        { value: "ODRZUCONA", label: "Отклонена" }
-      );
+      statuses.push({
+        value: "ZAAKCEPTOWANA",
+        label: "Принята"
+      });
     }
 
     statuses.forEach(status => {
@@ -923,77 +991,112 @@ document.addEventListener("DOMContentLoaded", async () => {
     statusLabelElement.appendChild(statusSelect);
     wrapper.appendChild(statusLabelElement);
 
-    const reasonLabel = createElement(
-      "label",
-      "",
-      "Причина отказа"
-    );
-
-    Object.assign(reasonLabel.style, {
-      display: "block",
-      marginBottom: "7px",
-      fontWeight: "600"
-    });
-
-    const reasonInput = document.createElement("textarea");
-
-    reasonInput.value = request.rejection_reason || "";
-    reasonInput.placeholder =
-      "Укажите причину, если отклоняете заявку...";
-    reasonInput.rows = 3;
-
-    Object.assign(reasonInput.style, {
-      display: "block",
-      width: "100%",
-      maxWidth: "600px",
-      boxSizing: "border-box",
-      padding: "11px",
-      marginBottom: "14px",
-      border: "1px solid #555",
-      borderRadius: "6px",
-      background: "#202226",
-      color: "#f5f5f4",
-      fontSize: "14px",
-      resize: "vertical"
-    });
-
-    reasonLabel.appendChild(reasonInput);
-    wrapper.appendChild(reasonLabel);
-
-    const reasonHint = createElement(
-      "small",
-      "",
-      "При статусе «Отклонена» причина обязательна."
-    );
-
-    Object.assign(reasonHint.style, {
-      display: "block",
-      marginBottom: "14px",
-      color: "#a4a7ad"
-    });
-
-    wrapper.appendChild(reasonHint);
-
     const saveButton = makeActionButton(
-      "Сохранить изменения",
+      "Сохранить статус",
       "#ff812e"
     );
 
     saveButton.addEventListener("click", () => {
-      saveRequestStatus(
-        statusSelect,
-        reasonInput,
-        saveButton
-      );
+      saveRequestStatus(statusSelect, saveButton);
     });
 
     wrapper.appendChild(saveButton);
+
+    // Отдельный блок отказа
+
+    if (canApproveRequests) {
+      const rejectionSection = createElement("div");
+
+      Object.assign(rejectionSection.style, {
+        marginTop: "22px",
+        paddingTop: "18px",
+        borderTop: "1px solid #484848"
+      });
+
+      const rejectionHeading = createElement(
+        "h4",
+        "",
+        "Отклонение заявки"
+      );
+
+      Object.assign(rejectionHeading.style, {
+        margin: "0 0 10px",
+        color: "#ff7373",
+        fontSize: "15px"
+      });
+
+      rejectionSection.appendChild(rejectionHeading);
+
+      const reasonLabel = createElement(
+        "label",
+        "",
+        "Причина отказа"
+      );
+
+      Object.assign(reasonLabel.style, {
+        display: "block",
+        marginBottom: "7px",
+        fontWeight: "600"
+      });
+
+      const reasonInput = document.createElement("textarea");
+
+      reasonInput.value = request.rejection_reason || "";
+      reasonInput.placeholder =
+        "Напишите клиенту, почему заявка отклонена...";
+
+      reasonInput.rows = 4;
+
+      Object.assign(reasonInput.style, {
+        display: "block",
+        width: "100%",
+        maxWidth: "600px",
+        boxSizing: "border-box",
+        padding: "11px",
+        marginBottom: "10px",
+        border: "1px solid #555",
+        borderRadius: "6px",
+        background: "#202226",
+        color: "#f5f5f4",
+        fontSize: "14px",
+        resize: "vertical"
+      });
+
+      reasonLabel.appendChild(reasonInput);
+      rejectionSection.appendChild(reasonLabel);
+
+      const reasonHint = createElement(
+        "small",
+        "",
+        "Причина обязательна. Она будет сохранена вместе с отказом."
+      );
+
+      Object.assign(reasonHint.style, {
+        display: "block",
+        marginBottom: "14px",
+        color: "#a4a7ad"
+      });
+
+      rejectionSection.appendChild(reasonHint);
+
+      const rejectButton = makeActionButton(
+        "Отклонить заявку",
+        "#c74343"
+      );
+
+      rejectButton.addEventListener("click", () => {
+        rejectRequest(reasonInput, rejectButton);
+      });
+
+      rejectionSection.appendChild(rejectButton);
+      wrapper.appendChild(rejectionSection);
+    }
 
     return wrapper;
   }
 
   // ==========================================
-  // 14. ОТКРЫТИЕ ПОДРОБНОСТЕЙ
+  // 16. ОТКРЫТИЕ ПОДРОБНОСТЕЙ
   // ==========================================
 
   function openRequestDetails(request) {
@@ -1126,7 +1229,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 15. ПОИСК И ФИЛЬТРЫ
+  // 17. ПОИСК И ФИЛЬТРЫ
   // ==========================================
 
   const searchInput = document.getElementById("requestSearch");
@@ -1143,7 +1246,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 16. ЗАГРУЗКА ЗАЯВОК ИЗ SUPABASE
+  // 18. ЗАГРУЗКА ЗАЯВОК ИЗ SUPABASE
   // ==========================================
 
   async function loadRequests() {
@@ -1229,7 +1332,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 17. ПЕРВИЧНЫЙ ЗАПУСК
+  // 19. ПЕРВИЧНЫЙ ЗАПУСК
   // ==========================================
 
   if (!permissionSet.has("dashboard.view")) {
@@ -1254,7 +1357,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 18. КОНТРОЛЬ СЕССИИ
+  // 20. КОНТРОЛЬ СЕССИИ
   // ==========================================
 
   client.auth.onAuthStateChange((event, session) => {
