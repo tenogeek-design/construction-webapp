@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -25,12 +26,12 @@
       </div>
 
       <form id="loginForm">
-        <label for="username">Логин</label>
+        <label for="username">Email</label>
         <input
           id="username"
           name="username"
-          type="text"
-          placeholder="Введите логин"
+          type="email"
+          placeholder="Введите email"
           autocomplete="username"
           required
         >
@@ -49,10 +50,11 @@
         <p id="loginMessage" role="status"></p>
       </form>
 
-  <footer>CONSTRUCTION GROUP © 2026</footer>
-</section>
-</main>
+      <footer>CONSTRUCTION GROUP © 2026</footer>
+    </section>
+  </main>
 
-<script src="login.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="login.js"></script>
 </body>
 </html>
