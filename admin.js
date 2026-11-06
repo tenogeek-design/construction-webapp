@@ -1,6 +1,7 @@
 // ==========================================
 // 6. ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ
 // ==========================================
+const navItems = document.querySelectorAll(".nav-item");
 
 const sectionTitles = {
   dashboard: "Панель управления",
