@@ -384,7 +384,118 @@
         </footer>
 
       </section>
+<!-- FINANCE -->
 
+<section
+  id="finance"
+  class="dashboard-section"
+  style="display:none;"
+>
+
+  <div class="welcome">
+    <div>
+      <span class="eyebrow">
+        ФИНАНСЫ КОМПАНИИ
+      </span>
+
+      <h2>Финансовое управление</h2>
+
+      <p>
+        Касса, банковские счета,
+        поступления, расходы и переводы.
+      </p>
+    </div>
+  </div>
+
+  <div class="stats-grid">
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Общий баланс</span>
+        <span class="stat-icon orange">▣</span>
+      </div>
+      <strong id="financeTotalBalance">—</strong>
+      <small>Все деньги компании</small>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Наличные</span>
+        <span class="stat-icon green">₴</span>
+      </div>
+      <strong id="financeCashBalance">—</strong>
+      <small>Баланс кассы</small>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Банковские счета</span>
+        <span class="stat-icon blue">▣</span>
+      </div>
+      <strong id="financeBankBalance">—</strong>
+      <small>Деньги в банке</small>
+    </article>
+
+  </div>
+
+  <section class="panel">
+
+    <div class="panel-header">
+      <div>
+        <h3>Финансовые операции</h3>
+        <p>Управление движением денег</p>
+      </div>
+    </div>
+
+    <div class="finance-actions">
+      <button type="button" id="financeIncomeBtn">
+        + Поступление
+      </button>
+
+      <button type="button" id="financeExpenseBtn">
+        − Расход
+      </button>
+
+      <button type="button" id="financeTransferBtn">
+        ⇄ Перевод
+      </button>
+    </div>
+
+    <p id="financeMessage" role="status"
+       style="padding:16px;color:#a4a7ad;">
+      Финансовые операции будут подключены
+      после настройки интерфейса.
+    </p>
+
+  </section>
+
+  <section class="panel" style="margin-top:20px;">
+
+    <div class="panel-header">
+      <div>
+        <h3>История операций</h3>
+        <p>Все движения денег компании</p>
+      </div>
+
+      <button
+        type="button"
+        id="financeRefreshBtn"
+        class="text-link"
+      >
+        ↻ Обновить
+      </button>
+    </div>
+
+    <div
+      id="financeHistory"
+      style="padding:20px;overflow-x:auto;"
+    >
+      История ещё не загружена.
+    </div>
+
+  </section>
+
+</section>
     </main>
   </div>
 
