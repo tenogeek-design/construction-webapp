@@ -1,7 +1,6 @@
-
 "use strict";
 
-document.addEventListener("DOMContentLoaded", async () => {
+document.addEventListener("DOMContentLoaded", () => {
   const SUPABASE_URL =
     "https://yepxskcfxyiyqqhmdpve.supabase.co";
 
@@ -9,7 +8,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH";
 
   if (!window.supabase) {
-    console.error("Supabase library is not loaded");
+    console.error("Supabase library not loaded");
     return;
   }
 
@@ -25,29 +24,28 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  const $ = id => document.getElementById(id);
+
   const money = value =>
     new Intl.NumberFormat("pl-PL", {
       style: "currency",
       currency: "PLN"
     }).format(Number(value) || 0);
 
-  function setText(id, value) {
-    const element = document.getElementById(id);
-    if (element) element.textContent = String(value);
+  function message(text, error = false) {
+    const element = $("financeMessage");
+    if (!element) return;
+
+    element.textContent = text;
+    element.style.color = error ? "#ff6b6b" : "#22a06b";
   }
 
-  function showMessage(message, isError = false) {
-    setText("financeMessage", message);
-
-    const element = document.getElementById("financeMessage");
-
-    if (element) {
-      element.style.color = isError ? "#ff6b6b" : "#22a06b";
-    }
-  }
-
-  let accountsCache = [];
+  let accounts = [];
   let loading = false;
+
+  // ======================================
+  // BALANCES
+  // ======================================
 
   async function loadBalances() {
     const { data, error } = await client.rpc(
@@ -56,10 +54,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (error) throw error;
 
-    accountsCache = data || [];
+    accounts = data || [];
 
-    const sumType = type =>
-      accountsCache
+    const calculate = type =>
+      accounts
         .filter(a =>
           a.account_type === type &&
           a.currency === "PLN"
@@ -69,18 +67,26 @@ document.addEventListener("DOMContentLoaded", async () => {
           0
         );
 
-    const cash = sumType("cash");
-    const bank = sumType("bank");
+    const cash = calculate("cash");
+    const bank = calculate("bank");
 
-    setText("financeCashBalance", money(cash));
-    setText("financeBankBalance", money(bank));
-    setText("financeTotalBalance", money(cash + bank));
+    if ($("financeCashBalance"))
+      $("financeCashBalance").textContent = money(cash);
+
+    if ($("financeBankBalance"))
+      $("financeBankBalance").textContent = money(bank);
+
+    if ($("financeTotalBalance"))
+      $("financeTotalBalance").textContent =
+        money(cash + bank);
   }
 
-  async function loadHistory() {
-    const container =
-      document.getElementById("financeHistory");
+  // ======================================
+  // HISTORY
+  // ======================================
 
+  async function loadHistory() {
+    const container = $("financeHistory");
     if (!container) return;
 
     const { data, error } = await client.rpc(
@@ -106,53 +112,57 @@ document.addEventListener("DOMContentLoaded", async () => {
       color: "#f5f5f4"
     });
 
-    const header = document.createElement("tr");
-
-    [
-      "Дата",
-      "Операция",
-      "Сумма",
-      "Счёт",
-      "Описание"
-    ].forEach(label => {
-      const th = document.createElement("th");
-      th.textContent = label;
-      th.style.padding = "12px";
-      th.style.textAlign = "left";
-      th.style.borderBottom = "1px solid #444";
-      header.appendChild(th);
-    });
-
-    const thead = document.createElement("thead");
-    thead.appendChild(header);
-    table.appendChild(thead);
-
-    const tbody = document.createElement("tbody");
-
     const labels = {
       income: "Поступление",
       expense: "Расход",
       transfer: "Перевод"
     };
 
-    data.forEach(operation => {
+    const columns = [
+      "Дата",
+      "Операция",
+      "Сумма",
+      "Счёт",
+      "Описание"
+    ];
+
+    const thead = document.createElement("thead");
+    const header = document.createElement("tr");
+
+    columns.forEach(name => {
+      const th = document.createElement("th");
+      th.textContent = name;
+      th.style.padding = "12px";
+      th.style.textAlign = "left";
+      th.style.borderBottom = "1px solid #444";
+      header.appendChild(th);
+    });
+
+    thead.appendChild(header);
+    table.appendChild(thead);
+
+    const tbody = document.createElement("tbody");
+
+    data.forEach(item => {
       const row = document.createElement("tr");
 
       const account =
-        operation.transaction_type === "transfer"
-          ? `${operation.from_account || "—"} → ${operation.to_account || "—"}`
-          : operation.transaction_type === "income"
-            ? operation.to_account || "—"
-            : operation.from_account || "—";
+        item.transaction_type === "transfer"
+          ? `${item.from_account || "—"} → ${item.to_account || "—"}`
+          : item.transaction_type === "income"
+            ? item.to_account || "—"
+            : item.from_account || "—";
 
-      [
-        operation.transaction_date || "—",
-        labels[operation.transaction_type] ||
-          operation.transaction_type,
-        money(operation.amount),
+      const values = [
+        item.transaction_date || "—",
+        labels[item.transaction_type] ||
+          item.transaction_type,
+        money(item.amount),
         account,
-        operation.description || "—"
-      ].forEach(value => {
+        item.description || "—"
+      ];
+
+      values.forEach(value => {
         const td = document.createElement("td");
         td.textContent = value;
         td.style.padding = "12px";
@@ -167,11 +177,15 @@ document.addEventListener("DOMContentLoaded", async () => {
     container.appendChild(table);
   }
 
+  // ======================================
+  // LOAD FINANCE
+  // ======================================
+
   async function loadFinance() {
     if (loading) return;
 
     loading = true;
-    showMessage("Загружаем финансовые данные...");
+    message("Загружаем финансовые данные...");
 
     try {
       await Promise.all([
@@ -179,80 +193,131 @@ document.addEventListener("DOMContentLoaded", async () => {
         loadHistory()
       ]);
 
-      showMessage("Финансовые данные успешно загружены.");
+      message("Финансовые данные успешно загружены.");
     } catch (error) {
-      console.error("Finance error:", error);
-      showMessage("Ошибка: " + error.message, true);
+      console.error("Finance loading error:", error);
+      message("Ошибка загрузки: " + error.message, true);
     } finally {
       loading = false;
     }
   }
 
   // ======================================
-  // ФОРМА ПОСТУПЛЕНИЯ
+  // MODAL
   // ======================================
 
-  function createField(labelText, element) {
-    const wrapper = document.createElement("label");
+  function createElement(tag, text = "") {
+    const element = document.createElement(tag);
+    element.textContent = text;
+    return element;
+  }
 
-    Object.assign(wrapper.style, {
+  function createField(labelText, input) {
+    const label = createElement("label", labelText);
+
+    Object.assign(label.style, {
       display: "flex",
       flexDirection: "column",
-      gap: "7px",
-      marginBottom: "15px",
+      gap: "8px",
+      marginBottom: "16px",
       color: "#a4a7ad"
     });
 
-    const label = document.createElement("span");
-    label.textContent = labelText;
-
-    Object.assign(element.style, {
+    Object.assign(input.style, {
       width: "100%",
       padding: "12px",
       borderRadius: "7px",
       border: "1px solid #444",
       background: "#202226",
-      color: "#f5f5f4",
-      font: "inherit",
-      boxSizing: "border-box"
+      color: "#fff",
+      boxSizing: "border-box",
+      font: "inherit"
     });
 
-    wrapper.append(label, element);
-
-    return wrapper;
+    label.appendChild(input);
+    return label;
   }
 
-  function createSelect() {
-    return document.createElement("select");
+  function createButton(text, color = "#ff812e") {
+    const button = createElement("button", text);
+    button.type = "button";
+
+    Object.assign(button.style, {
+      padding: "12px 16px",
+      background: color,
+      color: "#202226",
+      border: "none",
+      borderRadius: "7px",
+      cursor: "pointer",
+      fontWeight: "600"
+    });
+
+    return button;
   }
 
-  function createInput(type) {
-    const input = document.createElement("input");
-    input.type = type;
-    return input;
+  function openNotice(titleText, description) {
+    const overlay = createElement("div");
+
+    Object.assign(overlay.style, {
+      position: "fixed",
+      inset: "0",
+      zIndex: "99999",
+      background: "rgba(0,0,0,.75)",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      padding: "16px"
+    });
+
+    const modal = createElement("div");
+
+    Object.assign(modal.style, {
+      background: "#292c31",
+      color: "#fff",
+      padding: "24px",
+      borderRadius: "12px",
+      width: "100%",
+      maxWidth: "420px"
+    });
+
+    const title = createElement("h2", titleText);
+    const text = createElement("p", description);
+    text.style.color = "#a4a7ad";
+
+    const close = createButton("Закрыть", "#444");
+    close.style.color = "#fff";
+
+    close.addEventListener("click", () => overlay.remove());
+
+    modal.append(title, text, close);
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
   }
+
+  // ======================================
+  // INCOME FORM
+  // ======================================
 
   async function openIncomeForm() {
     await loadBalances();
 
-    const activeAccounts = accountsCache.filter(
+    const availableAccounts = accounts.filter(
       account =>
         account.currency === "PLN" &&
         account.account_id
     );
 
-    if (!activeAccounts.length) {
-      showMessage("Нет доступных финансовых счетов.", true);
-      return;
+    if (!availableAccounts.length) {
+      throw new Error("Нет доступных активных счетов.");
     }
 
-    const overlay = document.createElement("div");
+    const overlay = createElement("div");
 
     Object.assign(overlay.style, {
       position: "fixed",
       inset: "0",
-      background: "rgba(0,0,0,.75)",
       zIndex: "99999",
+      background: "rgba(0,0,0,.75)",
       display: "flex",
       alignItems: "center",
       justifyContent: "center",
@@ -260,7 +325,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       overflowY: "auto"
     });
 
-    const modal = document.createElement("div");
+    const modal = createElement("div");
 
     Object.assign(modal.style, {
       background: "#292c31",
@@ -273,34 +338,36 @@ document.addEventListener("DOMContentLoaded", async () => {
       boxSizing: "border-box"
     });
 
-    const title = document.createElement("h2");
-    title.textContent = "Новое поступление";
-    title.style.marginTop = "0";
+    const title = createElement("h2", "Новое поступление");
+    const subtitle = createElement(
+      "p",
+      "Регистрация поступления денег компании"
+    );
 
-    const subtitle = document.createElement("p");
-    subtitle.textContent =
-      "Регистрация поступления денег компании";
     subtitle.style.color = "#a4a7ad";
 
-    const form = document.createElement("form");
+    const form = createElement("form");
 
-    const accountSelect = createSelect();
+    const account = createElement("select");
 
-    activeAccounts.forEach(account => {
-      const option = document.createElement("option");
-      option.value = account.account_id;
-      option.textContent =
-        `${account.account_name} — ${money(account.balance)}`;
-      accountSelect.appendChild(option);
+    availableAccounts.forEach(item => {
+      const option = createElement(
+        "option",
+        item.account_name
+      );
+
+      option.value = item.account_id;
+      account.appendChild(option);
     });
 
-    const amountInput = createInput("number");
-    amountInput.min = "0.01";
-    amountInput.step = "0.01";
-    amountInput.placeholder = "Например, 1500.00";
-    amountInput.required = true;
+    const amount = createElement("input");
+    amount.type = "number";
+    amount.min = "0.01";
+    amount.step = "0.01";
+    amount.placeholder = "Например, 1500.00";
+    amount.required = true;
 
-    const categorySelect = createSelect();
+    const category = createElement("select");
 
     [
       ["client_payment", "Оплата клиента"],
@@ -308,32 +375,34 @@ document.addEventListener("DOMContentLoaded", async () => {
       ["contract_payment", "Оплата договора"],
       ["other", "Другой доход"]
     ].forEach(([value, label]) => {
-      const option = document.createElement("option");
+      const option = createElement("option", label);
       option.value = value;
-      option.textContent = label;
-      categorySelect.appendChild(option);
+      category.appendChild(option);
     });
 
-    const projectSelect = createSelect();
+    const project = createElement("select");
 
-    const noProject = document.createElement("option");
+    const noProject = createElement(
+      "option",
+      "Без привязки к объекту"
+    );
+
     noProject.value = "";
-    noProject.textContent = "Без привязки к объекту";
-    projectSelect.appendChild(noProject);
+    project.appendChild(noProject);
 
-    const description = document.createElement("textarea");
+    const description = createElement("textarea");
     description.rows = 3;
     description.placeholder = "Описание поступления...";
 
     form.append(
-      createField("Счёт зачисления", accountSelect),
-      createField("Сумма (PLN)", amountInput),
-      createField("Категория дохода", categorySelect),
-      createField("Объект (необязательно)", projectSelect),
+      createField("Счёт зачисления", account),
+      createField("Сумма (PLN)", amount),
+      createField("Категория дохода", category),
+      createField("Объект", project),
       createField("Описание", description)
     );
 
-    // Загрузка списка объектов
+    // Загрузка объектов
     try {
       const { data, error } = await client
         .from("projects")
@@ -343,159 +412,148 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (error) throw error;
 
-      (data || []).forEach(project => {
-        const option = document.createElement("option");
-        option.value = project.id;
-        option.textContent = project.name;
-        projectSelect.appendChild(option);
+      (data || []).forEach(item => {
+        const option = createElement("option", item.name);
+        option.value = item.id;
+        project.appendChild(option);
       });
     } catch (error) {
-      console.warn("Projects list unavailable:", error);
+      console.warn("Projects loading:", error);
     }
 
-    const errorText = document.createElement("p");
+    const errorText = createElement("p");
     errorText.style.color = "#ff6b6b";
-    errorText.style.fontSize = "13px";
 
-    const buttons = document.createElement("div");
+    const buttons = createElement("div");
 
     Object.assign(buttons.style, {
       display: "flex",
-      gap: "10px",
       justifyContent: "flex-end",
-      marginTop: "20px"
+      gap: "10px",
+      flexWrap: "wrap"
     });
 
-    const cancelButton = document.createElement("button");
-    cancelButton.type = "button";
-    cancelButton.textContent = "Отмена";
+    const cancel = createButton("Отмена", "#444");
+    cancel.style.color = "#fff";
 
-    const submitButton = document.createElement("button");
-    submitButton.type = "submit";
-    submitButton.textContent = "Зарегистрировать поступление";
+    const submit = createButton("Зарегистрировать поступление");
+    submit.type = "submit";
 
-    [cancelButton, submitButton].forEach(button => {
-      Object.assign(button.style, {
-        padding: "12px 16px",
-        borderRadius: "7px",
-        border: "none",
-        cursor: "pointer",
-        fontWeight: "600"
-      });
-    });
-
-    cancelButton.style.background = "#444";
-    cancelButton.style.color = "#fff";
-    submitButton.style.background = "#ff812e";
-    submitButton.style.color = "#202226";
-
-    buttons.append(cancelButton, submitButton);
-
+    buttons.append(cancel, submit);
     form.append(errorText, buttons);
+
     modal.append(title, subtitle, form);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    function closeForm() {
-      overlay.remove();
-    }
+    const close = () => overlay.remove();
 
-    cancelButton.addEventListener("click", closeForm);
+    cancel.addEventListener("click", close);
 
     overlay.addEventListener("click", event => {
-      if (event.target === overlay) closeForm();
+      if (event.target === overlay) close();
     });
 
     form.addEventListener("submit", async event => {
       event.preventDefault();
 
-      const amount = Number(amountInput.value);
+      const value = Number(amount.value);
 
-      if (!Number.isFinite(amount) || amount <= 0) {
-        errorText.textContent = "Укажи корректную сумму.";
+      if (
+        !Number.isFinite(value) ||
+        value <= 0 ||
+        Math.round(value * 100) !== value * 100
+      ) {
+        errorText.textContent = "Проверь правильность суммы.";
         return;
       }
 
-      if (Math.round(amount * 100) !== amount * 100) {
-        errorText.textContent =
-          "Допускается не более двух знаков после запятой.";
-        return;
-      }
-
-      submitButton.disabled = true;
-      submitButton.textContent = "Сохраняем...";
-      errorText.textContent = "";
+      submit.disabled = true;
+      submit.textContent = "Сохраняем...";
 
       try {
         const { data, error } = await client.rpc(
           "create_finance_income",
           {
-            p_account_id: accountSelect.value,
-            p_amount: amount,
-            p_category: categorySelect.value,
+            p_account_id: account.value,
+            p_amount: value,
+            p_category: category.value,
             p_description: description.value.trim() || null,
-            p_project_id: projectSelect.value || null
+            p_project_id: project.value || null
           }
         );
 
         if (error) throw error;
 
-        console.log("Income transaction created:", data);
+        console.log("Income created:", data);
 
-        closeForm();
+        close();
 
         await loadFinance();
 
-        showMessage(
-          "Поступление успешно зарегистрировано."
-        );
+        message("Поступление успешно зарегистрировано.");
 
       } catch (error) {
-        console.error("Income creation error:", error);
+        console.error("Income error:", error);
 
         errorText.textContent = error.message;
-        submitButton.disabled = false;
-        submitButton.textContent =
-          "Зарегистрировать поступление";
+        submit.disabled = false;
+        submit.textContent = "Зарегистрировать поступление";
       }
     });
   }
 
   // ======================================
-  // КНОПКИ
+  // BUTTONS — ALL CLICKABLE
   // ======================================
 
-  const incomeButton =
-    document.getElementById("financeIncomeBtn");
+  function activateButton(id, callback) {
+    const button = $(id);
 
-  if (incomeButton) {
-    incomeButton.disabled = false;
-    incomeButton.addEventListener("click", async () => {
-      try {
-        await openIncomeForm();
-      } catch (error) {
-        console.error(error);
-        showMessage(error.message, true);
-      }
-    });
-  }
-
-  ["financeExpenseBtn", "financeTransferBtn"].forEach(id => {
-    const button = document.getElementById(id);
-
-    if (button) {
-      button.disabled = true;
-      button.title = "Подключим следующим этапом";
-      button.style.opacity = "0.5";
+    if (!button) {
+      console.error("Button not found:", id);
+      return;
     }
+
+    button.disabled = false;
+    button.removeAttribute("disabled");
+    button.style.pointerEvents = "auto";
+    button.style.cursor = "pointer";
+    button.style.opacity = "1";
+
+    button.addEventListener("click", async event => {
+      event.preventDefault();
+
+      try {
+        await callback();
+      } catch (error) {
+        console.error("Finance button error:", error);
+        message(error.message, true);
+      }
+    });
+  }
+
+  activateButton("financeIncomeBtn", openIncomeForm);
+
+  activateButton("financeExpenseBtn", async () => {
+    openNotice(
+      "Новый расход",
+      "Форма расхода будет подключена после проверки существующего процесса заявок и оплаты."
+    );
   });
 
-  const refreshButton =
-    document.getElementById("financeRefreshBtn");
+  activateButton("financeTransferBtn", async () => {
+    openNotice(
+      "Перевод между счетами",
+      "Форма перевода будет подключена после проверки существующей функции перевода."
+    );
+  });
 
-  if (refreshButton) {
-    refreshButton.addEventListener("click", loadFinance);
-  }
+  activateButton("financeRefreshBtn", loadFinance);
+
+  // ======================================
+  // AUTO REFRESH
+  // ======================================
 
   const observer = new MutationObserver(() => {
     if (section.style.display !== "none") {
