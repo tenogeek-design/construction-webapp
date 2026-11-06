@@ -1,4 +1,8 @@
 
+/* ==========================================
+   CONSTRUCTION GROUP — ADMIN DESIGN
+   ========================================== */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -7,15 +11,19 @@
 
 :root {
   --bg: #202226;
+  --sidebar: #24272c;
   --panel: #292c31;
   --panel2: #30343a;
+  --panel3: #353940;
   --line: #3b3f46;
   --orange: #ff812e;
+  --orange-soft: rgba(255, 129, 46, .12);
   --text: #f5f5f4;
   --muted: #a4a7ad;
   --green: #22a06b;
   --blue: #5489d8;
   --purple: #9273d5;
+  --red: #e46c6c;
 }
 
 html {
@@ -35,8 +43,15 @@ a {
   text-decoration: none;
 }
 
-button {
+button,
+input,
+select,
+textarea {
   font: inherit;
+}
+
+button {
+  cursor: pointer;
 }
 
 .admin-layout {
@@ -44,12 +59,14 @@ button {
   min-height: 100vh;
 }
 
-/* SIDEBAR */
+/* ==========================================
+   SIDEBAR
+   ========================================== */
 
 .sidebar {
   width: 250px;
   min-width: 250px;
-  background: #25282d;
+  background: var(--sidebar);
   border-right: 1px solid var(--line);
   display: flex;
   flex-direction: column;
@@ -66,6 +83,7 @@ button {
 .brand-icon {
   width: 39px;
   height: 39px;
+  min-width: 39px;
   border-radius: 10px;
   background: var(--orange);
   color: #202226;
@@ -107,7 +125,7 @@ button {
   display: flex;
   align-items: center;
   gap: 12px;
-  min-height: 41px;
+  min-height: 42px;
   padding: 0 12px;
   color: #b7bac0;
   border-radius: 7px;
@@ -127,7 +145,7 @@ button {
 }
 
 .nav-item.active {
-  background: rgba(255, 129, 46, .12);
+  background: var(--orange-soft);
   color: var(--orange);
   border-left: 3px solid var(--orange);
   padding-left: 9px;
@@ -137,7 +155,7 @@ button {
   margin-left: auto;
   background: var(--orange);
   color: #202226;
-  padding: 2px 7px;
+  padding: 3px 7px;
   border-radius: 10px;
   font-size: 10px;
   font-weight: 700;
@@ -170,7 +188,9 @@ button {
   letter-spacing: .7px;
 }
 
-/* MAIN */
+/* ==========================================
+   MAIN CONTENT
+   ========================================== */
 
 .main-content {
   flex: 1;
@@ -245,7 +265,18 @@ button {
   margin-top: 4px;
 }
 
-/* DASHBOARD */
+.logout-button {
+  transition: .2s;
+}
+
+.logout-button:hover {
+  background: var(--orange) !important;
+  color: #202226 !important;
+}
+
+/* ==========================================
+   DASHBOARD
+   ========================================== */
 
 .dashboard-section {
   padding-top: 30px;
@@ -285,18 +316,22 @@ button {
   font-size: 12px;
 }
 
+/* ==========================================
+   STATISTICS
+   ========================================== */
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 15px;
-  margin-bottom: 20px;
+  margin-bottom: 22px;
 }
 
 .stat-card {
-  background: var(--panel);
+  background: linear-gradient(145deg, #2c2f35, #272a2f);
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 19px;
+  border-radius: 11px;
+  padding: 20px;
   min-width: 0;
   transition: border-color .2s, transform .2s;
 }
@@ -315,17 +350,17 @@ button {
 }
 
 .stat-icon {
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: grid;
   place-items: center;
-  border-radius: 8px;
+  border-radius: 9px;
   font-size: 17px;
 }
 
 .stat-icon.orange {
   color: var(--orange);
-  background: rgba(255, 129, 46, .12);
+  background: var(--orange-soft);
 }
 
 .stat-icon.blue {
@@ -345,8 +380,9 @@ button {
 
 .stat-card > strong {
   display: block;
-  font-size: 29px;
+  font-size: 30px;
   margin: 17px 0 6px;
+  letter-spacing: -.5px;
 }
 
 .stat-card > small {
@@ -354,7 +390,9 @@ button {
   font-size: 11px;
 }
 
-/* PANELS */
+/* ==========================================
+   PANELS
+   ========================================== */
 
 .dashboard-grid {
   display: grid;
@@ -366,8 +404,9 @@ button {
 .panel {
   background: var(--panel);
   border: 1px solid var(--line);
-  border-radius: 10px;
+  border-radius: 11px;
   min-width: 0;
+  overflow: hidden;
 }
 
 .panel-header {
@@ -407,6 +446,7 @@ button {
   flex-direction: column;
   text-align: center;
   padding: 25px;
+  color: var(--text);
 }
 
 .empty-icon {
@@ -449,6 +489,328 @@ button {
   letter-spacing: 1px;
 }
 
+/* ==========================================
+   REQUESTS SECTION
+   ========================================== */
+
+#requests {
+  padding-top: 30px;
+  padding-bottom: 40px;
+  min-width: 0;
+}
+
+#requests > h2 {
+  font-size: 24px;
+  font-weight: 700;
+  margin: 9px 0 7px;
+  letter-spacing: -.4px;
+}
+
+#requests > p {
+  color: var(--muted);
+  font-size: 13px;
+  margin-bottom: 25px;
+}
+
+/* Request statistics */
+
+#requests .stats-grid {
+  margin-top: 22px;
+  margin-bottom: 25px;
+}
+
+#requests .stat-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 135px;
+}
+
+#requests .stat-card::after {
+  content: "";
+  position: absolute;
+  width: 75px;
+  height: 75px;
+  border-radius: 50%;
+  right: -28px;
+  bottom: -38px;
+  background: rgba(255, 255, 255, .025);
+  pointer-events: none;
+}
+
+/* Requests panel */
+
+#requests .panel {
+  margin-bottom: 20px;
+}
+
+#requests .panel-header {
+  padding: 20px 22px;
+}
+
+#requests .panel-header h3 {
+  font-size: 15px;
+}
+
+#requests .panel-header p {
+  margin-top: 5px;
+  font-size: 12px;
+}
+
+/* Search and filter controls */
+
+#requests input,
+#requests select {
+  min-height: 42px;
+  background: #22252a;
+  border: 1px solid #454a53;
+  border-radius: 8px;
+  color: var(--text);
+  padding: 0 13px;
+  outline: none;
+  transition: border-color .2s, box-shadow .2s;
+}
+
+#requests input::placeholder {
+  color: #777d86;
+}
+
+#requests input:focus,
+#requests select:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px rgba(255, 129, 46, .1);
+}
+
+#requests select {
+  cursor: pointer;
+}
+
+#requests option {
+  background: var(--panel);
+  color: var(--text);
+}
+
+/* Buttons */
+
+#requests button {
+  min-height: 39px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 0 15px;
+  background: var(--panel2);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 600;
+  transition: .2s;
+}
+
+#requests button:hover {
+  border-color: var(--orange);
+  color: var(--orange);
+}
+
+#requests button:disabled {
+  opacity: .55;
+  cursor: wait;
+}
+
+/* Requests table wrapper */
+
+#requestsTableContainer {
+  width: 100%;
+  overflow-x: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #292c31;
+}
+
+#requestsTableContainer::-webkit-scrollbar {
+  height: 7px;
+}
+
+#requestsTableContainer::-webkit-scrollbar-track {
+  background: var(--panel);
+}
+
+#requestsTableContainer::-webkit-scrollbar-thumb {
+  background: #555;
+  border-radius: 10px;
+}
+
+.requests-table {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: separate !important;
+  border-spacing: 0;
+  color: var(--text);
+  font-size: 12px;
+}
+
+.requests-table thead {
+  background: #24272c;
+}
+
+.requests-table th {
+  color: #9298a2;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  padding: 15px 13px !important;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+
+.requests-table td {
+  padding: 15px 13px !important;
+  border-bottom: 1px solid #363a41;
+  color: #d9dadd;
+  line-height: 1.5;
+}
+
+.requests-table tbody tr {
+  background: transparent;
+  transition: background .15s;
+}
+
+.requests-table tbody tr:hover {
+  background: rgba(255, 129, 46, .07) !important;
+}
+
+.requests-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.requests-table td:first-child {
+  color: var(--orange);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.requests-table td:nth-child(2) {
+  color: #fff;
+  font-weight: 600;
+}
+
+.requests-table td:nth-child(3) {
+  white-space: nowrap;
+}
+
+/* Request details */
+
+#requestDetails {
+  margin-top: 22px;
+  margin-bottom: 30px;
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 12px 35px rgba(0, 0, 0, .16);
+}
+
+#requestDetailsTitle {
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+#requestDetails > div,
+#requestDetailsContent {
+  min-width: 0;
+}
+
+#requestDetailsContent {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0;
+  padding: 8px 20px 18px;
+}
+
+.request-detail-field {
+  min-width: 0;
+  padding: 15px 13px !important;
+  border-bottom: 1px solid #3b3f46 !important;
+}
+
+.request-detail-field strong {
+  display: block;
+  color: #9298a2 !important;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: .7px;
+  text-transform: uppercase;
+  margin-bottom: 8px !important;
+}
+
+.request-detail-field > div {
+  color: #f1f1ef;
+  font-size: 13px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+/* Description and long values */
+
+.request-detail-field:has(div) {
+  min-width: 0;
+}
+
+.request-detail-field:last-child {
+  border-bottom: none !important;
+}
+
+/* Loading and empty states */
+
+#requestsLoading {
+  color: var(--muted);
+  text-align: center;
+  padding: 30px;
+}
+
+#requestsEmpty {
+  color: var(--muted);
+  text-align: center;
+  padding: 30px;
+}
+
+/* ==========================================
+   REQUEST LIST ON DASHBOARD
+   ========================================== */
+
+.request-list {
+  padding: 15px !important;
+}
+
+.request-list article {
+  background: #24272c !important;
+  border: 1px solid #3b3f46 !important;
+  border-radius: 9px !important;
+  transition: border-color .2s, background .2s;
+}
+
+.request-list article:hover {
+  border-color: var(--orange) !important;
+  background: #2c2f35 !important;
+}
+
+.request-list article strong {
+  color: #fff;
+  font-size: 13px;
+}
+
+.request-list article p {
+  color: var(--muted);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.request-list article small {
+  color: #858a93;
+  font-size: 10px;
+}
+
+/* ==========================================
+   FOOTER
+   ========================================== */
+
 .footer {
   display: flex;
   justify-content: space-between;
@@ -460,15 +822,21 @@ button {
   letter-spacing: .5px;
 }
 
-/* FOCUS */
+/* ==========================================
+   FOCUS
+   ========================================== */
 
 a:focus-visible,
-button:focus-visible {
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
   outline: 2px solid var(--orange);
   outline-offset: 3px;
 }
 
-/* RESPONSIVE */
+/* ==========================================
+   RESPONSIVE — TABLET
+   ========================================== */
 
 @media (max-width: 1100px) {
   .sidebar {
@@ -485,6 +853,10 @@ button:focus-visible {
   }
 }
 
+/* ==========================================
+   RESPONSIVE — MOBILE
+   ========================================== */
+
 @media (max-width: 760px) {
   .sidebar {
     width: 66px;
@@ -498,9 +870,8 @@ button:focus-visible {
   }
 
   .brand > span:last-child,
-  .sidebar-label,
-  .nav-item:not(.active) {
-    font-size: 0;
+  .sidebar-label {
+    display: none;
   }
 
   .brand-icon {
@@ -511,6 +882,7 @@ button:focus-visible {
     justify-content: center;
     padding: 0;
     min-height: 43px;
+    font-size: 0;
   }
 
   .nav-item.active {
@@ -556,7 +928,36 @@ button:focus-visible {
   .dashboard-grid {
     grid-template-columns: 1fr;
   }
+
+  #requests {
+    padding-top: 22px;
+  }
+
+  #requests > h2 {
+    font-size: 21px;
+  }
+
+  #requestDetailsContent {
+    grid-template-columns: 1fr;
+    padding: 5px 12px 15px;
+  }
+
+  #requestDetailsTitle {
+    font-size: 16px;
+  }
+
+  .request-detail-field {
+    padding: 13px 9px !important;
+  }
+
+  #requests .panel-header {
+    padding: 15px;
+  }
 }
+
+/* ==========================================
+   RESPONSIVE — SMALL MOBILE
+   ========================================== */
 
 @media (max-width: 480px) {
   .stats-grid {
@@ -566,6 +967,7 @@ button:focus-visible {
 
   .stat-card {
     padding: 13px;
+    min-height: 115px;
   }
 
   .stat-heading {
@@ -574,6 +976,11 @@ button:focus-visible {
 
   .stat-card > strong {
     font-size: 24px;
+    margin: 13px 0 5px;
+  }
+
+  .stat-card > small {
+    font-size: 10px;
   }
 
   .topbar-actions {
@@ -582,5 +989,27 @@ button:focus-visible {
 
   .footer {
     flex-direction: column;
+  }
+
+  #requests .stats-grid {
+    gap: 9px;
+  }
+
+  #requests .stat-card {
+    padding: 13px;
+  }
+
+  #requests .panel-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  #requests input,
+  #requests select {
+    width: 100%;
+  }
+
+  #requests button {
+    min-height: 40px;
   }
 }
