@@ -1,10 +1,9 @@
 
 import { createClient } from "@supabase/supabase-js";
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+function getText(value) {
+  return typeof value === "string" ? value.trim() : "";
+}
 
 export default async function handler(req, res) {
   if (req.method !== "POST") {
@@ -12,68 +11,142 @@ export default async function handler(req, res) {
   }
 
   try {
-    const data = req.body;
+    const supabaseUrl = process.env.SUPABASE_URL;
+    const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-    if (!data.name || !data.phone || !data.description) {
+    if (!supabaseUrl || !supabaseKey) {
+      throw new Error("Supabase environment variables are missing");
+    }
+
+    const supabase = createClient(supabaseUrl, supabaseKey);
+
+    const data =
+      typeof req.body === "string"
+        ? JSON.parse(req.body)
+        : req.body;
+
+    if (!data || typeof data !== "object") {
+      return res.status(400).json({ error: "Invalid request data" });
+    }
+
+    const name = getText(data.name);
+    const phone = getText(data.phone);
+    const description = getText(data.description);
+
+    const address = data.address || {};
+    const city = getText(address.city);
+    const street = getText(address.street);
+    const building = getText(address.building);
+
+    if (!name || !phone || !description || !city || !street || !building) {
       return res.status(400).json({
-        error: "Missing required fields"
+        error: "Please fill in all required fields"
       });
     }
+
+    const calculator = data.calculator || {};
+    const options = calculator.options || {};
+
+    const hasElevator =
+      typeof data.hasElevator === "boolean"
+        ? data.hasElevator
+        : data.objectElevator === "yes"
+          ? true
+          : data.objectElevator === "no"
+            ? false
+            : null;
+
+    const additionalServices = Array.isArray(data.extras)
+      ? data.extras
+      : [];
+
+    const calculatorItems = Array.isArray(calculator.works)
+      ? calculator.works
+      : [];
 
     const { data: request, error } = await supabase
       .from("requests")
       .insert({
-        customer_name: data.name,
-        phone: data.phone,
-        city: data.address?.city,
-        street: data.address?.street,
-        building_number: data.address?.building,
-        apartment_number: data.address?.apartment || null,
-        description: data.description,
+        customer_name: name,
+        phone: phone,
+        city: city,
+        street: street,
+        building_number: building,
+        apartment_number: getText(address.apartment) || null,
+
+        description: description,
         object_type: data.objectType || null,
         area_sqm: data.area || null,
         object_condition: data.condition || null,
+
         preferred_start: data.startDate || null,
-        calculator_items: data.calculator?.works || [],
-        estimated_total: data.calculator?.total ?? null,
-        additional_services: data.extras || [],
+
+        calculator_items: calculatorItems,
+        estimated_total: calculator.total ?? null,
+
+        additional_services: additionalServices,
         debris_volume: data.wasteAmount || null,
+
         floor: data.objectFloor || null,
-        has_elevator: data.objectElevator === "yes",
-        is_direct_owner: Boolean(data.calculator?.options?.directOwner)
+        has_elevator: hasElevator,
+
+        is_direct_owner: Boolean(
+          options.directOwner ?? options.owner ?? false
+        ),
+
+        contact_preference: data.contactPreference || null
       })
-      .select()
+      .select("id, request_number")
       .single();
 
-    if (error) throw error;
+    if (error) {
+      console.error("Supabase error:", error);
+      throw new Error("Could not save request");
+    }
+
+    const addressText = [
+      city,
+      `${street} ${building}`,
+      address.apartment ? `кв. ${address.apartment}` : ""
+    ].filter(Boolean).join(", ");
 
     const message = [
-      "🏗 <b>CONSTRUCTION</b> — NOWA",
+      "🏗 CONSTRUCTION — NOWA ZGŁOSZENIE",
       `Заявка № ${request.request_number}`,
       "",
-      `👤 ${data.name}`,
-      `📞 ${data.phone}`,
-      `📍 ${data.address?.city || ""}, ${data.address?.street || ""} ${data.address?.building || ""}`,
+      `👤 ${name}`,
+      `📞 ${phone}`,
+      `📍 ${addressText}`,
       "",
-      `💰 ${data.calculator?.total ?? "Wartość do ustalenia"} PLN`,
-      `📝 ${data.description}`
+      `💰 ${calculator.total ?? "До уточнення"} PLN`,
+      "",
+      `📝 ${description}`
     ].join("\n");
 
-    const telegramResponse = await fetch(
-      `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          chat_id: process.env.TELEGRAM_GROUP_ID,
-          text: message,
-          parse_mode: "HTML"
-        })
-      }
-    );
+    // Ошибка Telegram не отменяет уже сохранённую заявку.
+    try {
+      const telegramResponse = await fetch(
+        `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            chat_id: process.env.TELEGRAM_GROUP_ID,
+            text: message
+          })
+        }
+      );
 
-    if (!telegramResponse.ok) {
-      throw new Error("Telegram notification failed");
+      if (!telegramResponse.ok) {
+        console.error(
+          "Telegram notification error:",
+          await telegramResponse.text()
+        );
+      }
+    } catch (telegramError) {
+      console.error("Telegram error:", telegramError);
     }
 
     return res.status(200).json({
@@ -83,6 +156,7 @@ export default async function handler(req, res) {
 
   } catch (error) {
     console.error("Request submission error:", error);
+
     return res.status(500).json({
       error: "Could not submit request"
     });
