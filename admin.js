@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const loginUrl = "/login.html";
 
-  // Проверяем загрузку Supabase
   if (!window.supabase) {
     document.body.textContent =
       "Ошибка загрузки системы авторизации. Обновите страницу.";
@@ -22,7 +21,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     SUPABASE_KEY
   );
 
-  // Проверка сессии
   async function checkAccess() {
     const { data, error } = await client.auth.getSession();
 
@@ -33,7 +31,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const user = data.session.user;
 
-    // Получаем активные роли пользователя
     const { data: roles, error: roleError } = await client
       .from("app_user_roles")
       .select("role_code")
@@ -43,12 +40,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (roleError) {
       console.error("Role check error:", roleError);
       document.body.textContent =
-        "Не удалось проверить права доступа. Обратитесь к владельцу системы.";
+        "Не удалось проверить права доступа.";
       return null;
     }
 
     const allowedRoles = ["owner", "admin"];
-
     const userRoles = (roles || []).map(role => role.role_code);
 
     const hasAccess = userRoles.some(role =>
@@ -68,7 +64,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (!access) return;
 
-  // Отображаем реального пользователя
+  // Профиль пользователя
   const profile = document.querySelector(".profile");
 
   if (profile) {
@@ -86,7 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const logoutButton = document.createElement("button");
-
     logoutButton.type = "button";
     logoutButton.textContent = "Выйти";
     logoutButton.className = "logout-button";
@@ -119,6 +114,70 @@ document.addEventListener("DOMContentLoaded", async () => {
     profile.appendChild(logoutButton);
   }
 
+  // Проверка эффективных разрешений
+  const permissionPanel = document.createElement("section");
+
+  permissionPanel.style.margin = "20px";
+  permissionPanel.style.padding = "20px";
+  permissionPanel.style.background = "#242424";
+  permissionPanel.style.border = "1px solid #444";
+  permissionPanel.style.borderRadius = "10px";
+  permissionPanel.style.color = "#fff";
+
+  permissionPanel.innerHTML = `
+    <h3 style="margin-top:0">Проверка системы разрешений</h3>
+    <p id="permissionStatus">Проверяем разрешения...</p>
+    <div id="permissionDetails"></div>
+  `;
+
+  const main = document.querySelector("main");
+
+  if (main) {
+    main.prepend(permissionPanel);
+  } else {
+    document.body.prepend(permissionPanel);
+  }
+
+  const permissionStatus =
+    permissionPanel.querySelector("#permissionStatus");
+
+  const permissionDetails =
+    permissionPanel.querySelector("#permissionDetails");
+
+  const { data: permissions, error: permissionError } =
+    await client.rpc("get_my_effective_permissions");
+
+  if (permissionError) {
+    permissionStatus.textContent =
+      "Ошибка проверки разрешений: " + permissionError.message;
+
+    permissionStatus.style.color = "#ff7373";
+  } else {
+    const list = permissions || [];
+
+    permissionStatus.textContent =
+      `Разрешения загружены: ${list.length}`;
+
+    permissionStatus.style.color = "#72d68b";
+
+    const permissionList = document.createElement("ul");
+
+    permissionList.style.paddingLeft = "20px";
+    permissionList.style.maxHeight = "250px";
+    permissionList.style.overflowY = "auto";
+
+    list.forEach(permission => {
+      const item = document.createElement("li");
+
+      item.textContent =
+        `${permission.permission_code} — ${permission.scope}`;
+
+      permissionList.appendChild(item);
+    });
+
+    permissionDetails.appendChild(permissionList);
+  }
+
   // Текущая дата
   const dateElement = document.getElementById("currentDate");
 
@@ -140,7 +199,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Контроль изменения авторизации
+  // Контроль авторизации
   client.auth.onAuthStateChange((event, session) => {
     if (event === "SIGNED_OUT" || !session) {
       window.location.replace(loginUrl);
