@@ -1,0 +1,219 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#202226">
+  <title>CONSTRUCTION GROUP — Admin</title>
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body>
+  <div class="admin-layout">
+
+    <aside class="sidebar">
+      <a href="admin.html" class="brand">
+        <span class="brand-icon">C</span>
+        <span>
+          <strong>CONSTRUCTION</strong>
+          <small>GROUP ADMIN</small>
+        </span>
+      </a>
+
+      <div class="sidebar-label">ГЛАВНОЕ</div>
+
+      <nav class="navigation">
+        <a href="#dashboard" class="nav-item active">
+          <span>▦</span> Dashboard
+        </a>
+        <a href="#requests" class="nav-item">
+          <span>▤</span> Заявки
+          <span class="nav-count">0</span>
+        </a>
+        <a href="#employees" class="nav-item">
+          <span>♙</span> Сотрудники
+        </a>
+        <a href="#projects" class="nav-item">
+          <span>▧</span> Объекты
+        </a>
+        <a href="#tasks" class="nav-item">
+          <span>☑</span> Задачи
+        </a>
+        <a href="#time" class="nav-item">
+          <span>◷</span> Учёт времени
+        </a>
+      </nav>
+
+      <div class="sidebar-label">УПРАВЛЕНИЕ</div>
+
+      <nav class="navigation">
+        <a href="#payroll" class="nav-item">
+          <span>₴</span> Зарплаты
+        </a>
+        <a href="#finance" class="nav-item">
+          <span>▣</span> Финансы
+        </a>
+        <a href="#services" class="nav-item">
+          <span>◇</span> Услуги и цены
+        </a>
+        <a href="#clients" class="nav-item">
+          <span>♧</span> Клиенты
+        </a>
+        <a href="#documents" class="nav-item">
+          <span>▤</span> Документы
+        </a>
+      </nav>
+
+      <div class="sidebar-label">СИСТЕМА</div>
+
+      <nav class="navigation">
+        <a href="#notifications" class="nav-item">
+          <span>♢</span> Уведомления
+        </a>
+        <a href="#analytics" class="nav-item">
+          <span>▥</span> Аналитика
+        </a>
+        <a href="#settings" class="nav-item">
+          <span>⚙</span> Настройки
+        </a>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <div class="system-status">
+          <span class="status-dot"></span>
+          <span>Система готова</span>
+        </div>
+        <small>CONSTRUCTION GROUP © 2026</small>
+      </div>
+    </aside>
+
+    <main class="main-content">
+
+      <header class="topbar">
+        <div>
+          <div class="breadcrumb">CONSTRUCTION / ADMIN</div>
+          <h1>Панель управления</h1>
+        </div>
+
+        <div class="topbar-actions">
+          <button class="icon-button" aria-label="Уведомления">♢</button>
+          <div class="profile">
+            <div class="avatar">A</div>
+            <div>
+              <strong>Администратор</strong>
+              <small>Administrator</small>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <section id="dashboard" class="dashboard-section">
+        <div class="welcome">
+          <div>
+            <span class="eyebrow">ОБЗОР КОМПАНИИ</span>
+            <h2>Добро пожаловать в CONSTRUCTION</h2>
+            <p>Управление компанией в одном месте.</p>
+          </div>
+          <div class="date-label" id="currentDate"></div>
+        </div>
+
+        <div class="stats-grid">
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Новые заявки</span>
+              <span class="stat-icon orange">▤</span>
+            </div>
+            <strong>0</strong>
+            <small>Ожидают обработки</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Активные объекты</span>
+              <span class="stat-icon blue">▧</span>
+            </div>
+            <strong>0</strong>
+            <small>В работе</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Сотрудники</span>
+              <span class="stat-icon green">♙</span>
+            </div>
+            <strong>0</strong>
+            <small>В базе компании</small>
+          </article>
+
+          <article class="stat-card">
+            <div class="stat-heading">
+              <span>Задачи</span>
+              <span class="stat-icon purple">☑</span>
+            </div>
+            <strong>0</strong>
+            <small>Активные задачи</small>
+          </article>
+        </div>
+
+        <div class="dashboard-grid">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Последние заявки</h3>
+                <p>Новые обращения клиентов</p>
+              </div>
+              <a href="#requests" class="text-link">Все заявки →</a>
+            </div>
+
+            <div class="empty-state">
+              <div class="empty-icon">▤</div>
+              <strong>Пока нет данных</strong>
+              <p>Здесь будут отображаться последние заявки.</p>
+            </div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h3>Активные объекты</h3>
+                <p>Текущие строительные проекты</p>
+              </div>
+              <a href="#projects" class="text-link">Все объекты →</a>
+            </div>
+
+            <div class="empty-state">
+              <div class="empty-icon">▧</div>
+              <strong>Нет активных объектов</strong>
+              <p>Созданные объекты появятся здесь.</p>
+            </div>
+          </section>
+        </div>
+
+        <section class="panel activity-panel">
+          <div class="panel-header">
+            <div>
+              <h3>Последние действия</h3>
+              <p>История активности системы</p>
+            </div>
+            <span class="live-indicator">
+              <span class="status-dot"></span> DEMO
+            </span>
+          </div>
+
+          <div class="empty-state compact">
+            <p>История действий появится после подключения базы данных.</p>
+          </div>
+        </section>
+
+        <footer class="footer">
+          <span>CONSTRUCTION GROUP</span>
+          <span>Admin Panel · Version 1.0</span>
+        </footer>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
