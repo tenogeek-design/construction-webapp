@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#202226">
+  <title>Вход — CONSTRUCTION GROUP</title>
+  <link rel="stylesheet" href="login.css">
+</head>
+<body>
+  <main class="login-page">
+    <section class="login-card">
+      <div class="brand">
+        <div class="brand-icon">C</div>
+        <div>
+          <h1>CONSTRUCTION</h1>
+          <span>GROUP</span>
+        </div>
+      </div>
+
+      <div class="login-heading">
+        <span class="eyebrow">CONSTRUCTION / SYSTEM</span>
+        <h2>Добро пожаловать</h2>
+        <p>Войдите в рабочую систему компании</p>
+      </div>
+
+      <form id="loginForm">
+        <label for="username">Логин</label>
+        <input
+          id="username"
+          name="username"
+          type="text"
+          placeholder="Введите логин"
+          autocomplete="username"
+          required
+        >
+
+        <label for="password">Пароль</label>
+        <input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Введите пароль"
+          autocomplete="current-password"
+          required
+        >
+
+        <button type="submit">Войти в систему <span>→</span></button>
+        <p id="loginMessage" role="status"></p>
+      </form>
+
+      <footer>CONSTRUCTION GROUP © 2026</footer>
+    </section>
+  </main>
+</body>
+</html>
