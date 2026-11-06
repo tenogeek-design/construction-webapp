@@ -136,6 +136,16 @@ document.addEventListener("DOMContentLoaded", async () => {
     permissionList.map(item => item.permission_code)
   );
 
+  function hasPermission(code) {
+    return permissionList.some(item =>
+      item.permission_code === code &&
+      item.scope === "all"
+    );
+  }
+
+  const canUpdateRequests = hasPermission("requests.update");
+  const canApproveRequests = hasPermission("requests.approve");
+
   const menuPermissions = {
     dashboard: "dashboard.view",
     requests: "requests.view",
@@ -226,6 +236,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     const element = document.createElement(tag);
 
     if (className) element.className = className;
+
     if (value !== undefined && value !== null) {
       element.textContent = String(value);
     }
@@ -269,6 +280,23 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (element) element.textContent = String(value);
   }
 
+  function makeActionButton(label, background) {
+    const button = createElement("button", "", label);
+    button.type = "button";
+
+    Object.assign(button.style, {
+      padding: "10px 16px",
+      border: "none",
+      borderRadius: "6px",
+      background,
+      color: "#fff",
+      cursor: "pointer",
+      fontWeight: "600"
+    });
+
+    return button;
+  }
+
   // ==========================================
   // 6. ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ
   // ==========================================
@@ -298,7 +326,9 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (pageTitle) {
       pageTitle.textContent =
-        sectionName === "requests" ? "Заявки" : "Панель управления";
+        sectionName === "requests"
+          ? "Заявки"
+          : "Панель управления";
     }
 
     if (sectionName === "requests") {
@@ -342,7 +372,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     setText("requestsAccepted", accepted);
     setText("requestsRejected", rejected);
 
-    const dashboardNew = document.getElementById("dashboardNewRequests");
+    const dashboardNew = document.getElementById(
+      "dashboardNewRequests"
+    );
 
     if (dashboardNew) {
       dashboardNew.textContent = String(newCount);
@@ -362,7 +394,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const firstStat = document.querySelector(".stat-card strong");
 
-    if (firstStat && !document.getElementById("dashboardNewRequests")) {
+    if (
+      firstStat &&
+      !document.getElementById("dashboardNewRequests")
+    ) {
       firstStat.textContent = String(newCount);
     }
   }
@@ -391,8 +426,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         createElement("strong", "", "Пока нет заявок")
       );
       empty.appendChild(
-        createElement("p", "", "Новые обращения клиентов появятся здесь.")
+        createElement(
+          "p",
+          "",
+          "Новые обращения клиентов появятся здесь."
+        )
       );
+
       latestPanel.appendChild(empty);
       return;
     }
@@ -429,6 +469,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         "",
         `Статус: ${statusLabel(request.status)}`
       );
+
       const date = createElement(
         "small",
         "",
@@ -464,7 +505,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (!container) return;
 
     const searchInput = document.getElementById("requestSearch");
-    const statusFilter = document.getElementById("requestStatusFilter");
+    const statusFilter = document.getElementById(
+      "requestStatusFilter"
+    );
 
     const search = (searchInput?.value || "").trim().toLowerCase();
     const selectedStatus = statusFilter?.value || "";
@@ -480,7 +523,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         request.building_number
       ].filter(Boolean).join(" ").toLowerCase();
 
-      const matchesSearch = !search || searchable.includes(search);
+      const matchesSearch =
+        !search || searchable.includes(search);
+
       const matchesStatus =
         !selectedStatus ||
         selectedStatus === "all" ||
@@ -507,6 +552,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             ? "По заданным условиям заявки не найдены."
             : "Заявок пока нет."
         );
+
         container.appendChild(message);
       }
 
@@ -630,6 +676,326 @@ document.addEventListener("DOMContentLoaded", async () => {
     updated_at: "Дата обновления"
   };
 
+  // ==========================================
+  // 11. СОХРАНЕНИЕ СТАТУСА ЗАЯВКИ
+  // ==========================================
+
+  async function saveRequestStatus(statusSelect, reasonInput, saveButton) {
+    if (!selectedRequest) return;
+
+    const request = selectedRequest;
+    const newStatus = statusSelect.value;
+    const rejectionReason = reasonInput.value.trim();
+
+    if (!canUpdateRequests) {
+      alert("У вас нет разрешения на изменение заявок.");
+      return;
+    }
+
+    if (
+      (newStatus === "ZAAKCEPTOWANA" ||
+        newStatus === "ODRZUCONA") &&
+      !canApproveRequests
+    ) {
+      alert("У вас нет разрешения на принятие решений по заявкам.");
+      return;
+    }
+
+    if (newStatus === "ODRZUCONA" && !rejectionReason) {
+      alert("Укажите причину отклонения заявки.");
+      reasonInput.focus();
+      return;
+    }
+
+    if (newStatus === request.status &&
+        (newStatus !== "ODRZUCONA" ||
+          rejectionReason === (request.rejection_reason || ""))) {
+      alert("Изменений нет.");
+      return;
+    }
+
+    saveButton.disabled = true;
+    saveButton.textContent = "Сохранение...";
+
+    const { data, error } = await client.rpc(
+      "admin_update_request",
+      {
+        p_request_id: request.id,
+        p_status: newStatus,
+        p_rejection_reason: rejectionReason || null
+      }
+    );
+
+    saveButton.disabled = false;
+    saveButton.textContent = "Сохранить изменения";
+
+    if (error) {
+      console.error("Request update error:", error);
+      alert(`Не удалось сохранить изменения:\n${error.message}`);
+      return;
+    }
+
+    const updatedRequest = Array.isArray(data) ? data[0] : data;
+
+    if (!updatedRequest) {
+      alert("Сервер не вернул обновлённую заявку. Обновите список.");
+      return;
+    }
+
+    const index = allRequests.findIndex(
+      item => item.id === updatedRequest.id
+    );
+
+    if (index !== -1) {
+      allRequests[index] = updatedRequest;
+    }
+
+    selectedRequest = updatedRequest;
+
+    updateRequestStats();
+    renderDashboardRequests();
+    renderRequests();
+    openRequestDetails(updatedRequest);
+
+    alert("Изменения заявки сохранены.");
+  }
+
+  // ==========================================
+  // 12. КОНТАКТЫ КЛИЕНТА
+  // ==========================================
+
+  function createContactActions(request) {
+    const wrapper = createElement("div");
+
+    Object.assign(wrapper.style, {
+      display: "flex",
+      flexWrap: "wrap",
+      gap: "10px",
+      marginBottom: "18px"
+    });
+
+    if (request.phone) {
+      const phoneLink = createElement(
+        "a",
+        "",
+        "Позвонить клиенту"
+      );
+
+      phoneLink.href = `tel:${String(request.phone).replace(/[^\d+]/g, "")}`;
+
+      Object.assign(phoneLink.style, {
+        display: "inline-block",
+        padding: "10px 14px",
+        borderRadius: "6px",
+        background: "#ff812e",
+        color: "#fff",
+        textDecoration: "none",
+        fontWeight: "600"
+      });
+
+      wrapper.appendChild(phoneLink);
+    }
+
+    if (request.email) {
+      const emailLink = createElement(
+        "a",
+        "",
+        "Написать email"
+      );
+
+      emailLink.href = `mailto:${encodeURIComponent(request.email)}`;
+
+      Object.assign(emailLink.style, {
+        display: "inline-block",
+        padding: "10px 14px",
+        borderRadius: "6px",
+        background: "#3b4654",
+        color: "#fff",
+        textDecoration: "none",
+        fontWeight: "600"
+      });
+
+      wrapper.appendChild(emailLink);
+    }
+
+    if (!request.phone && !request.email) {
+      wrapper.appendChild(
+        createElement("p", "", "Контактные данные не указаны.")
+      );
+    }
+
+    return wrapper;
+  }
+
+  // ==========================================
+  // 13. ПАНЕЛЬ УПРАВЛЕНИЯ ЗАЯВКОЙ
+  // ==========================================
+
+  function createRequestManagement(request) {
+    const wrapper = createElement("section");
+
+    Object.assign(wrapper.style, {
+      margin: "18px 0",
+      padding: "18px",
+      border: "1px solid #484848",
+      borderRadius: "8px",
+      background: "#292c31"
+    });
+
+    const heading = createElement(
+      "h3",
+      "",
+      "Управление заявкой"
+    );
+
+    Object.assign(heading.style, {
+      margin: "0 0 16px",
+      color: "#ff812e",
+      fontSize: "17px"
+    });
+
+    wrapper.appendChild(heading);
+    wrapper.appendChild(createContactActions(request));
+
+    if (!canUpdateRequests) {
+      wrapper.appendChild(
+        createElement("p", "", "Нет разрешения на изменение заявки.")
+      );
+      return wrapper;
+    }
+
+    const statusLabelElement = createElement(
+      "label",
+      "",
+      "Статус заявки"
+    );
+
+    Object.assign(statusLabelElement.style, {
+      display: "block",
+      marginBottom: "7px",
+      fontWeight: "600"
+    });
+
+    const statusSelect = document.createElement("select");
+
+    Object.assign(statusSelect.style, {
+      display: "block",
+      width: "100%",
+      maxWidth: "420px",
+      padding: "11px",
+      marginBottom: "14px",
+      border: "1px solid #555",
+      borderRadius: "6px",
+      background: "#202226",
+      color: "#f5f5f4",
+      fontSize: "14px"
+    });
+
+    const statuses = [
+      { value: "NOWA", label: "Новая" },
+      { value: "KONTAKT", label: "Контакт" },
+      { value: "USTALENIA", label: "Согласование" }
+    ];
+
+    if (canApproveRequests) {
+      statuses.push(
+        { value: "ZAAKCEPTOWANA", label: "Принята" },
+        { value: "ODRZUCONA", label: "Отклонена" }
+      );
+    }
+
+    statuses.forEach(status => {
+      const option = document.createElement("option");
+      option.value = status.value;
+      option.textContent = status.label;
+      statusSelect.appendChild(option);
+    });
+
+    if (!statuses.some(item => item.value === request.status)) {
+      const currentOption = document.createElement("option");
+      currentOption.value = request.status;
+      currentOption.textContent = statusLabel(request.status);
+      statusSelect.appendChild(currentOption);
+    }
+
+    statusSelect.value = request.status;
+
+    statusLabelElement.appendChild(statusSelect);
+    wrapper.appendChild(statusLabelElement);
+
+    const reasonLabel = createElement(
+      "label",
+      "",
+      "Причина отказа"
+    );
+
+    Object.assign(reasonLabel.style, {
+      display: "block",
+      marginBottom: "7px",
+      fontWeight: "600"
+    });
+
+    const reasonInput = document.createElement("textarea");
+
+    reasonInput.value = request.rejection_reason || "";
+    reasonInput.placeholder =
+      "Укажите причину, если отклоняете заявку...";
+    reasonInput.rows = 3;
+
+    Object.assign(reasonInput.style, {
+      display: "block",
+      width: "100%",
+      maxWidth: "600px",
+      boxSizing: "border-box",
+      padding: "11px",
+      marginBottom: "14px",
+      border: "1px solid #555",
+      borderRadius: "6px",
+      background: "#202226",
+      color: "#f5f5f4",
+      fontSize: "14px",
+      resize: "vertical"
+    });
+
+    reasonLabel.appendChild(reasonInput);
+    wrapper.appendChild(reasonLabel);
+
+    const reasonHint = createElement(
+      "small",
+      "",
+      "При статусе «Отклонена» причина обязательна."
+    );
+
+    Object.assign(reasonHint.style, {
+      display: "block",
+      marginBottom: "14px",
+      color: "#a4a7ad"
+    });
+
+    wrapper.appendChild(reasonHint);
+
+    const saveButton = makeActionButton(
+      "Сохранить изменения",
+      "#ff812e"
+    );
+
+    saveButton.addEventListener("click", () => {
+      saveRequestStatus(
+        statusSelect,
+        reasonInput,
+        saveButton
+      );
+    });
+
+    wrapper.appendChild(saveButton);
+
+    return wrapper;
+  }
+
+  // ==========================================
+  // 14. ОТКРЫТИЕ ПОДРОБНОСТЕЙ
+  // ==========================================
+
   function openRequestDetails(request) {
     const panel = document.getElementById("requestDetails");
     const title = document.getElementById("requestDetailsTitle");
@@ -645,6 +1011,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     content.replaceChildren();
+
+    content.appendChild(createRequestManagement(request));
 
     const orderedFields = [
       "status",
@@ -731,6 +1099,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     panel.style.display = "";
+
     panel.scrollIntoView({
       behavior: "smooth",
       block: "nearest"
@@ -757,11 +1126,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 11. ПОИСК И ФИЛЬТРЫ
+  // 15. ПОИСК И ФИЛЬТРЫ
   // ==========================================
 
   const searchInput = document.getElementById("requestSearch");
-  const statusFilter = document.getElementById("requestStatusFilter");
+  const statusFilter = document.getElementById(
+    "requestStatusFilter"
+  );
 
   if (searchInput) {
     searchInput.addEventListener("input", renderRequests);
@@ -772,7 +1143,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 12. ЗАГРУЗКА ЗАЯВОК ИЗ SUPABASE
+  // 16. ЗАГРУЗКА ЗАЯВОК ИЗ SUPABASE
   // ==========================================
 
   async function loadRequests() {
@@ -784,14 +1155,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const loading = document.getElementById("requestsLoading");
     const empty = document.getElementById("requestsEmpty");
-    const container = document.getElementById("requestsTableContainer");
+    const container = document.getElementById(
+      "requestsTableContainer"
+    );
 
     if (loading) loading.style.display = "";
     if (empty) empty.style.display = "none";
 
     if (container) container.replaceChildren();
 
-    const refreshButton = document.getElementById("refreshRequests");
+    const refreshButton = document.getElementById(
+      "refreshRequests"
+    );
 
     if (refreshButton) {
       refreshButton.disabled = true;
@@ -841,7 +1216,9 @@ document.addEventListener("DOMContentLoaded", async () => {
         item => item.id === selectedRequest.id
       );
 
-      if (updated) openRequestDetails(updated);
+      if (updated) {
+        openRequestDetails(updated);
+      }
     }
   }
 
@@ -852,7 +1229,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 13. ПЕРВИЧНЫЙ ЗАПУСК
+  // 17. ПЕРВИЧНЫЙ ЗАПУСК
   // ==========================================
 
   if (!permissionSet.has("dashboard.view")) {
@@ -877,7 +1254,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 14. КОНТРОЛЬ СЕССИИ
+  // 18. КОНТРОЛЬ СЕССИИ
   // ==========================================
 
   client.auth.onAuthStateChange((event, session) => {
@@ -891,5 +1268,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   console.info("User:", access.user.email);
   console.info("Roles:", access.userRoles);
   console.info("Permissions:", permissionList.length);
+  console.info("Can update requests:", canUpdateRequests);
+  console.info("Can approve requests:", canApproveRequests);
   console.info("Requests:", allRequests.length);
 });
