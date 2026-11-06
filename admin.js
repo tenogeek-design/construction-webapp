@@ -309,6 +309,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   function showSection(sectionName) {
     const requiredPermission = menuPermissions[sectionName];
+
     if (
       !Object.prototype.hasOwnProperty.call(sectionTitles, sectionName) ||
       (requiredPermission && !permissionSet.has(requiredPermission))
@@ -340,23 +341,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
   });
 
-  // Финансовые действия подключим отдельно после проверки навигации.
-  // До подключения RPC запрещаем создавать операции из интерфейса.
-  ["financeIncomeBtn", "financeExpenseBtn", "financeTransferBtn"].forEach(id => {
-    const button = document.getElementById(id);
-    if (!button) return;
-    button.disabled = true;
-    button.title = "Операция будет доступна после подключения Supabase";
-    button.style.opacity = "0.55";
-    button.style.cursor = "not-allowed";
-  });
-  const financeRefresh = document.getElementById("financeRefreshBtn");
-  if (financeRefresh) {
-    financeRefresh.addEventListener("click", () => {
-      const message = document.getElementById("financeHistory");
-      if (message) message.textContent = "Подключение истории операций — следующий шаг.";
-    });
-  }
+  // Финансовые кнопки и обновление финансов обслуживаются
+  // отдельным модулем admin-finance.js.
+  // Здесь не отключаем кнопки и не перезаписываем их обработчики.
 
   // ==========================================
   // 7. СТАТИСТИКА ЗАЯВОК
