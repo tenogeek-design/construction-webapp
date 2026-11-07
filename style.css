@@ -298,3 +298,36 @@ body {
     padding: 14px 12px;
   }
 }
+
+/* CONSTRUCTION GROUP — MAIN LOGO BANNER */
+
+#homePage .hero {
+  min-height: 440px;
+  padding: 0;
+  background:
+    url("construction-logo.png")
+    center center / contain no-repeat;
+  background-color: #34383d;
+  border: 1px solid #52677d;
+  border-radius: 20px;
+}
+
+/* Hide old text over the logo */
+#homePage .hero .eyebrow,
+#homePage .hero h1,
+#homePage .hero p {
+  display: none;
+}
+
+@media (max-width: 760px) {
+  #homePage .hero {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  #homePage .hero {
+    min-height: 210px;
+    border-radius: 14px;
+  }
+}
