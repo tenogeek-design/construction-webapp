@@ -1,4 +1,3 @@
-
 "use strict";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -1296,6 +1295,337 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =========================================
+  // УПРАВЛЕНИЕ СЧЕТАМИ (ТОЛЬКО OWNER)
+  // =========================================
+
+  const accountTypes = { cash: "Касса", bank: "Банковский счёт" };
+
+  function accountPanel() {
+    let panel = document.getElementById("financeAccountsPanel");
+    if (panel) return panel;
+
+    panel = document.createElement("section");
+    panel.id = "financeAccountsPanel";
+    Object.assign(panel.style, {
+      marginTop: "20px", padding: "20px", border: "1px solid #3b3f46",
+      borderRadius: "10px", background: "#292c31", color: "#f5f5f4"
+    });
+
+    const history = document.getElementById("financeHistory");
+    const historyCard = history?.closest(".panel, .card");
+    if (historyCard?.parentElement) {
+      historyCard.parentElement.insertBefore(panel, historyCard);
+    } else {
+      section.appendChild(panel);
+    }
+    return panel;
+  }
+
+  async function getAccountRows() {
+    await checkFinanceSession();
+    const { data, error } = await client
+      .from("finance_accounts")
+      .select("id, name, account_type, currency, opening_balance, status, description, responsible_employee_id, created_at")
+      .order("created_at", { ascending: true });
+    if (error) throw error;
+    return data || [];
+  }
+
+  async function getEmployees() {
+    const { data, error } = await client
+      .from("employees")
+      .select("*")
+      .eq("status", "active")
+      .limit(500);
+    if (error) throw error;
+    return (data || []).map(e => ({
+      id: e.id,
+      name: [e.first_name, e.last_name].filter(Boolean).join(" ") ||
+        e.full_name || e.name || e.phone || `Сотрудник ${e.id.slice(0, 8)}`
+    }));
+  }
+
+  function accountBalance(row) {
+    const current = accountsCache.find(a => a.account_id === row.id);
+    return current ? Number(current.balance) : null;
+  }
+
+  async function openAccountForm(existing = null) {
+    const modal = createModal(
+      existing ? "Редактировать счёт" : "Новый финансовый счёт",
+      existing
+        ? "История операций и начальный баланс не изменяются."
+        : "Создай кассу или банковский счёт компании. Валюта — PLN."
+    );
+    const name = createInput("text", "Например, Касса бригады №1");
+    name.maxLength = 120;
+    name.value = existing?.name || "";
+
+    const type = createSelect([
+      ["cash", "Касса (наличные)"],
+      ["bank", "Банковский счёт"]
+    ]);
+    type.value = existing?.account_type || "cash";
+
+    const opening = createInput("number", "0.00");
+    opening.min = "0";
+    opening.value = existing ? String(existing.opening_balance) : "0";
+
+    const responsible = createSelect([["", "Не назначен"]]);
+    const description = document.createElement("textarea");
+    description.rows = 3;
+    description.maxLength = 2000;
+    description.value = existing?.description || "";
+
+    addFields(modal, [
+      ["Название", name],
+      ["Тип счёта", type],
+      ...(!existing ? [["Начальный баланс (PLN)", opening]] : []),
+      ["Ответственный за кассу", responsible],
+      ["Описание", description]
+    ]);
+
+    // После появления операций тип счёта менять опасно:
+    // при редактировании тип и начальный баланс фиксированы.
+    if (existing) type.disabled = true;
+
+    try {
+      const employees = await getEmployees();
+      employees.forEach(e => {
+        const option = document.createElement("option");
+        option.value = e.id;
+        option.textContent = e.name;
+        responsible.appendChild(option);
+      });
+      responsible.value = existing?.responsible_employee_id || "";
+      if (existing?.responsible_employee_id && !responsible.value) {
+        const option = document.createElement("option");
+        option.value = existing.responsible_employee_id;
+        option.textContent = "Текущий ответственный (неактивен)";
+        responsible.appendChild(option);
+        responsible.value = existing.responsible_employee_id;
+      }
+    } catch (error) {
+      modal.errorText.textContent = "Не удалось загрузить сотрудников: " + error.message;
+      modal.submit.disabled = true;
+      return;
+    }
+
+    function updateResponsibleState() {
+      responsible.disabled = type.value !== "cash";
+      if (type.value !== "cash") responsible.value = "";
+    }
+    type.addEventListener("change", updateResponsibleState);
+    updateResponsibleState();
+    modal.submit.textContent = existing ? "Сохранить изменения" : "Создать счёт";
+
+    attachSubmit(modal, async () => {
+      if (modal.submit.disabled) return;
+      modal.errorText.textContent = "";
+      const cleanName = name.value.trim();
+      if (!cleanName) {
+        modal.errorText.textContent = "Укажи название счёта.";
+        return;
+      }
+      const amount = Number(opening.value);
+      if (!existing && (opening.value === "" || !Number.isFinite(amount) || amount < 0 ||
+          Math.abs(Math.round(amount * 100) - amount * 100) > 0.000001)) {
+        modal.errorText.textContent = "Начальный баланс должен быть неотрицательной суммой с точностью до гроша.";
+        return;
+      }
+      const payload = {
+        name: cleanName,
+        description: description.value.trim() || null,
+        responsible_employee_id: type.value === "cash" ? (responsible.value || null) : null
+      };
+      if (!existing) {
+        payload.account_type = type.value;
+        payload.currency = "PLN";
+        payload.opening_balance = amount;
+        payload.status = "active";
+      }
+      if (!window.confirm(existing ? "Сохранить изменения счёта?" :
+          `Создать счёт «${cleanName}» с начальным балансом ${money(amount)}?`)) return;
+
+      setBusy(modal, true, "Сохраняем...");
+      try {
+        const result = existing
+          ? await client.from("finance_accounts").update(payload).eq("id", existing.id).select("id")
+          : await client.from("finance_accounts").insert(payload).select("id");
+        if (result.error) throw result.error;
+        if (!result.data?.length) throw new Error("Изменение не подтверждено базой. Проверь права владельца.");
+        modal.close();
+        await loadFinance();
+        await loadAccountPanel();
+        showMessage(existing ? "Счёт обновлён." : "Счёт создан.");
+      } catch (error) {
+        modal.errorText.textContent = error.message;
+        setBusy(modal, false);
+      }
+    });
+  }
+
+  async function archiveAccount(row) {
+    // Архивирование — только при нулевом балансе. Повторная проверка
+    // делается по свежим данным; для строгой атомарности потребуется RPC.
+    await loadBalances();
+    const balance = accountBalance(row);
+    if (balance === null) throw new Error("Не удалось проверить баланс счёта.");
+    if (Math.abs(balance) > 0.000001) {
+      throw new Error("Нельзя архивировать счёт с остатком. Сначала переведи деньги на другой счёт.");
+    }
+    if (!window.confirm(`Архивировать счёт «${row.name}»? История сохранится.`)) return;
+    const { data, error } = await client.from("finance_accounts")
+      .update({ status: "archived" })
+      .eq("id", row.id)
+      .eq("status", "active")
+      .select("id");
+    if (error) throw error;
+    if (!data?.length) throw new Error("Счёт не обновлён. Возможно, его статус уже изменился.");
+    await loadFinance();
+    await loadAccountPanel();
+    showMessage("Счёт архивирован. Финансовая история сохранена.");
+  }
+
+  async function restoreAccount(row) {
+    if (!window.confirm(`Восстановить счёт «${row.name}»?`)) return;
+    const { data, error } = await client.from("finance_accounts")
+      .update({ status: "active" })
+      .eq("id", row.id)
+      .eq("status", "archived")
+      .select("id");
+    if (error) throw error;
+    if (!data?.length) throw new Error("Счёт не обновлён.");
+    await loadFinance();
+    await loadAccountPanel();
+    showMessage("Счёт восстановлен.");
+  }
+
+  async function showAccountHistory(row) {
+    const modal = createModal("История счёта: " + row.name,
+      "Последние 100 операций, включая переводы.");
+    modal.submit.remove();
+    const content = document.createElement("div");
+    content.textContent = "Загружаем операции...";
+    modal.fields.appendChild(content);
+    try {
+      const { data, error } = await client.from("finance_transactions")
+        .select("id, transaction_date, transaction_type, amount, currency, description, from_account_id, to_account_id, status")
+        .or(`from_account_id.eq.${row.id},to_account_id.eq.${row.id}`)
+        .order("transaction_date", { ascending: false })
+        .limit(100);
+      if (error) throw error;
+      content.replaceChildren();
+      if (!data?.length) {
+        content.textContent = "Операций по счёту пока нет.";
+        return;
+      }
+      for (const op of data) {
+        const item = document.createElement("div");
+        Object.assign(item.style, {
+          padding: "10px 0", borderBottom: "1px solid #444", whiteSpace: "pre-wrap"
+        });
+        const direction = op.transaction_type === "transfer"
+          ? (op.from_account_id === row.id ? "Перевод исходящий" : "Перевод входящий")
+          : op.transaction_type === "income" ? "Поступление" : "Расход";
+        item.textContent = `${op.transaction_date || "—"} · ${direction} · ${money(op.amount)}\n${op.description || "Без описания"} · ${op.status || "—"}`;
+        content.appendChild(item);
+      }
+    } catch (error) {
+      content.textContent = "Не удалось загрузить историю: " + error.message;
+    }
+  }
+
+  async function loadAccountPanel() {
+    const panel = accountPanel();
+    panel.replaceChildren();
+    const header = document.createElement("div");
+    Object.assign(header.style, {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      flexWrap: "wrap", gap: "12px", marginBottom: "12px"
+    });
+    const title = document.createElement("h3");
+    title.textContent = "Счета и кассы компании";
+    title.style.margin = "0";
+    const create = createButton("+ Создать счёт", true);
+    create.addEventListener("click", () => openAccountForm().catch(e => showMessage(e.message, true)));
+    header.append(title, create);
+    panel.appendChild(header);
+
+    const note = document.createElement("p");
+    note.style.color = "#a4a7ad";
+    note.textContent = "Управление счетами доступно владельцу. Архивирование не удаляет операции.";
+    panel.appendChild(note);
+
+    let rows;
+    try {
+      rows = await getAccountRows();
+    } catch (error) {
+      const err = document.createElement("p");
+      err.style.color = "#ff7373";
+      err.textContent = "Не удалось загрузить счета: " + error.message;
+      panel.appendChild(err);
+      return;
+    }
+    if (!rows.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "Счетов пока нет. Нажми «Создать счёт».";
+      panel.appendChild(empty);
+      return;
+    }
+
+    for (const row of rows) {
+      const card = document.createElement("article");
+      Object.assign(card.style, {
+        padding: "14px", marginTop: "12px", border: "1px solid #444",
+        borderRadius: "8px", background: "#24272c"
+      });
+      const name = document.createElement("strong");
+      name.textContent = row.name;
+      name.style.display = "block";
+      const balance = accountBalance(row);
+      const info = document.createElement("p");
+      info.textContent = `${accountTypes[row.account_type] || row.account_type} · ${row.currency} · ` +
+        `${row.status === "active" ? "Активен" : "Архив"} · ` +
+        `Баланс: ${balance === null ? "не отображается" : money(balance)}`;
+      info.style.color = "#a4a7ad";
+      const description = document.createElement("p");
+      description.textContent = row.description || "Без описания";
+      const responsible = document.createElement("small");
+      responsible.style.color = "#a4a7ad";
+      responsible.textContent = row.responsible_employee_id
+        ? `Ответственный: ${row.responsible_employee_id}`
+        : "Ответственный не назначен";
+      const actions = document.createElement("div");
+      Object.assign(actions.style, { display: "flex", flexWrap: "wrap", gap: "8px", marginTop: "12px" });
+      const history = createButton("История");
+      history.addEventListener("click", () => showAccountHistory(row));
+      actions.appendChild(history);
+      if (row.status === "active") {
+        const edit = createButton("Изменить");
+        edit.addEventListener("click", () => openAccountForm(row).catch(e => showMessage(e.message, true)));
+        const archive = createButton("Архивировать");
+        archive.addEventListener("click", async () => {
+          archive.disabled = true;
+          try { await archiveAccount(row); }
+          catch (e) { showMessage(e.message, true); archive.disabled = false; }
+        });
+        actions.append(edit, archive);
+      } else {
+        const restore = createButton("Восстановить");
+        restore.addEventListener("click", async () => {
+          restore.disabled = true;
+          try { await restoreAccount(row); }
+          catch (e) { showMessage(e.message, true); restore.disabled = false; }
+        });
+        actions.appendChild(restore);
+      }
+      card.append(name, info, description, responsible, actions);
+      panel.appendChild(card);
+    }
+  }
+
+  // =========================================
   // ПОДКЛЮЧЕНИЕ КНОПОК
   // =========================================
 
@@ -1376,6 +1706,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   await loadFinance();
 
   try {
+    await loadAccountPanel();
     await loadExpenseRequests();
   } catch (error) {
     console.error(
