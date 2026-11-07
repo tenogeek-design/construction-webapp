@@ -20,14 +20,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
+  // Используем стандартное хранилище авторизации,
+  // как в основном модуле админки.
   const client = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_KEY,
-    {
-      auth: {
-        storageKey: "construction-finance-auth"
-      }
-    }
+    SUPABASE_KEY
   );
 
   let accountsCache = [];
@@ -47,12 +44,29 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showMessage(message, isError = false) {
     setText("financeMessage", message);
 
-    const element = document.getElementById("financeMessage");
+    const element = document.getElementById(
+      "financeMessage"
+    );
+
     if (element) {
       element.style.color = isError
         ? "#ff6b6b"
         : "#22a06b";
     }
+  }
+
+  function validAmount(value) {
+    if (value === "" || value === null) return false;
+
+    const amount = Number(value);
+
+    return (
+      Number.isFinite(amount) &&
+      amount > 0 &&
+      Math.abs(
+        Math.round(amount * 100) - amount * 100
+      ) < 0.000001
+    );
   }
 
   function createField(labelText, element) {
@@ -81,42 +95,40 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     wrapper.append(label, element);
+
     return wrapper;
   }
 
-  function createSelect() {
-    return document.createElement("select");
-  }
+  function createSelect(options = []) {
+    const select = document.createElement("select");
 
-  function createInput(type) {
-    const input = document.createElement("input");
-    input.type = type;
-    return input;
-  }
-
-  function addOptions(select, options) {
     options.forEach(([value, label]) => {
       const option = document.createElement("option");
       option.value = value;
       option.textContent = label;
       select.appendChild(option);
     });
+
     return select;
   }
 
-  function validAmount(value) {
-    const amount = Number(value);
-    return (
-      Number.isFinite(amount) &&
-      amount > 0 &&
-      Math.abs(
-        Math.round(amount * 100) - amount * 100
-      ) < 0.000001
-    );
+  function createInput(type, placeholder = "") {
+    const input = document.createElement("input");
+
+    input.type = type;
+    input.placeholder = placeholder;
+
+    if (type === "number") {
+      input.min = "0.01";
+      input.step = "0.01";
+    }
+
+    return input;
   }
 
-  function makeButton(text, primary = false) {
+  function createButton(text, primary = false) {
     const button = document.createElement("button");
+
     button.type = "button";
     button.textContent = text;
 
@@ -133,7 +145,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     return button;
   }
 
-  function createModal(titleText, descriptionText) {
+  function createModal(titleText, subtitleText) {
     const overlay = document.createElement("div");
 
     Object.assign(overlay.style, {
@@ -167,12 +179,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     title.textContent = titleText;
     title.style.marginTop = "0";
 
-    const description = document.createElement("p");
-    description.textContent = descriptionText;
-    description.style.color = "#a4a7ad";
+    const subtitle = document.createElement("p");
+    subtitle.textContent = subtitleText;
+    subtitle.style.color = "#a4a7ad";
 
     const form = document.createElement("form");
     form.noValidate = true;
+
+    const fields = document.createElement("div");
 
     const errorText = document.createElement("p");
     errorText.style.color = "#ff6b6b";
@@ -182,18 +196,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     Object.assign(actions.style, {
       display: "flex",
-      justifyContent: "flex-end",
       flexWrap: "wrap",
+      justifyContent: "flex-end",
       gap: "10px",
       marginTop: "20px"
     });
 
-    const cancel = makeButton("Отмена");
-    const submit = makeButton("Сохранить", true);
+    const cancel = createButton("Отмена");
+    const submit = createButton("Сохранить", true);
 
     actions.append(cancel, submit);
-    form.append(errorText, actions);
-    modal.append(title, description, form);
+    form.append(fields, errorText, actions);
+    modal.append(title, subtitle, form);
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
@@ -202,46 +216,81 @@ document.addEventListener("DOMContentLoaded", async () => {
     cancel.addEventListener("click", close);
 
     overlay.addEventListener("click", event => {
-      if (event.target === overlay && !submit.disabled) {
+      if (
+        event.target === overlay &&
+        !submit.disabled
+      ) {
         close();
       }
     });
 
     return {
       overlay,
-      modal,
       form,
+      fields,
       errorText,
       cancel,
       submit,
-      close,
-      actions
+      close
     };
   }
 
-  function addFormFields(form, fields) {
-    const actions = form.querySelector("div:last-child");
-
+  function addFields(modal, fields) {
     fields.forEach(([label, element]) => {
-      const field = createField(label, element);
-      form.insertBefore(field, form.firstChild);
+      modal.fields.appendChild(
+        createField(label, element)
+      );
     });
-
-    return actions;
   }
 
-  function setBusy(modal, busy, text = "Сохраняем...") {
-    modal.submit.disabled = busy;
-    modal.cancel.disabled = busy;
-
+  function setBusy(modal, busy, text) {
     if (busy) {
       modal.submit.dataset.original =
         modal.submit.textContent;
-      modal.submit.textContent = text;
+
+      modal.submit.textContent = text || "Сохраняем...";
     } else {
       modal.submit.textContent =
         modal.submit.dataset.original || "Сохранить";
     }
+
+    modal.submit.disabled = busy;
+    modal.cancel.disabled = busy;
+  }
+
+  function attachSubmit(modal, handler) {
+    modal.submit.addEventListener("click", handler);
+
+    modal.form.addEventListener("submit", event => {
+      event.preventDefault();
+      handler();
+    });
+  }
+
+  function accountOptions(accounts) {
+    return accounts.map(account => [
+      account.account_id,
+      `${account.account_name} — ${money(account.balance)}`
+    ]);
+  }
+
+  // =========================================
+  // АВТОРИЗАЦИЯ
+  // =========================================
+
+  async function checkFinanceSession() {
+    const { data, error } =
+      await client.auth.getSession();
+
+    if (error) throw error;
+
+    if (!data.session) {
+      throw new Error(
+        "Нет активной сессии Supabase. Выйди из админки и войди снова."
+      );
+    }
+
+    return data.session;
   }
 
   // =========================================
@@ -249,6 +298,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =========================================
 
   async function loadBalances() {
+    await checkFinanceSession();
+
     const { data, error } = await client.rpc(
       "get_finance_balances"
     );
@@ -274,13 +325,16 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     setText("financeCashBalance", money(cash));
     setText("financeBankBalance", money(bank));
-    setText("financeTotalBalance", money(cash + bank));
+    setText(
+      "financeTotalBalance",
+      money(cash + bank)
+    );
 
     return accountsCache;
   }
 
   // =========================================
-  // ИСТОРИЯ ОПЕРАЦИЙ
+  // ИСТОРИЯ ФИНАНСОВ
   // =========================================
 
   async function loadHistory() {
@@ -288,6 +342,8 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("financeHistory");
 
     if (!container) return;
+
+    await checkFinanceSession();
 
     const { data, error } = await client.rpc(
       "get_finance_history",
@@ -298,11 +354,14 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     container.replaceChildren();
 
-    if (!data || data.length === 0) {
+    if (!data || !data.length) {
       container.textContent =
         "Финансовых операций пока нет.";
       return;
     }
+
+    const wrapper = document.createElement("div");
+    wrapper.style.overflowX = "auto";
 
     const table = document.createElement("table");
 
@@ -371,16 +430,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
 
     table.appendChild(tbody);
-
-    const wrapper = document.createElement("div");
-    wrapper.style.overflowX = "auto";
     wrapper.appendChild(table);
-
     container.appendChild(wrapper);
   }
 
   // =========================================
-  // ОБНОВЛЕНИЕ ФИНАНСОВ
+  // ЗАГРУЗКА ФИНАНСОВ
   // =========================================
 
   async function loadFinance() {
@@ -390,23 +445,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     showMessage("Загружаем финансовые данные...");
 
     try {
+      await checkFinanceSession();
+
       const results = await Promise.allSettled([
         loadBalances(),
         loadHistory()
       ]);
 
       const errors = results
-        .filter(result => result.status === "rejected")
-        .map(result => result.reason?.message || "Ошибка");
+        .filter(result =>
+          result.status === "rejected"
+        )
+        .map(result =>
+          result.reason?.message || "Неизвестная ошибка"
+        );
 
       if (errors.length) {
-        showMessage(errors.join("; "), true);
-        console.error("Finance loading errors:", errors);
+        showMessage(
+          "Ошибка: " + errors.join("; "),
+          true
+        );
+
+        console.error(
+          "Finance loading errors:",
+          errors
+        );
       } else {
         showMessage(
           "Финансовые данные успешно загружены."
         );
       }
+    } catch (error) {
+      console.error("Finance error:", error);
+      showMessage(error.message, true);
     } finally {
       loading = false;
     }
@@ -437,49 +508,39 @@ document.addEventListener("DOMContentLoaded", async () => {
       "Регистрация поступления денег компании"
     );
 
-    const accountSelect = addOptions(
-      createSelect(),
-      accounts.map(account => [
-        account.account_id,
-        `${account.account_name} — ${money(account.balance)}`
-      ])
+    const accountSelect = createSelect(
+      accountOptions(accounts)
     );
 
-    const amountInput = createInput("number");
-    amountInput.min = "0.01";
-    amountInput.step = "0.01";
-    amountInput.placeholder = "Например, 1500.00";
-
-    const categorySelect = addOptions(
-      createSelect(),
-      [
-        ["client_payment", "Оплата клиента"],
-        ["advance", "Аванс"],
-        ["contract_payment", "Оплата договора"],
-        ["other", "Другой доход"]
-      ]
+    const amountInput = createInput(
+      "number",
+      "Например, 1500.00"
     );
 
-    const projectSelect = addOptions(
-      createSelect(),
-      [["", "Без привязки к объекту"]]
-    );
+    const categorySelect = createSelect([
+      ["client_payment", "Оплата клиента"],
+      ["advance", "Аванс"],
+      ["contract_payment", "Оплата договора"],
+      ["other", "Другой доход"]
+    ]);
 
-    const description = document.createElement("textarea");
+    const projectSelect = createSelect([
+      ["", "Без привязки к объекту"]
+    ]);
+
+    const description =
+      document.createElement("textarea");
+
     description.rows = 3;
     description.placeholder = "Описание поступления...";
 
-    const fields = [
+    addFields(modal, [
       ["Счёт зачисления", accountSelect],
       ["Сумма (PLN)", amountInput],
       ["Категория дохода", categorySelect],
       ["Объект (необязательно)", projectSelect],
       ["Описание", description]
-    ];
-
-    fields.reverse().forEach(([label, element]) => {
-      modal.form.prepend(createField(label, element));
-    });
+    ]);
 
     modal.submit.textContent =
       "Зарегистрировать поступление";
@@ -510,7 +571,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (!validAmount(amountInput.value)) {
         modal.errorText.textContent =
-          "Укажи корректную сумму с точностью до 2 знаков.";
+          "Укажи корректную сумму.";
         return;
       }
 
@@ -520,7 +581,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         `Зарегистрировать поступление ${money(amount)}?`
       )) return;
 
-      setBusy(modal, true);
+      setBusy(modal, true, "Сохраняем...");
 
       try {
         const { error } = await client.rpc(
@@ -538,6 +599,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         if (error) throw error;
 
         modal.close();
+
         await loadFinance();
 
         showMessage(
@@ -545,24 +607,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       } catch (error) {
         console.error("Income error:", error);
-        modal.errorText.textContent = error.message;
+        modal.errorText.textContent =
+          error.message;
         setBusy(modal, false);
       }
     }
 
-    modal.submit.addEventListener(
-      "click",
-      submitIncome
-    );
-
-    modal.form.addEventListener("submit", event => {
-      event.preventDefault();
-      submitIncome();
-    });
+    attachSubmit(modal, submitIncome);
   }
 
   // =========================================
-  // ПЕРЕВОДЫ МЕЖДУ СЧЕТАМИ
+  // ПЕРЕВОД МЕЖДУ СЧЕТАМИ
   // =========================================
 
   async function openTransferForm() {
@@ -583,55 +638,48 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const modal = createModal(
       "Перевести деньги",
-      "Внутренний перевод между счетами компании. Общий баланс не изменится."
+      "Внутренний перевод между счетами компании."
     );
 
-    const fromSelect = createSelect();
-    const toSelect = createSelect();
+    const fromSelect = createSelect(
+      accountOptions(accounts)
+    );
 
-    accounts.forEach(account => {
-      [fromSelect, toSelect].forEach(select => {
-        const option = document.createElement("option");
-        option.value = account.account_id;
-        option.textContent =
-          `${account.account_name} — ${money(account.balance)}`;
-        select.appendChild(option);
-      });
-    });
+    const toSelect = createSelect(
+      accountOptions(accounts)
+    );
 
-    const firstWithFunds = accounts.find(
-      account => Number(account.balance) > 0
+    const amountInput = createInput(
+      "number",
+      "Например, 50.00"
+    );
+
+    const description =
+      document.createElement("textarea");
+
+    description.rows = 3;
+    description.maxLength = 2000;
+    description.placeholder =
+      "Например, выдача наличных бригадиру";
+
+    const firstWithFunds = accounts.find(account =>
+      Number(account.balance) > 0
     );
 
     if (firstWithFunds) {
       fromSelect.value = firstWithFunds.account_id;
     }
 
-    const balanceNote = document.createElement("p");
-    balanceNote.style.color = "#a4a7ad";
-    balanceNote.style.fontSize = "13px";
-
-    const amountInput = createInput("number");
-    amountInput.min = "0.01";
-    amountInput.step = "0.01";
-    amountInput.placeholder = "Например, 50.00";
-
-    const description = document.createElement("textarea");
-    description.rows = 3;
-    description.maxLength = 2000;
-    description.placeholder =
-      "Например, выдача наличных бригадиру";
-
-    const fields = [
+    addFields(modal, [
       ["Откуда перевести", fromSelect],
       ["Куда перевести", toSelect],
       ["Сумма (PLN)", amountInput],
       ["Комментарий (необязательно)", description]
-    ];
+    ]);
 
-    fields.reverse().forEach(([label, element]) => {
-      modal.form.prepend(createField(label, element));
-    });
+    const balanceNote = document.createElement("p");
+    balanceNote.style.color = "#a4a7ad";
+    balanceNote.style.fontSize = "13px";
 
     fromSelect.parentElement.after(balanceNote);
 
@@ -691,7 +739,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (!validAmount(amountInput.value)) {
         modal.errorText.textContent =
-          "Укажи корректную сумму с точностью до 2 знаков.";
+          "Укажи корректную сумму.";
         return;
       }
 
@@ -699,7 +747,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       if (amount > Number(source.balance)) {
         modal.errorText.textContent =
-          "Недостаточно денег на счёте отправителя.";
+          "Недостаточно денег на счёте.";
         return;
       }
 
@@ -729,39 +777,27 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         modal.close();
 
-        try {
-          await loadFinance();
-          showMessage(
-            `Перевод ${money(amount)} выполнен. Операция: ${data}`
-          );
-        } catch (refreshError) {
-          console.error(refreshError);
-          showMessage(
-            "Перевод выполнен, но обновление данных не удалось.",
-            true
-          );
-        }
+        await loadFinance();
+
+        showMessage(
+          `Перевод ${money(amount)} выполнен. ` +
+          `Операция: ${data}`
+        );
       } catch (error) {
         console.error("Transfer error:", error);
+
         modal.errorText.textContent =
           "Ошибка перевода: " + error.message;
+
         setBusy(modal, false);
       }
     }
 
-    modal.submit.addEventListener(
-      "click",
-      executeTransfer
-    );
-
-    modal.form.addEventListener("submit", event => {
-      event.preventDefault();
-      executeTransfer();
-    });
+    attachSubmit(modal, executeTransfer);
   }
 
   // =========================================
-  // РАСХОДЫ — ОБЪЕКТЫ
+  // ЗАГРУЗКА ОБЪЕКТОВ ДЛЯ РАСХОДОВ
   // =========================================
 
   async function loadExpenseProjects() {
@@ -772,6 +808,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       .order("name");
 
     if (error) throw error;
+
     return data || [];
   }
 
@@ -780,18 +817,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // =========================================
 
   async function openExpenseForm() {
-    let projects;
-
-    try {
-      projects = await loadExpenseProjects();
-    } catch (error) {
-      showMessage(
-        "Не удалось загрузить объекты: " +
-        error.message,
-        true
-      );
-      return;
-    }
+    const projects = await loadExpenseProjects();
 
     if (!projects.length) {
       showMessage(
@@ -803,48 +829,43 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     const modal = createModal(
       "Новая заявка на расход",
-      "Баланс изменится только после утверждения и оплаты расхода."
+      "Баланс изменится после утверждения и оплаты расхода."
     );
 
-    const projectSelect = addOptions(
-      createSelect(),
+    const projectSelect = createSelect(
       projects.map(project => [
         project.id,
         project.name
       ])
     );
 
-    const titleInput = createInput("text");
+    const titleInput = createInput(
+      "text",
+      "Например, покупка мешков для мусора"
+    );
+
     titleInput.maxLength = 160;
-    titleInput.placeholder =
-      "Например, покупка мешков для мусора";
 
-    const amountInput = createInput("number");
-    amountInput.min = "0.01";
-    amountInput.step = "0.01";
-    amountInput.placeholder = "0.00";
-
-    const categorySelect = addOptions(
-      createSelect(),
-      [
-        ["materials", "Материалы"],
-        ["tools", "Инструменты"],
-        ["transport", "Транспорт"],
-        ["fuel", "Топливо"],
-        ["debris", "Вывоз мусора"],
-        ["food", "Питание и вода"],
-        ["other", "Другое"]
-      ]
+    const amountInput = createInput(
+      "number",
+      "0.00"
     );
 
-    const paymentSelect = addOptions(
-      createSelect(),
-      [
-        ["cash", "Наличные компании"],
-        ["bank", "Банковский счёт"],
-        ["personal", "Личные деньги сотрудника"]
-      ]
-    );
+    const categorySelect = createSelect([
+      ["materials", "Материалы"],
+      ["tools", "Инструменты"],
+      ["transport", "Транспорт"],
+      ["fuel", "Топливо"],
+      ["debris", "Вывоз мусора"],
+      ["food", "Питание и вода"],
+      ["other", "Другое"]
+    ]);
+
+    const paymentSelect = createSelect([
+      ["cash", "Наличные компании"],
+      ["bank", "Банковский счёт"],
+      ["personal", "Личные деньги сотрудника"]
+    ]);
 
     const descriptionInput =
       document.createElement("textarea");
@@ -854,30 +875,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     descriptionInput.placeholder =
       "Дополнительные подробности...";
 
-    const fields = [
+    addFields(modal, [
       ["Объект", projectSelect],
       ["На что потрачены деньги", titleInput],
       ["Сумма (PLN)", amountInput],
       ["Категория", categorySelect],
       ["Способ оплаты", paymentSelect],
       ["Описание", descriptionInput]
-    ];
-
-    fields.reverse().forEach(([label, element]) => {
-      modal.form.prepend(createField(label, element));
-    });
+    ]);
 
     const receiptNote = document.createElement("p");
+
     receiptNote.textContent =
-      "Фотография чека будет подключена после настройки хранилища чеков в Supabase.";
+      "Фотография чека будет подключена после настройки хранилища чеков.";
 
-    Object.assign(receiptNote.style, {
-      color: "#a4a7ad",
-      fontSize: "12px",
-      lineHeight: "1.5"
-    });
+    receiptNote.style.color = "#a4a7ad";
+    receiptNote.style.fontSize = "12px";
 
-    modal.errorText.before(receiptNote);
+    modal.fields.appendChild(receiptNote);
+
     modal.submit.textContent = "Отправить заявку";
 
     async function submitExpense() {
@@ -927,22 +943,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         console.error("Expense error:", error);
 
         modal.errorText.textContent =
-          error.message +
-          "\nПроверь запись сотрудника и доступ к объекту.";
+          error.message;
 
         setBusy(modal, false);
       }
     }
 
-    modal.submit.addEventListener(
-      "click",
-      submitExpense
-    );
-
-    modal.form.addEventListener("submit", event => {
-      event.preventDefault();
-      submitExpense();
-    });
+    attachSubmit(modal, submitExpense);
   }
 
   // =========================================
@@ -986,15 +993,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     return panel;
   }
 
-  function expenseButton(text, background) {
-    const button = makeButton(text);
-    button.style.background = background;
-    button.style.color = "#fff";
-    return button;
-  }
-
   // =========================================
-  // ЗАГРУЗКА ЗАЯВОК
+  // ЗАГРУЗКА ЗАЯВОК НА РАСХОДЫ
   // =========================================
 
   async function loadExpenseRequests() {
@@ -1010,8 +1010,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       "Ожидающие проверки, утверждённые и оплаченные расходы.";
     subtitle.style.color = "#a4a7ad";
 
-    const refresh = makeButton("Обновить заявки");
-    refresh.style.marginBottom = "12px";
+    const refresh = createButton("Обновить заявки");
 
     refresh.addEventListener("click", async () => {
       try {
@@ -1031,15 +1030,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (error) {
       const message = document.createElement("p");
+
       message.textContent =
         "Не удалось загрузить заявки: " +
         error.message;
+
       message.style.color = "#ff7373";
       panel.appendChild(message);
       return;
     }
 
-    if (!data || data.length === 0) {
+    if (!data || !data.length) {
       const empty = document.createElement("p");
       empty.textContent =
         "Заявок на расходы пока нет.";
@@ -1051,10 +1052,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       ? { data: accountsCache, error: null }
       : await client.rpc("get_finance_balances");
 
-    if (accountResult.error) {
-      console.error(accountResult.error);
-    }
-
     const accountData = accountResult.data || [];
 
     const statusLabels = {
@@ -1064,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       paid: "Оплачен"
     };
 
-    for (const expense of data) {
+    data.forEach(expense => {
       const card = document.createElement("article");
 
       Object.assign(card.style, {
@@ -1080,12 +1077,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       title.style.display = "block";
 
       const details = document.createElement("p");
+
       details.textContent =
         `${money(expense.amount)} · ` +
         `${expense.category || "Без категории"} · ` +
         `${statusLabels[expense.status] || expense.status}`;
 
       const info = document.createElement("small");
+
       info.textContent =
         `Дата: ${expense.expense_date ||
           expense.created_at?.slice(0, 10) || "—"} · ` +
@@ -1120,13 +1119,14 @@ document.addEventListener("DOMContentLoaded", async () => {
         marginTop: "12px"
       });
 
-      // УТВЕРЖДЕНИЕ И ОТКЛОНЕНИЕ
+      // УТВЕРЖДЕНИЕ
 
       if (expense.status === "pending") {
-        const approve = expenseButton(
-          "Утвердить",
-          "#22a06b"
+        const approve = createButton(
+          "Утвердить"
         );
+
+        approve.style.background = "#22a06b";
 
         approve.addEventListener("click", async () => {
           if (!window.confirm(
@@ -1162,10 +1162,11 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         });
 
-        const reject = expenseButton(
-          "Отклонить",
-          "#a83e3e"
+        const reject = createButton(
+          "Отклонить"
         );
+
+        reject.style.background = "#a83e3e";
 
         reject.addEventListener("click", async () => {
           const reason = window.prompt(
@@ -1203,13 +1204,13 @@ document.addEventListener("DOMContentLoaded", async () => {
         buttons.append(approve, reject);
       }
 
-      // ОПЛАТА УТВЕРЖДЁННОГО РАСХОДА
+      // ОПЛАТА
 
       if (
         expense.status === "approved" &&
         !expense.finance_transaction_id
       ) {
-        const pay = makeButton(
+        const pay = createButton(
           "Оплатить со счёта",
           true
         );
@@ -1247,12 +1248,12 @@ document.addEventListener("DOMContentLoaded", async () => {
             choice > compatibleAccounts.length
           ) return;
 
-          const selectedAccount =
+          const selected =
             compatibleAccounts[choice - 1];
 
           if (!window.confirm(
             `Списать ${money(expense.amount)} ` +
-            `со счёта ${selectedAccount.account_name}?`
+            `со счёта ${selected.account_name}?`
           )) return;
 
           pay.disabled = true;
@@ -1261,7 +1262,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             const { data: transactionId, error } =
               await client.rpc("pay_expense", {
                 p_expense_id: expense.id,
-                p_account_id: selectedAccount.account_id
+                p_account_id: selected.account_id
               });
 
             if (error) throw error;
@@ -1291,7 +1292,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
 
       panel.appendChild(card);
-    }
+    });
   }
 
   // =========================================
