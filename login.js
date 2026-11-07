@@ -56,20 +56,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (roleError) throw roleError;
 
-      const hasAccess = roleData?.some(
-        role =>
-          role.role_code === "owner" ||
-          role.role_code === "admin"
+      const roles = (roleData || []).map(
+        role => role.role_code
       );
 
-      if (!hasAccess) {
+      let destination = null;
+
+      // Владелец и администратор
+      if (
+        roles.includes("owner") ||
+        roles.includes("admin")
+      ) {
+        destination = "/admin.html";
+      }
+
+      // Бригадир
+      else if (roles.includes("foreman")) {
+        destination = "/foreman.html";
+      }
+
+      // Остальные роли пока не имеют кабинета
+      if (!destination) {
         await client.auth.signOut();
+
         throw new Error(
-          "У аккаунта нет доступа к административной панели."
+          "Для вашей роли кабинет пока недоступен."
         );
       }
 
-      window.location.href = "/admin.html";
+      window.location.replace(destination);
 
     } catch (error) {
       message.textContent =
