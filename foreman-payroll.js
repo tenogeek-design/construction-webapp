@@ -21,21 +21,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   async function loadBrigades() {
     const selected=select.value;
-    const {data:balances,error:balanceError}=await client.rpc('get_my_finance_balances');
-    if(balanceError)throw balanceError;
-    const {data:assignedProjects,error:projectsError}=await client.rpc('get_my_expense_projects');
-    if(projectsError)throw projectsError;
-    // Never use the unrestricted list of brigades to grant a foreman access.
-    brigadeIds=new Set([...(balances||[]),...(assignedProjects||[])].map(x=>x.brigade_id).filter(uuid));
+    // Server derives brigade membership from the authenticated foreman.
+    const myBrigades=await rpc('get_my_foreman_brigades');
+    const allowed=(Array.isArray(myBrigades)?myBrigades:[])
+      .filter(b=>uuid(b.brigade_id));
+    brigadeIds=new Set(allowed.map(b=>b.brigade_id));
     select.replaceChildren();
     select.appendChild(new Option('Выберите бригаду',''));
+    for(const b of allowed)
+      select.appendChild(new Option(b.brigade_name||'Бригада',b.brigade_id));
     if(!brigadeIds.size) {
       select.disabled=true;
-      msg('Нужна привязка бригадира к бригаде: get_my_finance_balances / get_my_expense_projects пока не возвращают brigade_id. Выплаты отключены.');
+      msg('За вашим аккаунтом не закреплена активная бригада. Обратитесь к владельцу.');
       return false;
     }
-    const all=await get('brigades','id,name,status');
-    for(const b of all.filter(b=>brigadeIds.has(b.id)&&b.status==='active')) select.appendChild(new Option(b.name,b.id));
     select.disabled=select.options.length===1;
     if(brigadeIds.has(selected))select.value=selected;
     else if(select.options.length===2)select.selectedIndex=1;
