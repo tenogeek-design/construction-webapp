@@ -10,6 +10,15 @@
   let employeeOptions = [], projectOptions = [], workRows = [], paymentRows = [];
   let paymentAllocations = [];
   let currentUserId = null;
+  const { data: cancellations, error: cErr } = await client
+  .from('payroll_accrual_cancellations')
+  .select('accrual_id,reason,cancelled_at');
+
+if (cErr) throw cErr;
+
+const cancellationMap = new Map(
+  (cancellations || []).map(c => [c.accrual_id, c])
+);
   let brigadeOptions = [];
   let financeAccountOptions = [];
   // Confirmation is always performed server-side by the atomic RPC.
