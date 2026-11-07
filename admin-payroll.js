@@ -10,6 +10,9 @@
   let employeeOptions = [], projectOptions = [], workRows = [], paymentRows = [];
   let currentUserId = null;
   let brigadeOptions = [];
+  let financeAccountOptions = [];
+  // Enable only after verifying the server function body and an isolated test.
+  const PAYOUTS_ENABLED = false;
   const moneyInput = v => Number(v || 0).toLocaleString('pl-PL', {minimumFractionDigits:2,maximumFractionDigits:2});
 
   async function load() {
