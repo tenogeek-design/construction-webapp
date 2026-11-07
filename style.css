@@ -54,3 +54,190 @@ button,select,input,textarea{font:inherit}button{cursor:pointer}
 .toast{position:fixed;left:50%;bottom:25px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#f5f5f4;color:#202226;border-radius:8px;padding:11px 16px;font-size:12px;font-weight:700;transition:.25s;z-index:10;max-width:90%;text-align:center}.toast.show{opacity:1;transform:translate(-50%,0)}
 @media(max-width:760px){.app-shell{padding:0 18px}.topbar{height:70px}.location{display:none}.hero{padding:44px 0 28px}.home-menu{margin-bottom:35px}.calculator-layout{grid-template-columns:1fr}.summary-panel{order:-1}.footer{flex-direction:column;gap:18px}.footer-links{display:flex;flex-wrap:wrap;gap:14px}.page{padding-top:30px}.address-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:480px){.work-panel,.summary-panel,.form-panel{padding:15px}.work-item{grid-template-columns:minmax(0,1fr) auto}.mode-grid{grid-template-columns:1fr}.mode-wide{grid-column:auto}.hero h1{letter-spacing:-2px}.step-progress{gap:5px}.progress-step{grid-template-columns:27px auto;gap:5px;font-size:9px}.progress-step span{width:27px;height:27px}.field-grid{grid-template-columns:1fr}.address-grid{grid-template-columns:1fr 1fr}.footer{font-size:10px}}
+
+/* ========================================
+   CONSTRUCTION GROUP — NEW LANDING DESIGN
+   ======================================== */
+
+:root {
+  --bg: #1c1b1a;
+  --panel: #292624;
+  --panel2: #352e29;
+  --line: #554236;
+  --orange: #ed862f;
+  --text: #f8f6f3;
+  --muted: #b5aaa1;
+}
+
+body {
+  background: #1c1b1a;
+}
+
+.topbar {
+  height: 90px;
+  border-bottom: 1px solid #574337;
+}
+
+.brand-mark {
+  background: linear-gradient(145deg, #ff9c44, #a75d2c);
+  color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 0 24px #ed862f22;
+}
+
+.brand-name {
+  letter-spacing: 2px;
+}
+
+#homePage {
+  position: relative;
+}
+
+#homePage .hero {
+  position: relative;
+  max-width: none;
+  min-height: 400px;
+  padding: 90px 30px 75px;
+  margin-top: 24px;
+  border-radius: 22px;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      90deg,
+      rgba(17,17,17,.94),
+      rgba(22,19,17,.78) 55%,
+      rgba(22,19,17,.38)
+    ),
+    url("https://images.unsplash.com/photo-1504307651254-35680f356dfd?auto=format&fit=crop&w=1600&q=85")
+    center/cover no-repeat;
+  border: 1px solid #65442f;
+  text-align: left;
+}
+
+#homePage .hero h1 {
+  max-width: 780px;
+  font-size: clamp(42px, 7vw, 80px);
+  line-height: 1.04;
+  letter-spacing: -2px;
+}
+
+#homePage .hero h1 span {
+  color: #ff923d;
+}
+
+#homePage .hero p {
+  margin-left: 0;
+  color: #ddd1c8;
+}
+
+#homePage .hero .eyebrow {
+  color: #ffab67;
+}
+
+#homePage .home-menu {
+  max-width: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0,1fr));
+  gap: 16px;
+  margin: 22px 0 50px;
+}
+
+#homePage .home-card {
+  min-height: 170px;
+  border-radius: 17px;
+  padding: 25px;
+  border: 1px solid #8a5838;
+  background:
+    linear-gradient(130deg,#302923,#211f1e);
+  grid-template-columns: 36px 1fr 22px;
+  transition: transform .25s, border-color .25s,
+              box-shadow .25s;
+}
+
+#homePage .home-card:hover {
+  transform: translateY(-4px);
+  border-color: #ff9c44;
+  box-shadow: 0 12px 30px #0005;
+}
+
+#homePage .home-card strong {
+  font-size: 22px;
+}
+
+#homePage .home-card small {
+  font-size: 12px;
+}
+
+#homePage .home-card.featured {
+  grid-column: 1 / -1;
+  min-height: 125px;
+  background: linear-gradient(
+    110deg,#f38a31,#ad551d
+  );
+  border-color: #ffa55a;
+}
+
+#homePage .home-card.featured strong {
+  font-size: 25px;
+  color: #fff;
+}
+
+#homePage .home-card.featured small,
+#homePage .home-card.featured .card-index,
+#homePage .home-card.featured .card-arrow {
+  color: #fff3e9;
+}
+
+@media(max-width:760px) {
+  .topbar {
+    height: 72px;
+  }
+
+  #homePage .hero {
+    min-height: 380px;
+    padding: 65px 22px 50px;
+    margin-top: 8px;
+  }
+
+  #homePage .home-card {
+    min-height: 145px;
+    padding: 18px;
+  }
+
+  #homePage .home-card strong {
+    font-size: 17px;
+  }
+}
+
+@media(max-width:480px) {
+  #homePage .hero {
+    min-height: 360px;
+    padding: 60px 18px 42px;
+  }
+
+  #homePage .hero h1 {
+    font-size: 43px;
+  }
+
+  #homePage .home-menu {
+    gap: 10px;
+  }
+
+  #homePage .home-card {
+    min-height: 135px;
+    padding: 12px;
+    grid-template-columns: 1fr 18px;
+  }
+
+  #homePage .home-card .card-index {
+    grid-column: 1 / -1;
+  }
+
+  #homePage .home-card strong {
+    font-size: 16px;
+  }
+
+  #homePage .home-card.featured {
+    min-height: 110px;
+  }
+}
