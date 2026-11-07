@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -8,876 +9,1438 @@
   <link rel="stylesheet" href="admin.css">
 </head>
 <body>
-  <div class="admin-layout">
+<div class="admin-layout">
 
-    <aside class="sidebar">
-      <a href="admin.html" class="brand">
-        <span class="brand-icon">C</span>
-        <span>
-          <strong>CONSTRUCTION</strong>
-          <small>GROUP ADMIN</small>
-        </span>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <a href="admin.html" class="brand">
+      <span class="brand-icon">C</span>
+      <span>
+        <strong>CONSTRUCTION</strong>
+        <small>GROUP ADMIN</small>
+      </span>
+    </a>
+
+    <div class="sidebar-label">ГЛАВНОЕ</div>
+    <nav class="navigation">
+      <a href="#dashboard" class="nav-item active">
+        <span>▦</span> Dashboard
       </a>
+      <a href="#requests" class="nav-item">
+        <span>▤</span> Заявки
+        <span class="nav-count">0</span>
+      </a>
+      <a href="#employees" class="nav-item">
+        <span>♙</span> Сотрудники
+      </a>
+      <a href="#projects" class="nav-item">
+        <span>▧</span> Объекты
+      </a>
+      <a href="#tasks" class="nav-item">
+        <span>☑</span> Задачи
+      </a>
+      <a href="#time" class="nav-item">
+        <span>◷</span> Учёт времени
+      </a>
+    </nav>
 
-      <div class="sidebar-label">ГЛАВНОЕ</div>
+    <div class="sidebar-label">УПРАВЛЕНИЕ</div>
+    <nav class="navigation">
+      <a href="#payroll" class="nav-item">
+        <span>₴</span> Зарплаты
+      </a>
+      <a href="#finance" class="nav-item">
+        <span>▣</span> Финансы
+      </a>
+      <a href="#services" class="nav-item">
+        <span>◇</span> Услуги и цены
+      </a>
+      <a href="#clients" class="nav-item">
+        <span>♧</span> Клиенты
+      </a>
+      <a href="#documents" class="nav-item">
+        <span>▤</span> Документы
+      </a>
+    </nav>
 
-      <nav class="navigation">
-        <a href="#dashboard" class="nav-item active">
-          <span>▦</span> Dashboard
-        </a>
-        <a href="#requests" class="nav-item">
-          <span>▤</span> Заявки
-          <span class="nav-count">0</span>
-        </a>
-        <a href="#employees" class="nav-item">
-          <span>♙</span> Сотрудники
-        </a>
-        <a href="#projects" class="nav-item">
-          <span>▧</span> Объекты
-        </a>
-        <a href="#tasks" class="nav-item">
-          <span>☑</span> Задачи
-        </a>
-        <a href="#time" class="nav-item">
-          <span>◷</span> Учёт времени
-        </a>
-      </nav>
+    <div class="sidebar-label">СИСТЕМА</div>
+    <nav class="navigation">
+      <a href="#notifications" class="nav-item">
+        <span>♢</span> Уведомления
+      </a>
+      <a href="#analytics" class="nav-item">
+        <span>▥</span> Аналитика
+      </a>
+      <a href="#settings" class="nav-item">
+        <span>⚙</span> Настройки
+      </a>
+    </nav>
 
-      <div class="sidebar-label">УПРАВЛЕНИЕ</div>
-
-      <nav class="navigation">
-        <a href="#payroll" class="nav-item">
-          <span>₴</span> Зарплаты
-        </a>
-        <a href="#finance" class="nav-item">
-          <span>▣</span> Финансы
-        </a>
-        <a href="#services" class="nav-item">
-          <span>◇</span> Услуги и цены
-        </a>
-        <a href="#clients" class="nav-item">
-          <span>♧</span> Клиенты
-        </a>
-        <a href="#documents" class="nav-item">
-          <span>▤</span> Документы
-        </a>
-      </nav>
-
-      <div class="sidebar-label">СИСТЕМА</div>
-
-      <nav class="navigation">
-        <a href="#notifications" class="nav-item">
-          <span>♢</span> Уведомления
-        </a>
-        <a href="#analytics" class="nav-item">
-          <span>▥</span> Аналитика
-        </a>
-        <a href="#settings" class="nav-item">
-          <span>⚙</span> Настройки
-        </a>
-      </nav>
-
-      <div class="sidebar-bottom">
-        <div class="system-status">
-          <span class="status-dot"></span>
-          <span>Система готова</span>
-        </div>
-        <small>CONSTRUCTION GROUP © 2026</small>
+    <div class="sidebar-bottom">
+      <div class="system-status">
+        <span class="status-dot"></span>
+        <span>Система готова</span>
       </div>
-    </aside>
+      <small>CONSTRUCTION GROUP © 2026</small>
+    </div>
+  </aside>
 
-    <main class="main-content">
+  <!-- MAIN CONTENT -->
+  <main class="main-content">
 
-      <header class="topbar">
+    <header class="topbar">
+      <div>
+        <div class="breadcrumb">CONSTRUCTION / ADMIN</div>
+        <h1 id="pageTitle">Панель управления</h1>
+      </div>
+
+      <div class="topbar-actions">
+        <button class="icon-button" aria-label="Уведомления">
+          ♢
+        </button>
+        <div class="profile">
+          <div class="avatar">A</div>
+          <div>
+            <strong>Администратор</strong>
+            <small>Administrator</small>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ===================================== -->
+    <!-- DASHBOARD -->
+    <!-- ===================================== -->
+
+    <section id="dashboard" class="dashboard-section">
+
+      <div class="welcome">
         <div>
-          <div class="breadcrumb">CONSTRUCTION / ADMIN</div>
-          <h1 id="pageTitle">Панель управления</h1>
+          <span class="eyebrow">ОБЗОР КОМПАНИИ</span>
+          <h2>Добро пожаловать в CONSTRUCTION</h2>
+          <p>Управление компанией в одном месте.</p>
         </div>
+        <div class="date-label" id="currentDate"></div>
+      </div>
 
-        <div class="topbar-actions">
-          <button class="icon-button" aria-label="Уведомления">♢</button>
-          <div class="profile">
-            <div class="avatar">A</div>
-            <div>
-              <strong>Администратор</strong>
-              <small>Administrator</small>
-            </div>
+      <div class="stats-grid">
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Новые заявки</span>
+            <span class="stat-icon orange">▤</span>
           </div>
-        </div>
-      </header>
+          <strong id="dashboardNewRequests">0</strong>
+          <small>Ожидают обработки</small>
+        </article>
 
-      <!-- DASHBOARD -->
-
-      <section id="dashboard" class="dashboard-section">
-
-        <div class="welcome">
-          <div>
-            <span class="eyebrow">ОБЗОР КОМПАНИИ</span>
-            <h2>Добро пожаловать в CONSTRUCTION</h2>
-            <p>Управление компанией в одном месте.</p>
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Активные объекты</span>
+            <span class="stat-icon blue">▧</span>
           </div>
-          <div class="date-label" id="currentDate"></div>
-        </div>
+          <strong id="dashboardActiveProjects">—</strong>
+          <small>В работе</small>
+        </article>
 
-        <div class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Сотрудники</span>
+            <span class="stat-icon green">♙</span>
+          </div>
+          <strong id="dashboardEmployees">—</strong>
+          <small>В базе компании</small>
+        </article>
 
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Новые заявки</span>
-              <span class="stat-icon orange">▤</span>
-            </div>
-            <strong id="dashboardNewRequests">0</strong>
-            <small>Ожидают обработки</small>
-          </article>
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Задачи</span>
+            <span class="stat-icon purple">☑</span>
+          </div>
+          <strong id="dashboardActiveTasks">—</strong>
+          <small>Активные задачи</small>
+        </article>
 
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Активные объекты</span>
-              <span class="stat-icon blue">▧</span>
-            </div>
-            <strong id="dashboardActiveProjects">—</strong>
-            <small>В работе</small>
-          </article>
+      </div>
 
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Сотрудники</span>
-              <span class="stat-icon green">♙</span>
-            </div>
-            <strong id="dashboardEmployees">—</strong>
-            <small>В базе компании</small>
-          </article>
+      <div style="display:flex;align-items:center;gap:12px;margin:0 0 16px;flex-wrap:wrap;">
+        <button type="button" id="dashboardStatsRefresh">
+          ↻ Обновить статистику
+        </button>
+        <span id="dashboardStatsStatus"
+              role="status"
+              style="color:#a4a7ad;font-size:12px;">
+          Загрузка статистики...
+        </span>
+      </div>
 
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Задачи</span>
-              <span class="stat-icon purple">☑</span>
-            </div>
-            <strong id="dashboardActiveTasks">—</strong>
-            <small>Активные задачи</small>
-          </article>
+      <div class="dashboard-grid">
 
-        </div>
-
-        <div style="display:flex;align-items:center;gap:12px;margin:0 0 16px;flex-wrap:wrap;">
-          <button type="button" id="dashboardStatsRefresh">↻ Обновить статистику</button>
-          <span id="dashboardStatsStatus" role="status" style="color:#a4a7ad;font-size:12px;">Загрузка статистики...</span>
-        </div>
-
-        <div class="dashboard-grid">
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Последние заявки</h3>
-                <p>Новые обращения клиентов</p>
-              </div>
-              <a href="#requests" class="text-link">Все заявки →</a>
-            </div>
-
-            <div class="empty-state">
-              <div class="empty-icon">▤</div>
-              <strong>Загрузка заявок...</strong>
-              <p>Получаем данные из базы.</p>
-            </div>
-          </section>
-
-          <section class="panel">
-            <div class="panel-header">
-              <div>
-                <h3>Активные объекты</h3>
-                <p>Текущие строительные проекты</p>
-              </div>
-              <a href="#projects" class="text-link">Все объекты →</a>
-            </div>
-
-            <div class="empty-state">
-              <div class="empty-icon">▧</div>
-              <strong>Нет активных объектов</strong>
-              <p>Созданные объекты появятся здесь.</p>
-            </div>
-          </section>
-
-        </div>
-
-        <section class="panel activity-panel">
+        <section class="panel">
           <div class="panel-header">
             <div>
-              <h3>Последние действия</h3>
-              <p>История активности системы</p>
+              <h3>Последние заявки</h3>
+              <p>Новые обращения клиентов</p>
             </div>
-            <span class="live-indicator">
-              <span class="status-dot"></span> DEMO
-            </span>
+            <a href="#requests" class="text-link">
+              Все заявки →
+            </a>
           </div>
 
-          <div class="empty-state compact">
-            <p>История действий появится после подключения базы данных.</p>
+          <div class="empty-state">
+            <div class="empty-icon">▤</div>
+            <strong>Загрузка заявок...</strong>
+            <p>Получаем данные из базы.</p>
           </div>
         </section>
 
-        <footer class="footer">
-          <span>CONSTRUCTION GROUP</span>
-          <span>Admin Panel · Version 1.1</span>
-        </footer>
-
-      </section>
-
-      <!-- REQUESTS -->
-
-      <section id="requests" class="dashboard-section" style="display:none;">
-
-        <div class="welcome">
-          <div>
-            <span class="eyebrow">УПРАВЛЕНИЕ ОБРАЩЕНИЯМИ</span>
-            <h2>Заявки клиентов</h2>
-            <p>Все обращения клиентов CONSTRUCTION GROUP.</p>
-          </div>
-        </div>
-
-        <div class="stats-grid">
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Всего заявок</span>
-              <span class="stat-icon orange">▤</span>
-            </div>
-            <strong id="requestsTotal">0</strong>
-            <small>Загружено из базы</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Новые</span>
-              <span class="stat-icon blue">◷</span>
-            </div>
-            <strong id="requestsNew">0</strong>
-            <small>Ожидают обработки</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Принятые</span>
-              <span class="stat-icon green">✓</span>
-            </div>
-            <strong id="requestsAccepted">0</strong>
-            <small>Подтверждённые заявки</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Отклонённые</span>
-              <span class="stat-icon purple">×</span>
-            </div>
-            <strong id="requestsRejected">0</strong>
-            <small>Отклонённые обращения</small>
-          </article>
-
-        </div>
-
         <section class="panel">
-
           <div class="panel-header">
             <div>
-              <h3>Все заявки</h3>
-              <p>Поиск и фильтрация обращений</p>
+              <h3>Активные объекты</h3>
+              <p>Текущие строительные проекты</p>
             </div>
-
-            <button
-              type="button"
-              id="refreshRequests"
-              class="text-link"
-              style="cursor:pointer;background:none;border:none;"
-            >
-              ↻ Обновить
-            </button>
+            <a href="#projects" class="text-link">
+              Все объекты →
+            </a>
           </div>
 
-          <div style="
-            display:flex;
-            gap:12px;
-            flex-wrap:wrap;
-            padding:16px;
-          ">
+          <div class="empty-state">
+            <div class="empty-icon">▧</div>
+            <strong>Нет активных объектов</strong>
+            <p>Созданные объекты появятся здесь.</p>
+          </div>
+        </section>
 
-            <input
-              id="requestSearch"
-              type="search"
-              placeholder="Поиск: номер, имя или телефон"
-              style="
-                flex:1;
-                min-width:220px;
-                padding:12px;
-                border-radius:6px;
-              "
-            >
+      </div>
 
-            <select
-              id="requestStatusFilter"
-              style="
-                min-width:180px;
-                padding:12px;
-                border-radius:6px;
-              "
-            >
-              <option value="">Все статусы</option>
-              <option value="NOWA">Новая</option>
-              <option value="KONTAKT">Контакт</option>
-              <option value="USTALENIA">Согласование</option>
-              <option value="ZAAKCEPTOWANA">Принята</option>
-              <option value="ODRZUCONA">Отклонена</option>
+      <section class="panel activity-panel">
+        <div class="panel-header">
+          <div>
+            <h3>Последние действия</h3>
+            <p>История активности системы</p>
+          </div>
+          <span class="live-indicator">
+            <span class="status-dot"></span> DEMO
+          </span>
+        </div>
+
+        <div class="empty-state compact">
+          <p>
+            История действий появится после подключения базы данных.
+          </p>
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Admin Panel · Version 1.1</span>
+      </footer>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- REQUESTS -->
+    <!-- ===================================== -->
+
+    <section id="requests"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">УПРАВЛЕНИЕ ОБРАЩЕНИЯМИ</span>
+          <h2>Заявки клиентов</h2>
+          <p>Все обращения клиентов CONSTRUCTION GROUP.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Всего заявок</span>
+            <span class="stat-icon orange">▤</span>
+          </div>
+          <strong id="requestsTotal">0</strong>
+          <small>Загружено из базы</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Новые</span>
+            <span class="stat-icon blue">◷</span>
+          </div>
+          <strong id="requestsNew">0</strong>
+          <small>Ожидают обработки</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Принятые</span>
+            <span class="stat-icon green">✓</span>
+          </div>
+          <strong id="requestsAccepted">0</strong>
+          <small>Подтверждённые заявки</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Отклонённые</span>
+            <span class="stat-icon purple">×</span>
+          </div>
+          <strong id="requestsRejected">0</strong>
+          <small>Отклонённые обращения</small>
+        </article>
+
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Все заявки</h3>
+            <p>Поиск и фильтрация обращений</p>
+          </div>
+          <button type="button"
+                  id="refreshRequests"
+                  class="text-link"
+                  style="cursor:pointer;background:none;border:none;">
+            ↻ Обновить
+          </button>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
+          <input id="requestSearch"
+                 type="search"
+                 placeholder="Поиск: номер, имя или телефон"
+                 style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
+
+          <select id="requestStatusFilter"
+                  style="min-width:180px;padding:12px;border-radius:6px;">
+            <option value="">Все статусы</option>
+            <option value="NOWA">Новая</option>
+            <option value="KONTAKT">Контакт</option>
+            <option value="USTALENIA">Согласование</option>
+            <option value="ZAAKCEPTOWANA">Принята</option>
+            <option value="ODRZUCONA">Отклонена</option>
+          </select>
+        </div>
+
+        <div id="requestsLoading" style="padding:20px;">
+          Загружаем заявки...
+        </div>
+
+        <div id="requestsTableContainer"
+             style="overflow-x:auto;"></div>
+
+        <div id="requestsEmpty"
+             style="display:none;padding:20px;">
+          Заявки не найдены.
+        </div>
+      </section>
+
+      <section id="requestDetails"
+               class="panel"
+               style="display:none;margin-top:20px;">
+
+        <div class="panel-header">
+          <div>
+            <h3 id="requestDetailsTitle">Карточка заявки</h3>
+            <p>Подробная информация об обращении</p>
+          </div>
+
+          <button type="button"
+                  id="closeRequestDetails"
+                  class="text-link"
+                  style="cursor:pointer;background:none;border:none;">
+            Закрыть ✕
+          </button>
+        </div>
+
+        <div id="requestDetailsContent"
+             style="padding:20px;"></div>
+      </section>
+
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Requests Management · Version 1.1</span>
+      </footer>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- EMPLOYEES AND BRIGADES -->
+    <!-- ===================================== -->
+
+    <section id="employees"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">УПРАВЛЕНИЕ ПЕРСОНАЛОМ</span>
+          <h2>Сотрудники и бригады</h2>
+          <p>Работники, ставки, состав бригад и назначения.</p>
+        </div>
+
+        <button type="button" id="employeeNewBtn">
+          + Новый сотрудник
+        </button>
+      </div>
+
+      <div class="stats-grid">
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Всего сотрудников</span>
+            <span class="stat-icon orange">♙</span>
+          </div>
+          <strong id="employeesTotal">—</strong>
+          <small>В базе компании</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Активные</span>
+            <span class="stat-icon green">✓</span>
+          </div>
+          <strong id="employeesActive">—</strong>
+          <small>Работают в компании</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Бригады</span>
+            <span class="stat-icon blue">▧</span>
+          </div>
+          <strong id="employeesBrigades">—</strong>
+          <small>Всего бригад</small>
+        </article>
+      </div>
+
+      <!-- EMPLOYEES TABLE -->
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Список сотрудников</h3>
+            <p>Управление работниками CONSTRUCTION GROUP</p>
+          </div>
+          <button type="button"
+                  id="employeesRefreshBtn"
+                  class="text-link">
+            ↻ Обновить
+          </button>
+        </div>
+
+        <div style="padding:16px;">
+          <input id="employeesSearch"
+                 type="search"
+                 placeholder="Поиск по имени, телефону или должности"
+                 style="width:100%;padding:12px;border-radius:6px;">
+        </div>
+
+        <p id="employeesMessage" style="padding:16px;">
+          Ожидание загрузки сотрудников...
+        </p>
+
+        <div id="employeesTable"
+             style="overflow-x:auto;padding:16px;"></div>
+      </section>
+
+      <!-- EMPLOYEE EDITOR -->
+
+      <section class="panel"
+               id="employeeEditorPanel"
+               style="display:none;margin-top:20px;">
+
+        <div class="panel-header">
+          <div>
+            <h3 id="employeeEditorTitle">Новый сотрудник</h3>
+            <p>Личная карточка работника</p>
+          </div>
+          <button type="button" id="employeeEditorCloseBtn">
+            Закрыть ✕
+          </button>
+        </div>
+
+        <form id="employeeForm"
+              style="padding:20px;display:grid;gap:14px;">
+
+          <input type="hidden" id="employeeId">
+
+          <label>
+            Имя и фамилия *
+            <input id="employeeName"
+                   required
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>
+            Телефон
+            <input id="employeePhone"
+                   type="tel"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>
+            Специальность / должность
+            <input id="employeePosition"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>
+            Дата начала работы
+            <input id="employeeHiredAt"
+                   type="date"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>
+            Статус
+            <select id="employeeStatus"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="active">Активный</option>
+              <option value="inactive">Неактивный</option>
             </select>
+          </label>
 
-          </div>
+          <label>
+            Внутренние примечания
+            <textarea id="employeeNotes"
+                      rows="3"
+                      style="display:block;width:100%;padding:10px;"></textarea>
+          </label>
 
-          <div
-            id="requestsLoading"
-            style="padding:20px;"
-          >
-            Загружаем заявки...
-          </div>
+          <button type="submit" id="employeeSaveBtn">
+            Сохранить сотрудника
+          </button>
 
-          <div
-            id="requestsTableContainer"
-            style="overflow-x:auto;"
-          ></div>
-
-          <div
-            id="requestsEmpty"
-            style="display:none;padding:20px;"
-          >
-            Заявки не найдены.
-          </div>
-
-        </section>
-
-        <!-- REQUEST DETAILS -->
-
-        <section
-          id="requestDetails"
-          class="panel"
-          style="display:none;margin-top:20px;"
-        >
-
-          <div class="panel-header">
-            <div>
-              <h3 id="requestDetailsTitle">Карточка заявки</h3>
-              <p>Подробная информация об обращении</p>
-            </div>
-
-            <button
-              type="button"
-              id="closeRequestDetails"
-              class="text-link"
-              style="cursor:pointer;background:none;border:none;"
-            >
-              Закрыть ✕
-            </button>
-          </div>
-
-          <div
-            id="requestDetailsContent"
-            style="padding:20px;"
-          ></div>
-
-        </section>
-
-        <footer class="footer">
-          <span>CONSTRUCTION GROUP</span>
-          <span>Requests Management · Version 1.1</span>
-        </footer>
-
+          <p id="employeeFormMessage" role="status"></p>
+        </form>
       </section>
-<!-- EMPLOYEES -->
-<section id="employees" class="dashboard-section" style="display:none;">
 
-  <div class="welcome">
-    <div>
-      <span class="eyebrow">УПРАВЛЕНИЕ ПЕРСОНАЛОМ</span>
-      <h2>Сотрудники и бригады</h2>
-      <p>Работники, ставки, состав бригад и назначения.</p>
-    </div>
-    <button type="button" id="employeeNewBtn">
-      + Новый сотрудник
-    </button>
-  </div>
+      <!-- BRIGADES TABLE -->
 
-  <div class="stats-grid">
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Всего сотрудников</span>
-        <span class="stat-icon orange">♙</span>
-      </div>
-      <strong id="employeesTotal">—</strong>
-      <small>В базе компании</small>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Активные</span>
-        <span class="stat-icon green">✓</span>
-      </div>
-      <strong id="employeesActive">—</strong>
-      <small>Работают в компании</small>
-    </article>
-
-    <article class="stat-card">
-      <div class="stat-heading">
-        <span>Бригады</span>
-        <span class="stat-icon blue">▧</span>
-      </div>
-      <strong id="employeesBrigades">—</strong>
-      <small>Всего бригад</small>
-    </article>
-  </div>
-
-  <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>Список сотрудников</h3>
-        <p>Управление работниками CONSTRUCTION GROUP</p>
-      </div>
-      <button type="button" id="employeesRefreshBtn" class="text-link">
-        ↻ Обновить
-      </button>
-    </div>
-
-    <div style="padding:16px;">
-      <input
-        id="employeesSearch"
-        type="search"
-        placeholder="Поиск по имени, телефону или должности"
-        style="width:100%;padding:12px;border-radius:6px;"
-      >
-    </div>
-
-    <p id="employeesMessage" style="padding:16px;">
-      Ожидание загрузки сотрудников...
-    </p>
-
-    <div id="employeesTable" style="overflow-x:auto;padding:16px;"></div>
-  </section>
-
-  <section class="panel" id="employeeEditorPanel"
-           style="display:none;margin-top:20px;">
-
-    <div class="panel-header">
-      <div>
-        <h3 id="employeeEditorTitle">Новый сотрудник</h3>
-        <p>Личная карточка работника</p>
-      </div>
-      <button type="button" id="employeeEditorCloseBtn">
-        Закрыть ✕
-      </button>
-    </div>
-
-    <form id="employeeForm" style="padding:20px;display:grid;gap:14px;">
-
-      <input type="hidden" id="employeeId">
-
-      <label>Имя и фамилия *
-        <input id="employeeName" required
-               style="display:block;width:100%;padding:10px;">
-      </label>
-
-      <label>Телефон
-        <input id="employeePhone" type="tel"
-               style="display:block;width:100%;padding:10px;">
-      </label>
-
-      <label>Специальность / должность
-        <input id="employeePosition"
-               style="display:block;width:100%;padding:10px;">
-      </label>
-
-      <label>Дата начала работы
-        <input id="employeeHiredAt" type="date"
-               style="display:block;width:100%;padding:10px;">
-      </label>
-
-      <label>Статус
-        <select id="employeeStatus"
-                style="display:block;width:100%;padding:10px;">
-          <option value="active">Активный</option>
-          <option value="inactive">Неактивный</option>
-        </select>
-      </label>
-
-      <label>Внутренние примечания
-        <textarea id="employeeNotes" rows="3"
-                  style="display:block;width:100%;padding:10px;"></textarea>
-      </label>
-
-      <button type="submit" id="employeeSaveBtn">
-        Сохранить сотрудника
-      </button>
-
-      <p id="employeeFormMessage" role="status"></p>
-
-    </form>
-  </section>
-
-  <section class="panel" style="margin-top:20px;">
-    <div class="panel-header">
-      <div>
-        <h3>Бригады компании</h3>
-        <p>Бригадиры и состав команд</p>
-      </div>
-      <button type="button" id="brigadeNewBtn">
-        + Новая бригада
-      </button>
-    </div>
-
-    <p id="brigadesMessage" style="padding:16px;">
-      Ожидание загрузки бригад...
-    </p>
-
-    <div id="brigadesTable" style="overflow-x:auto;padding:16px;"></div>
-  </section>
-
-  <footer class="footer">
-    <span>CONSTRUCTION GROUP</span>
-    <span>Employees · Version 1.0</span>
-  </footer>
-
-</section>
-      <!-- PROJECTS -->
-      <section id="projects" class="dashboard-section" style="display:none;">
-        <div class="welcome">
+      <section class="panel" style="margin-top:20px;">
+        <div class="panel-header">
           <div>
-            <span class="eyebrow">УПРАВЛЕНИЕ ОБЪЕКТАМИ</span>
-            <h2>Объекты компании</h2>
-            <p>Адреса, сроки, бригады, ответственные и этапы работ.</p>
+            <h3>Бригады компании</h3>
+            <p>Бригадиры и состав команд</p>
           </div>
-          <button type="button" id="projectNewBtn">+ Новый объект</button>
+          <button type="button" id="brigadeNewBtn">
+            + Новая бригада
+          </button>
         </div>
-        <div class="stats-grid">
-          <article class="stat-card"><div class="stat-heading"><span>Всего объектов</span><span class="stat-icon orange">▧</span></div><strong id="projectsTotal">—</strong><small>В базе компании</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>В работе</span><span class="stat-icon green">✓</span></div><strong id="projectsActive">—</strong><small>Активные объекты</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>Запланировано</span><span class="stat-icon blue">◷</span></div><strong id="projectsPlanned">—</strong><small>Ожидают начала</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>Завершено</span><span class="stat-icon purple">▣</span></div><strong id="projectsCompleted">—</strong><small>Закрытые объекты</small></article>
+
+        <p id="brigadesMessage" style="padding:16px;">
+          Ожидание загрузки бригад...
+        </p>
+
+        <div id="brigadesTable"
+             style="overflow-x:auto;padding:16px;"></div>
+      </section>
+
+      <!--
+        Brigade management panel is created dynamically
+        by admin-brigades.js.
+      -->
+
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Employees & Brigades · Version 1.1</span>
+      </footer>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- PROJECTS -->
+    <!-- ===================================== -->
+
+    <section id="projects"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">УПРАВЛЕНИЕ ОБЪЕКТАМИ</span>
+          <h2>Объекты компании</h2>
+          <p>Адреса, сроки, бригады, ответственные и этапы работ.</p>
         </div>
-        <section class="panel">
-          <div class="panel-header"><div><h3>Все объекты</h3><p>Поиск и управление строительными объектами</p></div><button type="button" id="projectsRefreshBtn" class="text-link">↻ Обновить</button></div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
-            <input id="projectsSearch" type="search" placeholder="Название, город, улица" aria-label="Поиск объектов" style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
-            <select id="projectsStatusFilter" aria-label="Фильтр статуса объекта" style="min-width:180px;padding:12px;border-radius:6px;">
-              <option value="">Все статусы</option>
+        <button type="button" id="projectNewBtn">
+          + Новый объект
+        </button>
+      </div>
+
+      <div class="stats-grid">
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Всего объектов</span>
+            <span class="stat-icon orange">▧</span>
+          </div>
+          <strong id="projectsTotal">—</strong>
+          <small>В базе компании</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>В работе</span>
+            <span class="stat-icon green">✓</span>
+          </div>
+          <strong id="projectsActive">—</strong>
+          <small>Активные объекты</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Запланировано</span>
+            <span class="stat-icon blue">◷</span>
+          </div>
+          <strong id="projectsPlanned">—</strong>
+          <small>Ожидают начала</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Завершено</span>
+            <span class="stat-icon purple">▣</span>
+          </div>
+          <strong id="projectsCompleted">—</strong>
+          <small>Закрытые объекты</small>
+        </article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Все объекты</h3>
+            <p>Поиск и управление строительными объектами</p>
+          </div>
+          <button type="button"
+                  id="projectsRefreshBtn"
+                  class="text-link">
+            ↻ Обновить
+          </button>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
+          <input id="projectsSearch"
+                 type="search"
+                 placeholder="Название, город, улица"
+                 aria-label="Поиск объектов"
+                 style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
+
+          <select id="projectsStatusFilter"
+                  aria-label="Фильтр статуса объекта"
+                  style="min-width:180px;padding:12px;border-radius:6px;">
+            <option value="">Все статусы</option>
+            <option value="planned">Запланирован</option>
+            <option value="active">В работе</option>
+            <option value="paused">Приостановлен</option>
+            <option value="completed">Завершён</option>
+            <option value="cancelled">Отменён</option>
+          </select>
+        </div>
+
+        <p id="projectsMessage"
+           role="status"
+           style="padding:12px 20px;color:#a4a7ad;">
+          Откройте раздел, чтобы загрузить объекты.
+        </p>
+
+        <div id="projectsTable"
+             style="overflow-x:auto;padding:0 16px 20px;"></div>
+      </section>
+
+      <!-- PROJECT EDITOR -->
+
+      <section class="panel"
+               id="projectEditorPanel"
+               style="display:none;margin-top:20px;">
+
+        <div class="panel-header">
+          <div>
+            <h3 id="projectEditorTitle">Новый объект</h3>
+            <p>Основная информация и назначение ответственных</p>
+          </div>
+          <button type="button"
+                  id="projectEditorCloseBtn"
+                  class="text-link">
+            Закрыть ✕
+          </button>
+        </div>
+
+        <form id="projectForm"
+              style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+
+          <input type="hidden" id="projectId">
+
+          <label>Название объекта *
+            <input id="projectName"
+                   required
+                   maxlength="200"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Город *
+            <input id="projectCity"
+                   required
+                   maxlength="120"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Улица
+            <input id="projectStreet"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Номер дома
+            <input id="projectBuilding"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Квартира / помещение
+            <input id="projectApartment"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Статус
+            <select id="projectStatus"
+                    style="display:block;width:100%;padding:10px;">
               <option value="planned">Запланирован</option>
               <option value="active">В работе</option>
               <option value="paused">Приостановлен</option>
               <option value="completed">Завершён</option>
               <option value="cancelled">Отменён</option>
             </select>
+          </label>
+
+          <label>Дата начала
+            <input id="projectStartDate"
+                   type="date"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Дата окончания
+            <input id="projectEndDate"
+                   type="date"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Сумма договора, PLN
+            <input id="projectAmount"
+                   type="number"
+                   min="0"
+                   step="0.01"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Бригада
+            <select id="projectBrigade"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="">Не назначена</option>
+            </select>
+          </label>
+
+          <label>Бригадир
+            <select id="projectForeman"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="">Не назначен</option>
+            </select>
+          </label>
+
+          <label style="grid-column:1/-1;">Описание
+            <textarea id="projectDescription"
+                      rows="3"
+                      style="display:block;width:100%;padding:10px;"></textarea>
+          </label>
+
+          <label style="grid-column:1/-1;">Внутренние примечания
+            <textarea id="projectNotes"
+                      rows="3"
+                      style="display:block;width:100%;padding:10px;"></textarea>
+          </label>
+
+          <div style="grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <button type="submit" id="projectSaveBtn">
+              Сохранить объект
+            </button>
+            <button type="button" id="projectCancelBtn">
+              Отмена
+            </button>
+            <span id="projectFormMessage" role="status"></span>
           </div>
-          <p id="projectsMessage" role="status" style="padding:12px 20px;color:#a4a7ad;">Откройте раздел, чтобы загрузить объекты.</p>
-          <div id="projectsTable" style="overflow-x:auto;padding:0 16px 20px;"></div>
-        </section>
-        <section class="panel" id="projectEditorPanel" style="display:none;margin-top:20px;">
-          <div class="panel-header"><div><h3 id="projectEditorTitle">Новый объект</h3><p>Основная информация и назначение ответственных</p></div><button type="button" id="projectEditorCloseBtn" class="text-link">Закрыть ✕</button></div>
-          <form id="projectForm" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
-            <input type="hidden" id="projectId">
-            <label>Название объекта *<input id="projectName" required maxlength="200" style="display:block;width:100%;padding:10px;"></label>
-            <label>Город *<input id="projectCity" required maxlength="120" style="display:block;width:100%;padding:10px;"></label>
-            <label>Улица<input id="projectStreet" style="display:block;width:100%;padding:10px;"></label>
-            <label>Номер дома<input id="projectBuilding" style="display:block;width:100%;padding:10px;"></label>
-            <label>Квартира / помещение<input id="projectApartment" style="display:block;width:100%;padding:10px;"></label>
-            <label>Статус<select id="projectStatus" style="display:block;width:100%;padding:10px;"><option value="planned">Запланирован</option><option value="active">В работе</option><option value="paused">Приостановлен</option><option value="completed">Завершён</option><option value="cancelled">Отменён</option></select></label>
-            <label>Дата начала<input id="projectStartDate" type="date" style="display:block;width:100%;padding:10px;"></label>
-            <label>Дата окончания<input id="projectEndDate" type="date" style="display:block;width:100%;padding:10px;"></label>
-            <label>Сумма договора, PLN<input id="projectAmount" type="number" min="0" step="0.01" style="display:block;width:100%;padding:10px;"></label>
-            <label>Бригада<select id="projectBrigade" style="display:block;width:100%;padding:10px;"><option value="">Не назначена</option></select></label>
-            <label>Бригадир<select id="projectForeman" style="display:block;width:100%;padding:10px;"><option value="">Не назначен</option></select></label>
-            <label style="grid-column:1/-1;">Описание<textarea id="projectDescription" rows="3" style="display:block;width:100%;padding:10px;"></textarea></label>
-            <label style="grid-column:1/-1;">Внутренние примечания<textarea id="projectNotes" rows="3" style="display:block;width:100%;padding:10px;"></textarea></label>
-            <div style="grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-              <button type="submit" id="projectSaveBtn">Сохранить объект</button>
-              <button type="button" id="projectCancelBtn">Отмена</button>
-              <span id="projectFormMessage" role="status"></span>
-            </div>
-          </form>
-        </section>
-        <footer class="footer"><span>CONSTRUCTION GROUP</span><span>Projects · Version 1.0</span></footer>
+        </form>
       </section>
 
-      <!-- TASKS -->
-      <section id="tasks" class="dashboard-section" style="display:none;">
-        <div class="welcome">
-          <div>
-            <span class="eyebrow">УПРАВЛЕНИЕ РАБОТАМИ</span>
-            <h2>Задачи компании</h2>
-            <p>Задачи по объектам, исполнители, сроки и фотоотчёты.</p>
-          </div>
-          <button type="button" id="taskNewBtn" disabled title="Подключим на следующем шаге">+ Новая задача (скоро)</button>
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Projects · Version 1.0</span>
+      </footer>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- TASKS -->
+    <!-- ===================================== -->
+
+    <section id="tasks"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">УПРАВЛЕНИЕ РАБОТАМИ</span>
+          <h2>Задачи компании</h2>
+          <p>Задачи по объектам, исполнители, сроки и фотоотчёты.</p>
         </div>
-        <div class="stats-grid">
-          <article class="stat-card"><div class="stat-heading"><span>Всего задач</span><span class="stat-icon orange">☑</span></div><strong id="tasksTotal">—</strong><small>После подключения базы</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>В работе</span><span class="stat-icon blue">◷</span></div><strong id="tasksActive">—</strong><small>Активные задачи</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>На проверке</span><span class="stat-icon purple">▣</span></div><strong id="tasksReview">—</strong><small>Ожидают подтверждения</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>Завершено</span><span class="stat-icon green">✓</span></div><strong id="tasksCompleted">—</strong><small>Подтверждённые работы</small></article>
-        </div>
-        <section class="panel">
-          <div class="panel-header">
-            <div><h3>Все задачи</h3><p>Список работ по объектам CONSTRUCTION GROUP</p></div>
-            <button type="button" id="tasksRefreshBtn" class="text-link" disabled>↻ Обновить</button>
-          </div>
-          <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
-            <input type="search" id="tasksSearch" placeholder="Поиск по названию задачи" aria-label="Поиск задач" disabled style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
-            <select id="tasksProjectFilter" aria-label="Фильтр объекта" disabled style="min-width:180px;padding:12px;border-radius:6px;"><option value="">Все объекты</option></select>
-            <select id="tasksStatusFilter" aria-label="Фильтр статуса" disabled style="min-width:180px;padding:12px;border-radius:6px;"><option value="">Все статусы</option></select>
-          </div>
-          <p id="tasksMessage" role="status" style="padding:16px 20px;color:#a4a7ad;">Раздел открыт. Следующий шаг — подключить admin-tasks.js к Supabase.</p>
-          <div id="tasksTable" style="overflow-x:auto;padding:0 16px 20px;"></div>
-        </section>
-        <section class="panel" id="taskEditorPanel" style="display:none;margin-top:20px;">
-          <div class="panel-header"><div><h3 id="taskEditorTitle">Новая задача</h3><p>Работа на объекте и ответственные</p></div><button type="button" id="taskEditorCloseBtn" class="text-link">Закрыть ✕</button></div>
-          <form id="taskForm" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
-            <input type="hidden" id="taskId">
-            <label>Объект *<select id="taskProject" required style="display:block;width:100%;padding:10px;"><option value="">Выберите объект</option></select></label>
-            <label>Название задачи *<input id="taskTitle" required maxlength="200" style="display:block;width:100%;padding:10px;"></label>
-            <label>Бригада<select id="taskBrigade" style="display:block;width:100%;padding:10px;"><option value="">Не назначена</option></select></label>
-            <label>Исполнитель<select id="taskEmployee" style="display:block;width:100%;padding:10px;"><option value="">Не назначен</option></select></label>
-            <label>Приоритет<select id="taskPriority" style="display:block;width:100%;padding:10px;"><option value="normal">Обычный</option><option value="high">Высокий</option><option value="low">Низкий</option></select></label>
-            <label>Статус<select id="taskStatus" style="display:block;width:100%;padding:10px;"><option value="new">Новая</option><option value="in_progress">В работе</option><option value="review">На проверке</option><option value="completed">Завершена</option></select></label>
-            <label>Срок выполнения<input id="taskDueDate" type="date" style="display:block;width:100%;padding:10px;"></label>
-            <label style="display:flex;align-items:center;gap:10px;"><input id="taskPhotoRequired" type="checkbox"> Фотоотчёт обязателен</label>
-            <label style="grid-column:1/-1;">Описание<textarea id="taskDescription" rows="3" style="display:block;width:100%;padding:10px;"></textarea></label>
-            <div style="grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
-              <button type="submit" id="taskSaveBtn">Сохранить задачу</button>
-              <button type="button" id="taskCancelBtn">Отмена</button>
-              <span id="taskFormMessage" role="status"></span>
-            </div>
-          </form>
-        </section>
-        <footer class="footer"><span>CONSTRUCTION GROUP</span><span>Tasks · Version 1.0</span></footer>
-      </section>
-
-      <!-- TIME TRACKING -->
-<section id="time" class="dashboard-section" style="display:none;">
-
-  <div class="welcome">
-    <div>
-      <span class="eyebrow">УЧЁТ РАБОЧЕГО ВРЕМЕНИ</span>
-      <h2>Учёт времени сотрудников</h2>
-      <p>Рабочие часы, ставки и начисления по объектам.</p>
-    </div>
-  </div>
-
-  <section class="panel">
-    <div class="panel-header">
-      <div>
-        <h3>Рабочие записи</h3>
-        <p>Учёт часов сотрудников CONSTRUCTION GROUP</p>
+        <button type="button"
+                id="taskNewBtn"
+                disabled
+                title="Подключим на следующем шаге">
+          + Новая задача (скоро)
+        </button>
       </div>
-    </div>
 
-    <div style="padding:20px;">
-      <p>
-        Раздел учёта времени подключён.
-        Следующий этап — загрузка записей из Supabase
-        и формирование начислений.
-      </p>
-    </div>
-  </section>
+      <div class="stats-grid">
 
-</section>
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Всего задач</span>
+            <span class="stat-icon orange">☑</span>
+          </div>
+          <strong id="tasksTotal">—</strong>
+          <small>После подключения базы</small>
+        </article>
 
-      <!-- PAYROLL -->
-      <section id="payroll" class="dashboard-section" style="display:none;">
-        <div class="welcome"><div>
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>В работе</span>
+            <span class="stat-icon blue">◷</span>
+          </div>
+          <strong id="tasksActive">—</strong>
+          <small>Активные задачи</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>На проверке</span>
+            <span class="stat-icon purple">▣</span>
+          </div>
+          <strong id="tasksReview">—</strong>
+          <small>Ожидают подтверждения</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Завершено</span>
+            <span class="stat-icon green">✓</span>
+          </div>
+          <strong id="tasksCompleted">—</strong>
+          <small>Подтверждённые работы</small>
+        </article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Все задачи</h3>
+            <p>Список работ по объектам CONSTRUCTION GROUP</p>
+          </div>
+          <button type="button"
+                  id="tasksRefreshBtn"
+                  class="text-link"
+                  disabled>
+            ↻ Обновить
+          </button>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
+          <input type="search"
+                 id="tasksSearch"
+                 placeholder="Поиск по названию задачи"
+                 aria-label="Поиск задач"
+                 disabled
+                 style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
+
+          <select id="tasksProjectFilter"
+                  aria-label="Фильтр объекта"
+                  disabled
+                  style="min-width:180px;padding:12px;border-radius:6px;">
+            <option value="">Все объекты</option>
+          </select>
+
+          <select id="tasksStatusFilter"
+                  aria-label="Фильтр статуса"
+                  disabled
+                  style="min-width:180px;padding:12px;border-radius:6px;">
+            <option value="">Все статусы</option>
+          </select>
+        </div>
+
+        <p id="tasksMessage"
+           role="status"
+           style="padding:16px 20px;color:#a4a7ad;">
+          Раздел открыт. Следующий шаг — подключить admin-tasks.js к Supabase.
+        </p>
+
+        <div id="tasksTable"
+             style="overflow-x:auto;padding:0 16px 20px;"></div>
+      </section>
+
+      <!-- TASK EDITOR -->
+
+      <section class="panel"
+               id="taskEditorPanel"
+               style="display:none;margin-top:20px;">
+
+        <div class="panel-header">
+          <div>
+            <h3 id="taskEditorTitle">Новая задача</h3>
+            <p>Работа на объекте и ответственные</p>
+          </div>
+          <button type="button"
+                  id="taskEditorCloseBtn"
+                  class="text-link">
+            Закрыть ✕
+          </button>
+        </div>
+
+        <form id="taskForm"
+              style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+
+          <input type="hidden" id="taskId">
+
+          <label>Объект *
+            <select id="taskProject"
+                    required
+                    style="display:block;width:100%;padding:10px;">
+              <option value="">Выберите объект</option>
+            </select>
+          </label>
+
+          <label>Название задачи *
+            <input id="taskTitle"
+                   required
+                   maxlength="200"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label>Бригада
+            <select id="taskBrigade"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="">Не назначена</option>
+            </select>
+          </label>
+
+          <label>Исполнитель
+            <select id="taskEmployee"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="">Не назначен</option>
+            </select>
+          </label>
+
+          <label>Приоритет
+            <select id="taskPriority"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="normal">Обычный</option>
+              <option value="high">Высокий</option>
+              <option value="low">Низкий</option>
+            </select>
+          </label>
+
+          <label>Статус
+            <select id="taskStatus"
+                    style="display:block;width:100%;padding:10px;">
+              <option value="new">Новая</option>
+              <option value="in_progress">В работе</option>
+              <option value="review">На проверке</option>
+              <option value="completed">Завершена</option>
+            </select>
+          </label>
+
+          <label>Срок выполнения
+            <input id="taskDueDate"
+                   type="date"
+                   style="display:block;width:100%;padding:10px;">
+          </label>
+
+          <label style="display:flex;align-items:center;gap:10px;">
+            <input id="taskPhotoRequired" type="checkbox">
+            Фотоотчёт обязателен
+          </label>
+
+          <label style="grid-column:1/-1;">Описание
+            <textarea id="taskDescription"
+                      rows="3"
+                      style="display:block;width:100%;padding:10px;"></textarea>
+          </label>
+
+          <div style="grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+            <button type="submit" id="taskSaveBtn">
+              Сохранить задачу
+            </button>
+            <button type="button" id="taskCancelBtn">
+              Отмена
+            </button>
+            <span id="taskFormMessage" role="status"></span>
+          </div>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Tasks · Version 1.0</span>
+      </footer>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- TIME TRACKING -->
+    <!-- ===================================== -->
+
+    <section id="time"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">УЧЁТ РАБОЧЕГО ВРЕМЕНИ</span>
+          <h2>Учёт времени сотрудников</h2>
+          <p>Рабочие часы, ставки и начисления по объектам.</p>
+        </div>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Рабочие записи</h3>
+            <p>Учёт часов сотрудников CONSTRUCTION GROUP</p>
+          </div>
+        </div>
+
+        <div style="padding:20px;">
+          <p>
+            Раздел учёта времени подключён.
+            Следующий этап — загрузка записей из Supabase
+            и формирование начислений.
+          </p>
+        </div>
+      </section>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- PAYROLL -->
+    <!-- ===================================== -->
+
+    <section id="payroll"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
           <span class="eyebrow">УЧЁТ ЗАРПЛАТ</span>
           <h2>Зарплаты сотрудников</h2>
           <p>Подтверждённые начисления, выплаты и остатки по сотрудникам.</p>
-        </div></div>
-        <div class="stats-grid">
-          <article class="stat-card"><div class="stat-heading"><span>Начислено</span><span class="stat-icon orange">₽</span></div><strong id="payrollAccrued">—</strong><small>Утверждённые начисления</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>Выплачено</span><span class="stat-icon green">✓</span></div><strong id="payrollPaid">—</strong><small>Привязанные подтверждённые выплаты</small></article>
-          <article class="stat-card"><div class="stat-heading"><span>Осталось</span><span class="stat-icon blue">◷</span></div><strong id="payrollRemaining">—</strong><small>По утверждённым начислениям</small></article>
         </div>
-        <section class="panel">
-          <div class="panel-header"><div><h3>Начисления по сотрудникам</h3><p>Только просмотр. Суммы в PLN.</p></div>
-            <button type="button" id="payrollRefreshBtn" class="text-link" style="cursor:pointer;background:none;border:none;">↻ Обновить</button>
+      </div>
+
+      <div class="stats-grid">
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Начислено</span>
+            <span class="stat-icon orange">₽</span>
           </div>
-          <div style="padding:16px;display:flex;gap:12px;flex-wrap:wrap;">
-            <input type="search" id="payrollSearch" placeholder="Поиск по сотруднику или объекту" aria-label="Поиск начислений" style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
-            <select id="payrollStatus" aria-label="Статус начисления" style="min-width:170px;padding:12px;border-radius:6px;">
-              <option value="">Все статусы</option><option value="approved">Утверждено</option><option value="submitted">На проверке</option><option value="draft">Черновик</option><option value="cancelled">Отменено</option>
-            </select>
+          <strong id="payrollAccrued">—</strong>
+          <small>Утверждённые начисления</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Выплачено</span>
+            <span class="stat-icon green">✓</span>
           </div>
-          <p id="payrollMessage" role="status" style="padding:12px 20px;color:#a4a7ad;">Откройте раздел, чтобы загрузить данные.</p>
-          <div id="payrollTable" style="overflow-x:auto;padding:0 16px 20px;"></div>
-        </section>
-        <section class="panel" style="margin-top:20px;">
-          <div class="panel-header"><div><h3>Как считаются суммы</h3><p>Без повторного списания из кассы</p></div></div>
-          <p style="padding:16px;color:#a4a7ad;line-height:1.6;">«Выплачено» — сумма подтверждённых зарплатных выплат, привязанных к конкретным начислениям. Авансы и другие операции здесь не вычитаются: их общий баланс учитывается отдельно. До подключения полного расчёта этот раздел используется для просмотра.</p>
-        </section>
-        <footer class="footer"><span>CONSTRUCTION GROUP</span><span>Payroll · Version 1.0</span></footer>
-      </section>
+          <strong id="payrollPaid">—</strong>
+          <small>Привязанные подтверждённые выплаты</small>
+        </article>
 
-      <!-- FINANCE -->
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Осталось</span>
+            <span class="stat-icon blue">◷</span>
+          </div>
+          <strong id="payrollRemaining">—</strong>
+          <small>По утверждённым начислениям</small>
+        </article>
+      </div>
 
-      <section id="finance" class="dashboard-section" style="display:none;">
-
-        <div class="welcome">
+      <section class="panel">
+        <div class="panel-header">
           <div>
-            <span class="eyebrow">ФИНАНСЫ КОМПАНИИ</span>
-            <h2>Финансовое управление</h2>
-            <p>Касса, банковские счета, поступления, расходы и переводы.</p>
+            <h3>Начисления по сотрудникам</h3>
+            <p>Только просмотр. Суммы в PLN.</p>
           </div>
+          <button type="button"
+                  id="payrollRefreshBtn"
+                  class="text-link"
+                  style="cursor:pointer;background:none;border:none;">
+            ↻ Обновить
+          </button>
         </div>
 
-        <div class="stats-grid">
+        <div style="padding:16px;display:flex;gap:12px;flex-wrap:wrap;">
+          <input type="search"
+                 id="payrollSearch"
+                 placeholder="Поиск по сотруднику или объекту"
+                 aria-label="Поиск начислений"
+                 style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
 
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Общий баланс</span>
-              <span class="stat-icon orange">▣</span>
-            </div>
-            <strong id="financeTotalBalance">—</strong>
-            <small>Все деньги компании</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Наличные</span>
-              <span class="stat-icon green">₴</span>
-            </div>
-            <strong id="financeCashBalance">—</strong>
-            <small>Баланс кассы</small>
-          </article>
-
-          <article class="stat-card">
-            <div class="stat-heading">
-              <span>Банковские счета</span>
-              <span class="stat-icon blue">▣</span>
-            </div>
-            <strong id="financeBankBalance">—</strong>
-            <small>Деньги в банке</small>
-          </article>
-
+          <select id="payrollStatus"
+                  aria-label="Статус начисления"
+                  style="min-width:170px;padding:12px;border-radius:6px;">
+            <option value="">Все статусы</option>
+            <option value="approved">Утверждено</option>
+            <option value="submitted">На проверке</option>
+            <option value="draft">Черновик</option>
+            <option value="cancelled">Отменено</option>
+          </select>
         </div>
 
-        <section class="panel">
-          <div class="panel-header">
-            <div>
-              <h3>Финансовые операции</h3>
-              <p>Управление движением денег</p>
-            </div>
-          </div>
+        <p id="payrollMessage"
+           role="status"
+           style="padding:12px 20px;color:#a4a7ad;">
+          Откройте раздел, чтобы загрузить данные.
+        </p>
 
-          <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
-            <button type="button" id="financeIncomeBtn">+ Поступление</button>
-            <button type="button" id="financeExpenseBtn">− Расход</button>
-            <button type="button" id="financeTransferBtn">⇄ Перевод</button>
-          </div>
-
-          <p id="financeMessage" role="status" style="padding:16px;color:#a4a7ad;">
-            Финансовые данные ещё не загружены.
-          </p>
-        </section>
-
-        <section class="panel" style="margin-top:20px;">
-          <div class="panel-header">
-            <div>
-              <h3>История операций</h3>
-              <p>Все движения денег компании</p>
-            </div>
-
-            <button
-              type="button"
-              id="financeRefreshBtn"
-              class="text-link"
-              style="cursor:pointer;background:none;border:none;"
-            >
-              ↻ Обновить
-            </button>
-          </div>
-
-          <div id="financeHistory" style="padding:20px;overflow-x:auto;">
-            История ещё не загружена.
-          </div>
-        </section>
-
-        <footer class="footer">
-          <span>CONSTRUCTION GROUP</span>
-          <span>Finance Management · Version 1.0</span>
-        </footer>
-
+        <div id="payrollTable"
+             style="overflow-x:auto;padding:0 16px 20px;"></div>
       </section>
 
-    </main>
-  </div>
+      <section class="panel" style="margin-top:20px;">
+        <div class="panel-header">
+          <div>
+            <h3>Как считаются суммы</h3>
+            <p>Без повторного списания из кассы</p>
+          </div>
+        </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="admin.js"></script>
-  <script src="admin-finance.js"></script>
-  <script src="admin-payroll.js"></script>
-  <script src="admin-time.js"></script>
-  <script src="admin-finance-payroll.js"></script>
-  <script src="admin-projects.js"></script>
-  <script src="admin-tasks.js"></script>
+        <p style="padding:16px;color:#a4a7ad;line-height:1.6;">
+          «Выплачено» — сумма подтверждённых зарплатных выплат,
+          привязанных к конкретным начислениям.
+          Авансы и другие операции здесь не вычитаются:
+          их общий баланс учитывается отдельно.
+          До подключения полного расчёта этот раздел
+          используется для просмотра.
+        </p>
+      </section>
+
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Payroll · Version 1.0</span>
+      </footer>
+    </section>
+
+    <!-- ===================================== -->
+    <!-- FINANCE -->
+    <!-- ===================================== -->
+
+    <section id="finance"
+             class="dashboard-section"
+             style="display:none;">
+
+      <div class="welcome">
+        <div>
+          <span class="eyebrow">ФИНАНСЫ КОМПАНИИ</span>
+          <h2>Финансовое управление</h2>
+          <p>Касса, банковские счета, поступления, расходы и переводы.</p>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Общий баланс</span>
+            <span class="stat-icon orange">▣</span>
+          </div>
+          <strong id="financeTotalBalance">—</strong>
+          <small>Все деньги компании</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Наличные</span>
+            <span class="stat-icon green">₴</span>
+          </div>
+          <strong id="financeCashBalance">—</strong>
+          <small>Баланс кассы</small>
+        </article>
+
+        <article class="stat-card">
+          <div class="stat-heading">
+            <span>Банковские счета</span>
+            <span class="stat-icon blue">▣</span>
+          </div>
+          <strong id="financeBankBalance">—</strong>
+          <small>Деньги в банке</small>
+        </article>
+      </div>
+
+      <section class="panel">
+        <div class="panel-header">
+          <div>
+            <h3>Финансовые операции</h3>
+            <p>Управление движением денег</p>
+          </div>
+        </div>
+
+        <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
+          <button type="button" id="financeIncomeBtn">
+            + Поступление
+          </button>
+          <button type="button" id="financeExpenseBtn">
+            − Расход
+          </button>
+          <button type="button" id="financeTransferBtn">
+            ⇄ Перевод
+          </button>
+        </div>
+
+        <p id="financeMessage"
+           role="status"
+           style="padding:16px;color:#a4a7ad;">
+          Финансовые данные ещё не загружены.
+        </p>
+      </section>
+
+      <section class="panel" style="margin-top:20px;">
+        <div class="panel-header">
+          <div>
+            <h3>История операций</h3>
+            <p>Все движения денег компании</p>
+          </div>
+          <button type="button"
+                  id="financeRefreshBtn"
+                  class="text-link"
+                  style="cursor:pointer;background:none;border:none;">
+            ↻ Обновить
+          </button>
+        </div>
+
+        <div id="financeHistory"
+             style="padding:20px;overflow-x:auto;">
+          История ещё не загружена.
+        </div>
+      </section>
+
+      <footer class="footer">
+        <span>CONSTRUCTION GROUP</span>
+        <span>Finance Management · Version 1.0</span>
+      </footer>
+    </section>
+
+  </main>
+</div>
+
+<!-- ======================================= -->
+<!-- SUPABASE AND ADMIN MODULES -->
+<!-- ======================================= -->
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<script src="admin.js"></script>
+<script src="admin-finance.js"></script>
+<script src="admin-payroll.js"></script>
+<script src="admin-time.js"></script>
+<script src="admin-finance-payroll.js"></script>
+<script src="admin-projects.js"></script>
+<script src="admin-tasks.js"></script>
 <script src="admin-tasks-review.js"></script>
 <script src="admin-employees.js"></script>
-<script src="admin-brigades.js"></script>  <script src="admin-employees.js"></script>
-  <script>
+<script src="admin-brigades.js"></script>
+
+<!-- ======================================= -->
+<!-- DASHBOARD COUNTERS -->
+<!-- ======================================= -->
+
+<script>
 "use strict";
-/* CONSTRUCTION GROUP — Dashboard counters. Read-only; does not modify records. */
+
+/*
+  CONSTRUCTION GROUP — Dashboard counters.
+  Read-only; does not modify records.
+*/
+
 (() => {
   const $ = id => document.getElementById(id);
-  const root = $('dashboard');
+  const root = $("dashboard");
+
   if (!root || !window.supabase) return;
+
   const client = window.supabase.createClient(
-    'https://yepxskcfxyiyqqhmdpve.supabase.co',
-    'sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH'
+    "https://yepxskcfxyiyqqhmdpve.supabase.co",
+    "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH"
   );
+
   const output = {
-    projects: $('dashboardActiveProjects'),
-    employees: $('dashboardEmployees'),
-    tasks: $('dashboardActiveTasks')
+    projects: $("dashboardActiveProjects"),
+    employees: $("dashboardEmployees"),
+    tasks: $("dashboardActiveTasks")
   };
-  const status = $('dashboardStatsStatus');
+
+  const status = $("dashboardStatsStatus");
   let busy = false;
+
   async function count(table, filter) {
-    let query = client.from(table).select('id', {count:'exact', head:true});
-    if (filter) query = filter(query);
-    const {count, error} = await query;
+    let query = client
+      .from(table)
+      .select("id", {
+        count: "exact",
+        head: true
+      });
+
+    if (filter) {
+      query = filter(query);
+    }
+
+    const { count, error } = await query;
+
     if (error) throw error;
+
     return count ?? 0;
   }
+
   async function refresh() {
     if (busy) return;
+
     busy = true;
-    if (status) status.textContent = 'Обновляем статистику...';
+
+    if (status) {
+      status.textContent = "Обновляем статистику...";
+    }
+
     try {
-      const {data:{session}, error:sessionError} = await client.auth.getSession();
-      if (sessionError || !session) throw new Error('Нет активной сессии. Войдите заново.');
-      const {data:permissions,error:permissionsError} = await client.rpc('get_my_effective_permissions');
-      if (permissionsError) throw permissionsError;
-      const has = code => Array.isArray(permissions) && permissions.some(p => p.permission_code === code && p.scope === 'all');
+      const {
+        data: { session },
+        error: sessionError
+      } = await client.auth.getSession();
+
+      if (sessionError || !session) {
+        throw new Error(
+          "Нет активной сессии. Войдите заново."
+        );
+      }
+
+      const {
+        data: permissions,
+        error: permissionsError
+      } = await client.rpc(
+        "get_my_effective_permissions"
+      );
+
+      if (permissionsError) {
+        throw permissionsError;
+      }
+
+      const has = code =>
+        Array.isArray(permissions) &&
+        permissions.some(
+          p =>
+            p.permission_code === code &&
+            p.scope === "all"
+        );
+
       const items = [
-        ['projects','projects','projects.view',q=>q.eq('status','active')],
-        ['employees','employees','employees.view',q=>q.eq('status','active')],
-        ['tasks','tasks','tasks.view',q=>q.in('status',['in_progress','review'])]
+        [
+          "projects",
+          "projects",
+          "projects.view",
+          q => q.eq("status", "active")
+        ],
+        [
+          "employees",
+          "employees",
+          "employees.view",
+          q => q.eq("status", "active")
+        ],
+        [
+          "tasks",
+          "tasks",
+          "tasks.view",
+          q => q.in("status", [
+            "in_progress",
+            "review"
+          ])
+        ]
       ];
-      const errors=[];
-      await Promise.all(items.map(async ([key,table,permission,filter])=>{
-        if (!output[key]) return;
-        if (!has(permission)) {output[key].textContent='Нет доступа';return;}
-        try {output[key].textContent=String(await count(table,filter));}
-        catch (err) {output[key].textContent='—';errors.push(table+': '+(err.message||err));}
-      }));
-      if (status) status.textContent=errors.length?'Ошибка загрузки: '+errors.join('; '):'Статистика обновлена из Supabase';
-    } catch(err) {
-      Object.values(output).forEach(el=>{if(el)el.textContent='—';});
-      if(status)status.textContent='Ошибка статистики: '+(err.message||err);
-    } finally {busy=false;}
+
+      const errors = [];
+
+      await Promise.all(
+        items.map(async ([
+          key,
+          table,
+          permission,
+          filter
+        ]) => {
+          if (!output[key]) return;
+
+          if (!has(permission)) {
+            output[key].textContent = "Нет доступа";
+            return;
+          }
+
+          try {
+            output[key].textContent = String(
+              await count(table, filter)
+            );
+          } catch (err) {
+            output[key].textContent = "—";
+            errors.push(
+              table + ": " + (err.message || err)
+            );
+          }
+        })
+      );
+
+      if (status) {
+        status.textContent = errors.length
+          ? "Ошибка загрузки: " + errors.join("; ")
+          : "Статистика обновлена из Supabase";
+      }
+
+    } catch (err) {
+      Object.values(output).forEach(el => {
+        if (el) el.textContent = "—";
+      });
+
+      if (status) {
+        status.textContent =
+          "Ошибка статистики: " +
+          (err.message || err);
+      }
+
+    } finally {
+      busy = false;
+    }
   }
-  const refreshButton=$('dashboardStatsRefresh');
-  if(refreshButton)refreshButton.addEventListener('click',refresh);
-  document.querySelectorAll('a[href="#dashboard"]').forEach(a=>a.addEventListener('click',()=>setTimeout(refresh,100)));
+
+  const refreshButton = $("dashboardStatsRefresh");
+
+  if (refreshButton) {
+    refreshButton.addEventListener(
+      "click",
+      refresh
+    );
+  }
+
+  document
+    .querySelectorAll('a[href="#dashboard"]')
+    .forEach(a => {
+      a.addEventListener("click", () => {
+        setTimeout(refresh, 100);
+      });
+    });
+
   refresh();
 })();
+</script>
 
-  </script>
 </body>
 </html>
