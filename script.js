@@ -6,6 +6,54 @@ if (tg) {
   tg.expand();
 }
 
+// ==========================================
+// SUPABASE — АВТОРИЗАЦИЯ ЗАКАЗЧИКА
+// ==========================================
+
+const SUPABASE_URL =
+  "https://yepxskcfxyiyqqhmdpve.supabase.co";
+
+const SUPABASE_ANON_KEY =
+  "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH";
+
+let supabaseLibraryPromise = null;
+let supabaseClient = null;
+
+async function getSupabaseClient() {
+  if (supabaseClient) return supabaseClient;
+
+  if (!window.supabase) {
+    if (!supabaseLibraryPromise) {
+      supabaseLibraryPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+
+        script.src =
+          "https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2";
+
+        script.onload = resolve;
+        script.onerror = () => reject(
+          new Error("Не удалось загрузить библиотеку Supabase")
+        );
+
+        document.head.appendChild(script);
+      });
+    }
+
+    await supabaseLibraryPromise;
+  }
+
+  if (!window.supabase?.createClient) {
+    throw new Error("Библиотека Supabase недоступна");
+  }
+
+  supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_ANON_KEY
+  );
+
+  return supabaseClient;
+}
+
 const translations = {
   pl: {
     heroTag: "DEMONTAŻ • REMONT • PRZYGOTOWANIE",
@@ -625,7 +673,10 @@ function formDataObject() {
   };
 }
 
-// REAL REQUEST SUBMISSION
+// ==========================================
+// ОТПРАВКА ЗАЯВКИ
+// ==========================================
+
 $("requestForm").addEventListener("submit", async e => {
   e.preventDefault();
 
@@ -643,11 +694,34 @@ $("requestForm").addEventListener("submit", async e => {
   try {
     const payload = formDataObject();
 
+    // Получаем текущую сессию Supabase.
+    // Авторизованный заказчик передаёт токен серверу.
+    // Гость отправляет заявку без токена.
+    const client = await getSupabaseClient();
+
+    const {
+      data: sessionData,
+      error: sessionError
+    } = await client.auth.getSession();
+
+    if (sessionError) {
+      throw sessionError;
+    }
+
+    const headers = {
+      "Content-Type": "application/json"
+    };
+
+    const accessToken =
+      sessionData.session?.access_token;
+
+    if (accessToken) {
+      headers.Authorization = `Bearer ${accessToken}`;
+    }
+
     const response = await fetch("/api/submit", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
+      headers,
       body: JSON.stringify(payload)
     });
 
