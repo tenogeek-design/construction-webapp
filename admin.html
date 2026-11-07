@@ -388,7 +388,160 @@
         </footer>
 
       </section>
+<!-- EMPLOYEES -->
+<section id="employees" class="dashboard-section" style="display:none;">
 
+  <div class="welcome">
+    <div>
+      <span class="eyebrow">УПРАВЛЕНИЕ ПЕРСОНАЛОМ</span>
+      <h2>Сотрудники и бригады</h2>
+      <p>Работники, ставки, состав бригад и назначения.</p>
+    </div>
+    <button type="button" id="employeeNewBtn">
+      + Новый сотрудник
+    </button>
+  </div>
+
+  <div class="stats-grid">
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Всего сотрудников</span>
+        <span class="stat-icon orange">♙</span>
+      </div>
+      <strong id="employeesTotal">—</strong>
+      <small>В базе компании</small>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Активные</span>
+        <span class="stat-icon green">✓</span>
+      </div>
+      <strong id="employeesActive">—</strong>
+      <small>Работают в компании</small>
+    </article>
+
+    <article class="stat-card">
+      <div class="stat-heading">
+        <span>Бригады</span>
+        <span class="stat-icon blue">▧</span>
+      </div>
+      <strong id="employeesBrigades">—</strong>
+      <small>Всего бригад</small>
+    </article>
+  </div>
+
+  <section class="panel">
+    <div class="panel-header">
+      <div>
+        <h3>Список сотрудников</h3>
+        <p>Управление работниками CONSTRUCTION GROUP</p>
+      </div>
+      <button type="button" id="employeesRefreshBtn" class="text-link">
+        ↻ Обновить
+      </button>
+    </div>
+
+    <div style="padding:16px;">
+      <input
+        id="employeesSearch"
+        type="search"
+        placeholder="Поиск по имени, телефону или должности"
+        style="width:100%;padding:12px;border-radius:6px;"
+      >
+    </div>
+
+    <p id="employeesMessage" style="padding:16px;">
+      Ожидание загрузки сотрудников...
+    </p>
+
+    <div id="employeesTable" style="overflow-x:auto;padding:16px;"></div>
+  </section>
+
+  <section class="panel" id="employeeEditorPanel"
+           style="display:none;margin-top:20px;">
+
+    <div class="panel-header">
+      <div>
+        <h3 id="employeeEditorTitle">Новый сотрудник</h3>
+        <p>Личная карточка работника</p>
+      </div>
+      <button type="button" id="employeeEditorCloseBtn">
+        Закрыть ✕
+      </button>
+    </div>
+
+    <form id="employeeForm" style="padding:20px;display:grid;gap:14px;">
+
+      <input type="hidden" id="employeeId">
+
+      <label>Имя и фамилия *
+        <input id="employeeName" required
+               style="display:block;width:100%;padding:10px;">
+      </label>
+
+      <label>Телефон
+        <input id="employeePhone" type="tel"
+               style="display:block;width:100%;padding:10px;">
+      </label>
+
+      <label>Специальность / должность
+        <input id="employeePosition"
+               style="display:block;width:100%;padding:10px;">
+      </label>
+
+      <label>Дата начала работы
+        <input id="employeeHiredAt" type="date"
+               style="display:block;width:100%;padding:10px;">
+      </label>
+
+      <label>Статус
+        <select id="employeeStatus"
+                style="display:block;width:100%;padding:10px;">
+          <option value="active">Активный</option>
+          <option value="inactive">Неактивный</option>
+          <option value="archived">Архив</option>
+        </select>
+      </label>
+
+      <label>Внутренние примечания
+        <textarea id="employeeNotes" rows="3"
+                  style="display:block;width:100%;padding:10px;"></textarea>
+      </label>
+
+      <button type="submit" id="employeeSaveBtn">
+        Сохранить сотрудника
+      </button>
+
+      <p id="employeeFormMessage" role="status"></p>
+
+    </form>
+  </section>
+
+  <section class="panel" style="margin-top:20px;">
+    <div class="panel-header">
+      <div>
+        <h3>Бригады компании</h3>
+        <p>Бригадиры и состав команд</p>
+      </div>
+      <button type="button" id="brigadeNewBtn">
+        + Новая бригада
+      </button>
+    </div>
+
+    <p id="brigadesMessage" style="padding:16px;">
+      Ожидание загрузки бригад...
+    </p>
+
+    <div id="brigadesTable" style="overflow-x:auto;padding:16px;"></div>
+  </section>
+
+  <footer class="footer">
+    <span>CONSTRUCTION GROUP</span>
+    <span>Employees · Version 1.0</span>
+  </footer>
+
+</section>
       <!-- PROJECTS -->
       <section id="projects" class="dashboard-section" style="display:none;">
         <div class="welcome">
