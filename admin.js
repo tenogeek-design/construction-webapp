@@ -1,10 +1,15 @@
 
-const permissionList =
-  typeof permissions !== "undefined" && Array.isArray(permissions)
-    ? permissions
-    : [];
+  // ==========================================
+  // 3. ПРАВА ДОСТУПА
+  // ==========================================
 
-const permissionsLoaded = permissionList.length > 0;
+  const permissionList =
+    typeof permissions !== "undefined" &&
+    Array.isArray(permissions)
+      ? permissions
+      : [];
+
+  const permissionsLoaded = permissionList.length > 0;
 
   const permissionSet = new Set(
     permissionList.map(item => item.permission_code)
@@ -40,25 +45,32 @@ const permissionsLoaded = permissionList.length > 0;
 
   const navItems = document.querySelectorAll(".nav-item");
 
+  function isSectionAllowed(section) {
+    const requiredPermission = menuPermissions[section];
+
+    // Временный режим, пока загрузка прав не восстановлена.
+    // Это НЕ серверная проверка доступа.
+    if (!permissionsLoaded) {
+      return true;
+    }
+
+    return !requiredPermission ||
+      permissionSet.has(requiredPermission);
+  }
+
+  // Показываем только разрешённые пункты меню
   navItems.forEach(item => {
     const href = item.getAttribute("href") || "";
+
     const section = (
       href.split("#")[1] ||
       item.dataset.section ||
       ""
     ).toLowerCase();
 
-    const requiredPermission = menuPermissions[section];
-
-if (
-  permissionsLoaded &&
-  requiredPermission &&
-  !permissionSet.has(requiredPermission)
-) {
-      item.style.display = "none";
-    }
+    item.style.display =
+      isSectionAllowed(section) ? "" : "none";
   });
-
 
   // ==========================================
   // 3.1. НАВИГАЦИЯ
@@ -69,54 +81,71 @@ if (
       .replace(/^#/, "")
       .toLowerCase();
 
-    const requiredPermission = menuPermissions[section];
-
-    if (
-      requiredPermission &&
-      !permissionSet.has(requiredPermission)
-    ) {
+    if (!isSectionAllowed(section)) {
       console.warn("Нет доступа к разделу:", section);
       return;
     }
 
     const target = document.getElementById(section);
 
-    if (!target || !target.classList.contains("dashboard-section")) {
-      console.warn("Раздел отсутствует:", section);
+    if (
+      !target ||
+      !target.classList.contains("dashboard-section")
+    ) {
+      console.warn(
+        "Раздел отсутствует в admin.html:",
+        section
+      );
       return;
     }
 
+    // Переключаем страницы
     document.querySelectorAll(".dashboard-section")
       .forEach(page => {
         page.style.display =
           page.id === section ? "block" : "none";
       });
 
+    // Подсвечиваем активный пункт меню
     navItems.forEach(item => {
+      const href = item.getAttribute("href") || "";
+
       item.classList.toggle(
         "active",
-        item.getAttribute("href") === "#" + section
+        href === "#" + section
       );
     });
+
+    // Обновляем заголовок
+    const titles = {
+      dashboard: "Панель управления",
+      requests: "Заявки клиентов",
+      employees: "Сотрудники",
+      projects: "Объекты",
+      tasks: "Задачи",
+      time: "Учёт времени",
+      payroll: "Зарплаты",
+      finance: "Финансы",
+      services: "Услуги и цены",
+      clients: "Клиенты",
+      documents: "Документы",
+      notifications: "Уведомления",
+      analytics: "Аналитика",
+      settings: "Настройки",
+      roles: "Роли и доступ"
+    };
 
     const pageTitle = document.getElementById("pageTitle");
 
     if (pageTitle) {
-      const titles = {
-        dashboard: "Панель управления",
-        requests: "Заявки клиентов",
-        payroll: "Зарплаты",
-        finance: "Финансы",
-        time: "Учёт времени"
-      };
-
       pageTitle.textContent =
-        titles[section] || "CONSTRUCTION GROUP";
+        titles[section] || "Панель управления";
     }
 
     window.scrollTo(0, 0);
   }
 
+  // Обработка нажатий
   navItems.forEach(item => {
     item.addEventListener("click", event => {
       const href = item.getAttribute("href") || "";
@@ -135,16 +164,17 @@ if (
     });
   });
 
+  // Переключение через адресную строку
   window.addEventListener("hashchange", () => {
     openAdminSection(
       window.location.hash.slice(1) || "dashboard"
     );
   });
 
+  // Начальная страница
   openAdminSection(
     window.location.hash.slice(1) || "dashboard"
   );
-
 
   // ==========================================
   // 4. ДАТА
@@ -197,7 +227,9 @@ if (
   function createElement(tag, className, value) {
     const element = document.createElement(tag);
 
-    if (className) element.className = className;
+    if (className) {
+      element.className = className;
+    }
 
     if (value !== undefined && value !== null) {
       element.textContent = String(value);
