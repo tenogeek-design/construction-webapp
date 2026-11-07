@@ -20,15 +20,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
-  const db = window.supabase.createClient(
-    "https://yepxskcfxyiyqqhmdpve.supabase.co",
-    "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH",
-    {
-      auth: {
-        storageKey: "construction-brigades-auth"
-      }
-    }
-  );
+const db = window.supabase.createClient(
+  "https://yepxskcfxyiyqqhmdpve.supabase.co",
+  "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH"
+);
 
   let employees = [];
   let brigades = [];
