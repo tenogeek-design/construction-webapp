@@ -16,16 +16,32 @@ document.addEventListener("DOMContentLoaded", async () => {
   const expensesElement = document.getElementById("foremanExpenses");
   const addExpenseButton = document.getElementById("foremanAddExpense");
 
+  const formContainer = document.getElementById("expenseFormContainer");
+  const expenseForm = document.getElementById("foremanExpenseForm");
+  const projectSelect = document.getElementById("expenseProject");
+  const titleInput = document.getElementById("expenseTitle");
+  const amountInput = document.getElementById("expenseAmount");
+  const categorySelect = document.getElementById("expenseCategory");
+  const paymentSelect = document.getElementById("expensePaymentMethod");
+  const descriptionInput = document.getElementById("expenseDescription");
+  const receiptInput = document.getElementById("expenseReceipt");
+  const submitButton = document.getElementById("submitExpenseButton");
+  const cancelButton = document.getElementById("cancelExpenseButton");
+  const formMessage = document.getElementById("expenseFormMessage");
+
   if (!window.supabase) {
     balanceElement.textContent = "Ошибка загрузки авторизации";
     return;
   }
 
-  // Общая сессия с login.html
+  // Используем общую сессию с login.html.
   const client = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
+
+  let availableProjects = [];
+  let isSubmitting = false;
 
   const moneyFormat = (amount, currency = "PLN") => {
     return new Intl.NumberFormat("pl-PL", {
@@ -37,6 +53,17 @@ document.addEventListener("DOMContentLoaded", async () => {
   function showError(message) {
     balanceElement.textContent = "Ошибка";
     nameElement.textContent = message;
+  }
+
+  function setFormMessage(message, type = "") {
+    if (!formMessage) return;
+
+    formMessage.textContent = message;
+    formMessage.className = "form-message";
+
+    if (type) {
+      formMessage.classList.add(type);
+    }
   }
 
   // ==========================================
@@ -187,7 +214,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 4. РАСХОДЫ И ЧЕКИ
+  // 4. СПИСОК РАСХОДОВ
   // ==========================================
 
   const expenseStatusLabels = {
@@ -261,20 +288,11 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     expensesElement.textContent = "Загрузка расходов...";
 
-    // Эта функция будет создана следующим шагом.
-    // До её появления не запрашиваем таблицу напрямую.
     const { data, error } = await client.rpc(
       "get_my_expense_requests"
     );
 
     if (error) {
-      if (error.code === "PGRST202" ||
-          error.code === "42883") {
-        expensesElement.textContent =
-          "Раздел готов. Ожидается подключение функции расходов.";
-        return;
-      }
-
       expensesElement.textContent =
         "Ошибка загрузки расходов: " + error.message;
       return;
@@ -294,7 +312,202 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 5. ОБНОВЛЕНИЕ ДАННЫХ
+  // 5. ЗАГРУЗКА ОБЪЕКТОВ
+  // ==========================================
+
+  async function loadMyProjects() {
+    projectSelect.replaceChildren();
+
+    const loadingOption = document.createElement("option");
+    loadingOption.value = "";
+    loadingOption.textContent = "Загрузка объектов...";
+    projectSelect.appendChild(loadingOption);
+
+    projectSelect.disabled = true;
+    submitButton.disabled = true;
+
+    const { data, error } = await client.rpc(
+      "get_my_expense_projects"
+    );
+
+    projectSelect.replaceChildren();
+
+    if (error) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "Ошибка загрузки объектов";
+      projectSelect.appendChild(option);
+
+      setFormMessage(
+        "Не удалось загрузить объекты: " + error.message,
+        "error"
+      );
+      return;
+    }
+
+    availableProjects = Array.isArray(data) ? data : [];
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Выберите объект";
+    projectSelect.appendChild(placeholder);
+
+    for (const project of availableProjects) {
+      const option = document.createElement("option");
+
+      option.value = project.project_id;
+
+      option.textContent = project.project_address
+        ? `${project.project_name} — ${project.project_address}`
+        : project.project_name;
+
+      projectSelect.appendChild(option);
+    }
+
+    if (availableProjects.length === 0) {
+      setFormMessage(
+        "У вас пока нет назначенных активных объектов.",
+        "warning"
+      );
+      return;
+    }
+
+    projectSelect.disabled = false;
+    submitButton.disabled = false;
+  }
+
+  // ==========================================
+  // 6. ОТКРЫТИЕ И ЗАКРЫТИЕ ФОРМЫ
+  // ==========================================
+
+  async function openExpenseForm() {
+    if (!formContainer || isSubmitting) return;
+
+    formContainer.hidden = false;
+    addExpenseButton.disabled = true;
+
+    setFormMessage("");
+
+    await loadMyProjects();
+
+    addExpenseButton.disabled = false;
+
+    formContainer.scrollIntoView({
+      behavior: "smooth",
+      block: "start"
+    });
+  }
+
+  function closeExpenseForm() {
+    if (isSubmitting) return;
+
+    formContainer.hidden = true;
+    expenseForm.reset();
+    setFormMessage("");
+  }
+
+  // ==========================================
+  // 7. СОЗДАНИЕ РАСХОДА
+  // ==========================================
+
+  async function submitNewExpense(event) {
+    event.preventDefault();
+
+    if (isSubmitting) return;
+
+    const projectId = projectSelect.value;
+    const title = titleInput.value.trim();
+    const amount = Number(amountInput.value);
+    const category = categorySelect.value;
+    const paymentMethod = paymentSelect.value;
+    const description = descriptionInput.value.trim();
+
+    if (!projectId ||
+        !availableProjects.some(
+          project => project.project_id === projectId
+        )) {
+      setFormMessage("Выберите доступный объект.", "error");
+      return;
+    }
+
+    if (!title) {
+      setFormMessage("Укажите, что было куплено.", "error");
+      return;
+    }
+
+    if (!Number.isFinite(amount) ||
+        amount <= 0 ||
+        Math.round(amount * 100) !== amount * 100) {
+      setFormMessage(
+        "Введите корректную сумму с точностью до 0,01 zł.",
+        "error"
+      );
+      return;
+    }
+
+    if (!["cash", "bank", "personal"].includes(paymentMethod)) {
+      setFormMessage("Некорректный способ оплаты.", "error");
+      return;
+    }
+
+    if (receiptInput && receiptInput.files.length > 0) {
+      setFormMessage(
+        "Загрузка чеков ещё не подключена. Уберите файл.",
+        "error"
+      );
+      return;
+    }
+
+    isSubmitting = true;
+    submitButton.disabled = true;
+    cancelButton.disabled = true;
+    addExpenseButton.disabled = true;
+
+    setFormMessage("Отправляем заявку...", "warning");
+
+    try {
+      const { error } = await client.rpc(
+        "submit_expense",
+        {
+          p_project_id: projectId,
+          p_title: title,
+          p_amount: amount,
+          p_payment_method: paymentMethod,
+          p_description: description || null,
+          p_category: category || null,
+          p_receipt_path: null
+        }
+      );
+
+      if (error) {
+        throw error;
+      }
+
+      expenseForm.reset();
+
+      setFormMessage(
+        "Расход успешно отправлен на согласование.",
+        "success"
+      );
+
+      await loadMyExpenses();
+
+    } catch (error) {
+      setFormMessage(
+        "Ошибка создания расхода: " + error.message,
+        "error"
+      );
+
+    } finally {
+      isSubmitting = false;
+      submitButton.disabled = availableProjects.length === 0;
+      cancelButton.disabled = false;
+      addExpenseButton.disabled = false;
+    }
+  }
+
+  // ==========================================
+  // 8. ОБНОВЛЕНИЕ ДАННЫХ
   // ==========================================
 
   async function refreshFinance() {
@@ -312,7 +525,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 6. ЗАПУСК
+  // 9. ЗАПУСК
   // ==========================================
 
   const hasAccess = await checkAccess();
@@ -324,11 +537,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     refreshFinance
   );
 
-  // Пока создание расходов не подключено,
-  // кнопка остаётся отключённой.
-  if (addExpenseButton) {
-    addExpenseButton.disabled = true;
-  }
+  addExpenseButton.disabled = false;
+
+  addExpenseButton.addEventListener(
+    "click",
+    openExpenseForm
+  );
+
+  cancelButton.addEventListener(
+    "click",
+    closeExpenseForm
+  );
+
+  expenseForm.addEventListener(
+    "submit",
+    submitNewExpense
+  );
 
   await refreshFinance();
 });
