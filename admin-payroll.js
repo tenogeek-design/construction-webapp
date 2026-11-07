@@ -32,8 +32,6 @@
 
   const moneyInput = v => Number(v || 0).toLocaleString('pl-PL', {minimumFractionDigits:2,maximumFractionDigits:2});
 
- 
-
   async function load() {
 
     if (!$('payrollMessage')) return;
@@ -216,8 +214,6 @@
 
   }
 
- 
-
   function render() {
 
     const filter = ($('payrollSearch')?.value||'').trim().toLowerCase();
@@ -308,8 +304,6 @@
 
   }
 
- 
-
   const rpc = async (name, args) => {
 
     const {data,error} = await client.rpc(name,args);
@@ -331,8 +325,6 @@
   const optionHtml = (items, label) => `<option value="">${label}</option>` +
 
     items.map(x=>`<option value="${safe(x.id)}">${safe(x.full_name||x.name||'Без названия')}</option>`).join('');
-
- 
 
   function setupActions() {
 
@@ -519,8 +511,6 @@
     setupBrigadeBudget();
 
   }
-
- 
 
   function updateOptions(){
 
@@ -716,8 +706,6 @@
 
   }
 
- 
-
   async function loadBrigadeBudget() {
 
     const select = $('payrollBrigadeSelect');
@@ -784,15 +772,13 @@
 
       </div><p style="color:#a4a7ad;margin-top:12px;font-size:12px">Бюджет — лимит выплат, а не остаток кассы.</p>`;
 
+      const {data: entries, error} = await client.rpc(
 
-const {data: entries, error} = await client.rpc(
-  'get_brigade_payroll_budget_history',
-  {p_brigade_id: brigadeId}
-);
+        'get_brigade_payroll_budget_history',
 
-        .select('id,entry_type,amount,note,created_at,created_by')
+        {p_brigade_id: brigadeId}
 
-        .eq('brigade_id', brigadeId).order('created_at', {ascending:false}).limit(100);
+      );
 
       if (select.value !== brigadeId || !historyBox) return;
 
@@ -833,8 +819,6 @@ const {data: entries, error} = await client.rpc(
     }
 
   }
-
- 
 
   async function saveBrigadeBudget(e) {
 
@@ -905,8 +889,6 @@ const {data: entries, error} = await client.rpc(
     }
 
   }
-
- 
 
   function setupPayments(){
 
@@ -980,8 +962,6 @@ const {data: entries, error} = await client.rpc(
 
   }
 
- 
-
   function updatePaymentOptions(){
 
     if ($('ppEmployee')) $('ppEmployee').innerHTML=optionHtml(employeeOptions,'Выберите сотрудника');
@@ -989,8 +969,6 @@ const {data: entries, error} = await client.rpc(
     if ($('ppProject')) $('ppProject').innerHTML=optionHtml(projectOptions,'Без объекта');
 
   }
-
- 
 
   function renderPayments(){
 
@@ -1065,8 +1043,6 @@ const {data: entries, error} = await client.rpc(
     ].map(v=>`<td style="padding:10px;border-bottom:1px solid #3b3f46;vertical-align:top">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'Выплат пока нет.';
 
   }
-
- 
 
   async function confirmPayment(e){
 
@@ -1158,8 +1134,6 @@ const {data: entries, error} = await client.rpc(
 
   }
 
- 
-
   async function savePaymentDraft(e){
 
     e.preventDefault();
@@ -1210,8 +1184,6 @@ const {data: entries, error} = await client.rpc(
 
   }
 
- 
-
   function show() {
 
     document.querySelectorAll('.dashboard-section').forEach(s=>s.style.display='none');
@@ -1225,8 +1197,6 @@ const {data: entries, error} = await client.rpc(
     if (!initialized) { initialized=true; setupActions(); load(); }
 
   }
-
- 
 
   document.addEventListener('DOMContentLoaded',()=>{
 
