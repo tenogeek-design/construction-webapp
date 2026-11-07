@@ -330,3 +330,34 @@ url("construction-logo.png")    center / cover no-repeat;
     border-radius: 14px;
   }
 }
+
+/* FIX — CONSTRUCTION GROUP LOGO */
+
+#homePage .hero {
+  background-image: url("/изображение.png") !important;
+  background-position: center center !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-color: #34383d !important;
+
+  min-height: 440px;
+  padding: 0;
+}
+
+#homePage .hero .eyebrow,
+#homePage .hero h1,
+#homePage .hero p {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  #homePage .hero {
+    min-height: 300px;
+  }
+}
+
+@media (max-width: 480px) {
+  #homePage .hero {
+    min-height: 210px;
+  }
+}
