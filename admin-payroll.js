@@ -1,3 +1,4 @@
+
 "use strict";
 /* CONSTRUCTION GROUP — payroll admin: work, accruals, payment drafts */
 (() => {
@@ -11,8 +12,8 @@
   let currentUserId = null;
   let brigadeOptions = [];
   let financeAccountOptions = [];
-  // Enable only after verifying the server function body and an isolated test.
-  const PAYOUTS_ENABLED = false;
+  // Confirmation is always performed server-side by the atomic RPC.
+  const PAYOUTS_ENABLED = true;
   const moneyInput = v => Number(v || 0).toLocaleString('pl-PL', {minimumFractionDigits:2,maximumFractionDigits:2});
 
   async function load() {
@@ -53,6 +54,11 @@
       const {data:payments,error:payErr} = await client.from('payroll_payments')
         .select('id,status,payment_type,employee_id,project_id,amount,currency,payment_method,payment_date,description').order('payment_date',{ascending:false}).limit(10000);
       if (payErr) throw payErr;
+      const {data:accounts,error:accountError} = await client.from('finance_accounts')
+        .select('id,name,account_type,currency,status')
+        .eq('status','active').eq('currency','PLN').order('name');
+      financeAccountOptions = accountError ? [] : (accounts || []);
+      if (accountError) console.warn('Finance accounts:', accountError.message);
       employeeOptions = employees || [];
        paymentRows = payments || [];
       projectOptions = projects || [];
@@ -307,7 +313,7 @@
       </div>
       <form id="payrollPaymentForm" style="padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
         <label>Сотрудник<select id="ppEmployee" required style="display:block;width:100%;padding:12px;margin-top:5px"></select></label>
-        <label>Объект (необязательно)<select id="ppProject" style="display:block;width:100%;padding:12px;margin-top:5px"></select></label>
+        <label>Объект (обязательно для подтверждения)<select id="ppProject" style="display:block;width:100%;padding:12px;margin-top:5px"></select></label>
         <label>Вид выплаты<select id="ppType" required style="display:block;width:100%;padding:12px;margin-top:5px"><option value="advance">Аванс</option><option value="salary">Зарплата</option><option value="bonus">Премия</option></select></label>
         <label>Сумма, zł<input id="ppAmount" type="number" min="0.01" step="0.01" required style="display:block;width:100%;padding:12px;margin-top:5px"></label>
         <label>Способ<select id="ppMethod" required style="display:block;width:100%;padding:12px;margin-top:5px"><option value="cash">Наличные</option><option value="bank">Банк</option></select></label>
@@ -315,7 +321,7 @@
         <label style="grid-column:1/-1">Примечание<input id="ppDescription" maxlength="500" placeholder="За какой период / комментарий" style="display:block;width:100%;padding:12px;margin-top:5px"></label>
         <div style="grid-column:1/-1"><button id="ppSave" type="submit" style="padding:12px 18px;cursor:pointer">Создать черновик выплаты</button></div>
       </form>
-      <p id="ppMessage" role="status" style="padding:0 18px 18px;color:#a4a7ad">Черновик не означает, что деньги выданы. Подтверждение и движение средств подключим после проверки финансовой операции.</p>
+      <p id="ppMessage" role="status" style="padding:0 18px 18px;color:#a4a7ad">Черновик не списывает деньги. Для подтверждения выберите бригаду и счёт в строке выплаты.</p>
       <div class="panel-header"><div><h3>История выплат</h3><p>Черновики и подтверждённые платежи</p></div></div>
       <div id="ppTable" style="padding:12px 18px 20px;overflow-x:auto">Загрузка...</div>`;
     anchor.insertAdjacentElement('afterend', panel);
@@ -328,20 +334,63 @@
     if ($('ppEmployee')) $('ppEmployee').innerHTML=optionHtml(employeeOptions,'Выберите сотрудника');
     if ($('ppProject')) $('ppProject').innerHTML=optionHtml(projectOptions,'Без объекта');
   }
-  function renderPayments(){
-    if (!$('ppTable')) return;
-    const confirmed = paymentRows.filter(p=>p.status==='confirmed');
-    const total = type=>confirmed.filter(p=>p.payment_type===type).reduce((s,p)=>s+Number(p.amount||0),0);
-    $('payrollAdvancesTotal').textContent=money(total('advance'));
-    $('payrollSalaryTotal').textContent=money(total('salary'));
-    $('payrollDraftsTotal').textContent=String(paymentRows.filter(p=>p.status==='draft').length);
-    const names=new Map(employeeOptions.map(e=>[e.id,e.full_name]));
-    const types={advance:'Аванс',salary:'Зарплата',bonus:'Премия',adjustment:'Корректировка'};
-    const statuses={draft:'Черновик',confirmed:'Подтверждено',cancelled:'Отменено'};
-    $('ppTable').innerHTML=paymentRows.length?`<table style="width:100%;min-width:730px;border-collapse:collapse;text-align:left"><thead><tr>${['Дата','Сотрудник','Тип','Сумма','Способ','Статус'].map(t=>`<th style="padding:10px;border-bottom:1px solid #3b3f46">${t}</th>`).join('')}</tr></thead><tbody>${paymentRows.map(p=>`<tr>${[
-      safe(p.payment_date),safe(names.get(p.employee_id)||'—'),safe(types[p.payment_type]||p.payment_type),money(p.amount),p.payment_method==='cash'?'Наличные':'Банк',safe(statuses[p.status]||p.status)
-    ].map(v=>`<td style="padding:10px;border-bottom:1px solid #3b3f46">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'Выплат пока нет.';
-  }
+   function renderPayments(){
+     if (!$('ppTable')) return;
+     const confirmed = paymentRows.filter(p=>p.status==='confirmed');
+     const total = type=>confirmed.filter(p=>p.payment_type===type).reduce((s,p)=>s+Number(p.amount||0),0);
+     $('payrollAdvancesTotal').textContent=money(total('advance'));
+     $('payrollSalaryTotal').textContent=money(total('salary'));
+     $('payrollDraftsTotal').textContent=String(paymentRows.filter(p=>p.status==='draft').length);
+     const names=new Map(employeeOptions.map(e=>[e.id,e.full_name]));
+     const types={advance:'Аванс',salary:'Зарплата',bonus:'Премия',adjustment:'Корректировка'};
+     const statuses={draft:'Черновик',confirmed:'Подтверждено',cancelled:'Отменено'};
+     const activeBrigades=brigadeOptions.filter(b=>b.status==='active');
+     const action=p=>{
+       if(p.status!=='draft') return '—';
+       if(!['advance','salary'].includes(p.payment_type)) return 'Для этого типа выплаты подтверждение пока недоступно';
+       if(!p.project_id) return 'Нет объекта — подтверждение невозможно';
+       if(!PAYOUTS_ENABLED) return 'Подтверждение отключено';
+       const accounts=financeAccountOptions.filter(a=>a.account_type===p.payment_method);
+       return `<div style="display:flex;flex-direction:column;gap:6px;min-width:175px">
+         <select data-brigade-for="${safe(p.id)}" aria-label="Бригада">${optionHtml(activeBrigades,'Выберите бригаду')}</select>
+         <select data-account-for="${safe(p.id)}" aria-label="Финансовый счёт">${optionHtml(accounts,'Выберите счёт')}</select>
+         <button type="button" data-confirm-payment="${safe(p.id)}" style="cursor:pointer;padding:8px">Подтвердить выплату</button>
+       </div>`;
+     };
+     $('ppTable').innerHTML=paymentRows.length?`<table style="width:100%;min-width:920px;border-collapse:collapse;text-align:left"><thead><tr>${['Дата','Сотрудник','Объект','Тип','Сумма','Способ','Статус','Действие'].map(t=>`<th style="padding:10px;border-bottom:1px solid #3b3f46">${t}</th>`).join('')}</tr></thead><tbody>${paymentRows.map(p=>`<tr>${[
+       safe(p.payment_date),safe(names.get(p.employee_id)||'—'),safe(projectOptions.find(x=>x.id===p.project_id)?.name||'—'),safe(types[p.payment_type]||p.payment_type),money(p.amount),p.payment_method==='cash'?'Наличные':'Банк',safe(statuses[p.status]||p.status),action(p)
+     ].map(v=>`<td style="padding:10px;border-bottom:1px solid #3b3f46;vertical-align:top">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'Выплат пока нет.';
+   }
+
+   async function confirmPayment(e){
+     const btn=e.target.closest('[data-confirm-payment]');
+     if(!btn) return;
+     const id=btn.dataset.confirmPayment;
+     const payment=paymentRows.find(p=>p.id===id);
+     const brigadeId=$('ppTable').querySelector(`[data-brigade-for="${id}"]`)?.value;
+     const accountId=$('ppTable').querySelector(`[data-account-for="${id}"]`)?.value;
+     const msg=$('ppMessage');
+     try{
+       if(!payment || payment.status!=='draft') throw Error('Черновик не найден или уже обработан');
+       if(!brigadeId || !accountId) throw Error('Выберите бригаду и финансовый счёт');
+       if(!payment.project_id) throw Error('Выплата должна быть привязана к объекту');
+       const employee=employeeOptions.find(x=>x.id===payment.employee_id)?.full_name||'Сотрудник';
+       const account=financeAccountOptions.find(x=>x.id===accountId)?.name||'Счёт';
+       if(!confirm(`Подтвердить реальную выплату ${money(payment.amount)}?\nСотрудник: ${employee}\nСчёт: ${account}\nБудут списаны деньги со счёта и бюджет бригады. Отменить операцию после подтверждения нельзя.`))return;
+       btn.disabled=true;
+       const transactionId=await rpc('confirm_brigade_payroll_payment',{
+         p_payment_id:id,p_brigade_id:brigadeId,p_account_id:accountId
+       });
+       await load();
+       msg.textContent='Выплата подтверждена. Финансовая операция: '+transactionId;
+       msg.style.color='#a4d7b5';
+     }catch(err){
+       msg.textContent='Выплата не подтверждена: '+(err.message||err);
+       msg.style.color='#ff8d8d';
+       btn.disabled=false;
+     }
+   }
+
   async function savePaymentDraft(e){
     e.preventDefault();
     const btn=$('ppSave'); btn.disabled=true;
