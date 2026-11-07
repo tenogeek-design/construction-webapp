@@ -126,6 +126,7 @@
       color: #a4a7ad;
       font-size: 12px;
       margin-top: 15px;
+      line-height: 1.5;
     }
 
     /* ФОРМА РАСХОДОВ */
@@ -190,12 +191,50 @@
 
     .form-field input[type="file"] {
       padding: 10px;
+      cursor: pointer;
     }
 
     .form-hint {
       color: #a4a7ad;
       font-size: 12px;
       line-height: 1.5;
+    }
+
+    .receipt-info {
+      padding: 12px 14px;
+      border: 1px solid #454a52;
+      background: #30343a;
+      border-radius: 8px;
+      color: #a4a7ad;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    .receipt-info strong {
+      color: #f5f5f4;
+    }
+
+    .receipt-preview {
+      margin-top: 8px;
+    }
+
+    .receipt-preview[hidden] {
+      display: none;
+    }
+
+    .receipt-preview img {
+      display: block;
+      max-width: 100%;
+      max-height: 260px;
+      border-radius: 8px;
+      border: 1px solid #454a52;
+      object-fit: contain;
+    }
+
+    .receipt-file-name {
+      color: #ff812e;
+      font-size: 12px;
+      overflow-wrap: anywhere;
     }
 
     .form-actions {
@@ -289,22 +328,13 @@
         Доступный баланс
       </p>
 
-      <div
-        class="balance"
-        id="myBalance"
-      >
+      <div class="balance" id="myBalance">
         Загрузка...
       </div>
 
-      <p
-        id="cashboxName"
-        class="muted"
-      ></p>
+      <p id="cashboxName" class="muted"></p>
 
-      <button
-        id="refreshBalance"
-        type="button"
-      >
+      <button id="refreshBalance" type="button">
         Обновить баланс
       </button>
 
@@ -361,6 +391,7 @@
 
         <p class="muted">
           Заполните информацию о покупке.
+          При необходимости прикрепите чек.
           После отправки заявка поступит
           на согласование.
         </p>
@@ -370,21 +401,21 @@
           <div class="form-grid">
 
             <div class="form-field full-width">
+
               <label for="expenseProject">
                 Объект *
               </label>
 
-              <select
-                id="expenseProject"
-                required
-              >
+              <select id="expenseProject" required>
                 <option value="">
                   Загрузка объектов...
                 </option>
               </select>
+
             </div>
 
             <div class="form-field full-width">
+
               <label for="expenseTitle">
                 Что купили? *
               </label>
@@ -396,9 +427,11 @@
                 placeholder="Например: Перчатки 10 пар"
                 required
               >
+
             </div>
 
             <div class="form-field">
+
               <label for="expenseAmount">
                 Сумма, zł *
               </label>
@@ -411,9 +444,11 @@
                 placeholder="0.00"
                 required
               >
+
             </div>
 
             <div class="form-field">
+
               <label for="expenseCategory">
                 Категория
               </label>
@@ -435,17 +470,16 @@
                   Другое
                 </option>
               </select>
+
             </div>
 
             <div class="form-field full-width">
+
               <label for="expensePaymentMethod">
                 Способ оплаты *
               </label>
 
-              <select
-                id="expensePaymentMethod"
-                required
-              >
+              <select id="expensePaymentMethod" required>
                 <option value="cash">
                   Наличные компании
                 </option>
@@ -456,9 +490,11 @@
                   Личные деньги сотрудника
                 </option>
               </select>
+
             </div>
 
             <div class="form-field full-width">
+
               <label for="expenseDescription">
                 Примечание
               </label>
@@ -468,9 +504,13 @@
                 maxlength="1000"
                 placeholder="Количество, назначение покупки и другие детали"
               ></textarea>
+
             </div>
 
+            <!-- ФОТОГРАФИЯ ЧЕКА -->
+
             <div class="form-field full-width">
+
               <label for="expenseReceipt">
                 Фотография чека
               </label>
@@ -479,14 +519,38 @@
                 type="file"
                 id="expenseReceipt"
                 accept="image/jpeg,image/png,image/webp,application/pdf"
-                disabled
               >
 
               <div class="form-hint">
-                Загрузку чеков подключим после настройки
-                защищённого хранилища Supabase.
-                Пока можно создать заявку без фотографии.
+                Необязательно. JPG, PNG, WEBP или PDF.
+                Максимальный размер — 10 МБ.
+                Можно сфотографировать чек телефоном
+                или выбрать готовый файл.
               </div>
+
+              <div
+                class="receipt-info"
+                id="expenseReceiptInfo"
+                hidden
+              >
+                <strong>Выбранный файл:</strong>
+                <div
+                  class="receipt-file-name"
+                  id="expenseReceiptFileName"
+                ></div>
+              </div>
+
+              <div
+                class="receipt-preview"
+                id="expenseReceiptPreview"
+                hidden
+              >
+                <img
+                  id="expenseReceiptPreviewImage"
+                  alt="Предпросмотр фотографии чека"
+                >
+              </div>
+
             </div>
 
           </div>
@@ -524,10 +588,7 @@
 
       <!-- СПИСОК РАСХОДОВ -->
 
-      <div
-        class="expense-list"
-        id="foremanExpenses"
-      >
+      <div class="expense-list" id="foremanExpenses">
         <div class="empty-state">
           Загрузка расходов...
         </div>
