@@ -241,3 +241,60 @@ body {
     min-height: 110px;
   }
 }
+
+/* CONSTRUCTION GROUP — MAIN BRAND IMAGE */
+
+#homePage .hero {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(20, 21, 24, .82),
+      rgba(20, 21, 24, .15)
+    ),
+    url("construction-logo.png")
+    center / cover no-repeat;
+
+  border: 1px solid #52677d;
+}
+
+/* SMALL NAVIGATION BUTTONS */
+
+#homePage .home-menu {
+  gap: 12px;
+}
+
+#homePage .home-card:not(.featured) {
+  min-height: 76px;
+  padding: 17px 20px;
+  border-radius: 12px;
+  background: #292725;
+  border: 1px solid #615247;
+}
+
+#homePage .home-card:not(.featured) .card-index {
+  display: none;
+}
+
+#homePage .home-card:not(.featured) strong {
+  font-size: 16px;
+}
+
+#homePage .home-card:not(.featured) small {
+  font-size: 11px;
+}
+
+#homePage .home-card:not(.featured) {
+  grid-template-columns: 1fr 22px;
+}
+
+#homePage .home-card:not(.featured):hover {
+  border-color: #3589d5;
+  background: #302d2b;
+}
+
+@media (max-width: 480px) {
+  #homePage .home-card:not(.featured) {
+    min-height: 74px;
+    padding: 14px 12px;
+  }
+}
