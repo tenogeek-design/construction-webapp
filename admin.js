@@ -301,11 +301,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 6. ПЕРЕКЛЮЧЕНИЕ РАЗДЕЛОВ
   // ==========================================
 
-  const sectionTitles = {
-    dashboard: "Панель управления",
-    requests: "Заявки",
-    finance: "Финансы компании"
-  };
+const sectionTitles = {
+  dashboard: "Панель управления",
+  requests: "Заявки",
+  finance: "Финансы компании",
+  payroll: "Зарплаты"
+};
 
   function showSection(sectionName) {
     const requiredPermission = menuPermissions[sectionName];
