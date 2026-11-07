@@ -135,7 +135,7 @@
               <span>Активные объекты</span>
               <span class="stat-icon blue">▧</span>
             </div>
-            <strong>0</strong>
+            <strong id="dashboardActiveProjects">—</strong>
             <small>В работе</small>
           </article>
 
@@ -144,7 +144,7 @@
               <span>Сотрудники</span>
               <span class="stat-icon green">♙</span>
             </div>
-            <strong>0</strong>
+            <strong id="dashboardEmployees">—</strong>
             <small>В базе компании</small>
           </article>
 
@@ -153,10 +153,15 @@
               <span>Задачи</span>
               <span class="stat-icon purple">☑</span>
             </div>
-            <strong>0</strong>
+            <strong id="dashboardActiveTasks">—</strong>
             <small>Активные задачи</small>
           </article>
 
+        </div>
+
+        <div style="display:flex;align-items:center;gap:12px;margin:0 0 16px;flex-wrap:wrap;">
+          <button type="button" id="dashboardStatsRefresh">↻ Обновить статистику</button>
+          <span id="dashboardStatsStatus" role="status" style="color:#a4a7ad;font-size:12px;">Загрузка статистики...</span>
         </div>
 
         <div class="dashboard-grid">
@@ -651,9 +656,74 @@
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="admin.js"></script>
+  <script src="admin-finance.js"></script>
+  <script src="admin-payroll.js"></script>
+  <script src="admin-time.js"></script>
+  <script src="admin-finance-payroll.js"></script>
   <script src="admin-projects.js"></script>
   <script src="admin-tasks.js"></script>
   <script src="admin-tasks-review.js"></script>
-  <script src="admin.js"></script>
+  <script>
+"use strict";
+/* CONSTRUCTION GROUP — Dashboard counters. Read-only; does not modify records. */
+(() => {
+  const $ = id => document.getElementById(id);
+  const root = $('dashboard');
+  if (!root || !window.supabase) return;
+  const client = window.supabase.createClient(
+    'https://yepxskcfxyiyqqhmdpve.supabase.co',
+    'sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH'
+  );
+  const output = {
+    projects: $('dashboardActiveProjects'),
+    employees: $('dashboardEmployees'),
+    tasks: $('dashboardActiveTasks')
+  };
+  const status = $('dashboardStatsStatus');
+  let busy = false;
+  async function count(table, filter) {
+    let query = client.from(table).select('id', {count:'exact', head:true});
+    if (filter) query = filter(query);
+    const {count, error} = await query;
+    if (error) throw error;
+    return count ?? 0;
+  }
+  async function refresh() {
+    if (busy) return;
+    busy = true;
+    if (status) status.textContent = 'Обновляем статистику...';
+    try {
+      const {data:{session}, error:sessionError} = await client.auth.getSession();
+      if (sessionError || !session) throw new Error('Нет активной сессии. Войдите заново.');
+      const {data:permissions,error:permissionsError} = await client.rpc('get_my_effective_permissions');
+      if (permissionsError) throw permissionsError;
+      const has = code => Array.isArray(permissions) && permissions.some(p => p.permission_code === code && p.scope === 'all');
+      const items = [
+        ['projects','projects','projects.view',q=>q.eq('status','active')],
+        ['employees','employees','employees.view',q=>q.eq('status','active')],
+        ['tasks','tasks','tasks.view',q=>q.in('status',['in_progress','review'])]
+      ];
+      const errors=[];
+      await Promise.all(items.map(async ([key,table,permission,filter])=>{
+        if (!output[key]) return;
+        if (!has(permission)) {output[key].textContent='Нет доступа';return;}
+        try {output[key].textContent=String(await count(table,filter));}
+        catch (err) {output[key].textContent='—';errors.push(table+': '+(err.message||err));}
+      }));
+      if (status) status.textContent=errors.length?'Ошибка загрузки: '+errors.join('; '):'Статистика обновлена из Supabase';
+    } catch(err) {
+      Object.values(output).forEach(el=>{if(el)el.textContent='—';});
+      if(status)status.textContent='Ошибка статистики: '+(err.message||err);
+    } finally {busy=false;}
+  }
+  const refreshButton=$('dashboardStatsRefresh');
+  if(refreshButton)refreshButton.addEventListener('click',refresh);
+  document.querySelectorAll('a[href="#dashboard"]').forEach(a=>a.addEventListener('click',()=>setTimeout(refresh,100)));
+  refresh();
+})();
+
+  </script>
 </body>
 </html>
