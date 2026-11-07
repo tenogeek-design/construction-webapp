@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -383,6 +384,25 @@
         <div class="payroll-metric">Выделено<strong id="foremanBudgetAllocated">—</strong></div>
         <div class="payroll-metric">Выплачено<strong id="foremanBudgetSpent">—</strong></div>
         <div class="payroll-metric">Осталось<strong id="foremanBudgetAvailable">—</strong></div>
+      </div>
+      <div style="margin:18px 0">
+        <button id="foremanNewPayment" type="button" disabled>+ Новая выплата</button>
+      </div>
+      <div id="foremanPaymentFormWrap" class="expense-form-container" hidden>
+        <h2>Новый черновик выплаты</h2>
+        <p class="muted">Сохранение черновика не списывает деньги. Подтверждение выполняется отдельно.</p>
+        <form id="foremanPaymentForm">
+          <div class="form-grid">
+            <div class="form-field"><label for="foremanPaymentEmployee">Работник *</label><select id="foremanPaymentEmployee" required></select></div>
+            <div class="form-field"><label for="foremanPaymentProject">Объект *</label><select id="foremanPaymentProject" required></select></div>
+            <div class="form-field"><label for="foremanPaymentType">Тип *</label><select id="foremanPaymentType"><option value="advance">Аванс</option><option value="salary">Зарплата</option></select></div>
+            <div class="form-field"><label for="foremanPaymentMethod">Способ *</label><select id="foremanPaymentMethod"><option value="cash">Наличные</option><option value="bank">Банк</option></select></div>
+            <div class="form-field"><label for="foremanPaymentAmount">Сумма, zł *</label><input id="foremanPaymentAmount" type="number" min="0.01" step="0.01" required></div>
+            <div class="form-field"><label for="foremanPaymentDate">Дата *</label><input id="foremanPaymentDate" type="date" required></div>
+            <div class="form-field full-width"><label for="foremanPaymentDescription">Примечание</label><textarea id="foremanPaymentDescription" maxlength="1000"></textarea></div>
+          </div>
+          <div class="form-actions"><button id="foremanSavePayment" type="submit">Сохранить черновик</button><button id="foremanCancelPayment" type="button" class="secondary-button">Отмена</button></div>
+        </form>
       </div>
       <div id="foremanPayrollMessage" class="muted" role="status" aria-live="polite">Загрузка выплат...</div>
       <div id="foremanPayrollDrafts" class="payroll-list"></div>
