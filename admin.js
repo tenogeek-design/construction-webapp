@@ -50,10 +50,11 @@ const permissionsLoaded = permissionList.length > 0;
 
     const requiredPermission = menuPermissions[section];
 
-    if (
-      requiredPermission &&
-      !permissionSet.has(requiredPermission)
-    ) {
+if (
+  permissionsLoaded &&
+  requiredPermission &&
+  !permissionSet.has(requiredPermission)
+) {
       item.style.display = "none";
     }
   });
