@@ -384,6 +384,38 @@
 
       </section>
 
+      <!-- PAYROLL -->
+      <section id="payroll" class="dashboard-section" style="display:none;">
+        <div class="welcome"><div>
+          <span class="eyebrow">УЧЁТ ЗАРПЛАТ</span>
+          <h2>Зарплаты сотрудников</h2>
+          <p>Подтверждённые начисления, выплаты и остатки по сотрудникам.</p>
+        </div></div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-heading"><span>Начислено</span><span class="stat-icon orange">₽</span></div><strong id="payrollAccrued">—</strong><small>Утверждённые начисления</small></article>
+          <article class="stat-card"><div class="stat-heading"><span>Выплачено</span><span class="stat-icon green">✓</span></div><strong id="payrollPaid">—</strong><small>Привязанные подтверждённые выплаты</small></article>
+          <article class="stat-card"><div class="stat-heading"><span>Осталось</span><span class="stat-icon blue">◷</span></div><strong id="payrollRemaining">—</strong><small>По утверждённым начислениям</small></article>
+        </div>
+        <section class="panel">
+          <div class="panel-header"><div><h3>Начисления по сотрудникам</h3><p>Только просмотр. Суммы в PLN.</p></div>
+            <button type="button" id="payrollRefreshBtn" class="text-link" style="cursor:pointer;background:none;border:none;">↻ Обновить</button>
+          </div>
+          <div style="padding:16px;display:flex;gap:12px;flex-wrap:wrap;">
+            <input type="search" id="payrollSearch" placeholder="Поиск по сотруднику или объекту" aria-label="Поиск начислений" style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
+            <select id="payrollStatus" aria-label="Статус начисления" style="min-width:170px;padding:12px;border-radius:6px;">
+              <option value="">Все статусы</option><option value="approved">Утверждено</option><option value="submitted">На проверке</option><option value="draft">Черновик</option><option value="cancelled">Отменено</option>
+            </select>
+          </div>
+          <p id="payrollMessage" role="status" style="padding:12px 20px;color:#a4a7ad;">Откройте раздел, чтобы загрузить данные.</p>
+          <div id="payrollTable" style="overflow-x:auto;padding:0 16px 20px;"></div>
+        </section>
+        <section class="panel" style="margin-top:20px;">
+          <div class="panel-header"><div><h3>Как считаются суммы</h3><p>Без повторного списания из кассы</p></div></div>
+          <p style="padding:16px;color:#a4a7ad;line-height:1.6;">«Выплачено» — сумма подтверждённых зарплатных выплат, привязанных к конкретным начислениям. Авансы и другие операции здесь не вычитаются: их общий баланс учитывается отдельно. До подключения полного расчёта этот раздел используется для просмотра.</p>
+        </section>
+        <footer class="footer"><span>CONSTRUCTION GROUP</span><span>Payroll · Version 1.0</span></footer>
+      </section>
+
       <!-- FINANCE -->
 
       <section id="finance" class="dashboard-section" style="display:none;">
@@ -481,6 +513,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="admin.js"></script>
   <script src="admin-finance.js"></script>
+  <script src="admin-payroll.js"></script>
 
 </body>
 </html>
