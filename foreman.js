@@ -43,7 +43,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   const formMessage = document.getElementById("expenseFormMessage");
 
   if (!window.supabase) {
-    balanceElement.textContent = "Ошибка загрузки авторизации";
+    if (balanceElement) {
+      balanceElement.textContent = "Ошибка загрузки авторизации";
+    }
     return;
   }
 
@@ -54,6 +56,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   let availableProjects = [];
   let isSubmitting = false;
+  let isAttachingReceipt = false;
   let previewUrl = null;
 
   const moneyFormat = (amount, currency = "PLN") =>
@@ -296,6 +299,19 @@ document.addEventListener("DOMContentLoaded", async () => {
     paid: "Оплачен"
   };
 
+  function getExpenseId(item) {
+    const value = item.id || item.expense_id || null;
+
+    if (
+      typeof value === "string" &&
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+    ) {
+      return value;
+    }
+
+    return null;
+  }
+
   function createExpenseRow(item) {
     const row = document.createElement("div");
 
@@ -346,6 +362,109 @@ document.addEventListener("DOMContentLoaded", async () => {
       receipt.style.marginTop = "6px";
       receipt.textContent = "✓ Чек прикреплён";
       details.appendChild(receipt);
+    }
+
+    // КНОПКА ПРИКРЕПЛЕНИЯ ЧЕКА
+    // Только для ожидающих расходов без чека.
+
+    const expenseId = getExpenseId(item);
+
+    if (
+      item.status === "pending" &&
+      !item.receipt_path &&
+      expenseId
+    ) {
+      const receiptSection = document.createElement("div");
+      receiptSection.style.marginTop = "12px";
+
+      const attachButton = document.createElement("button");
+      attachButton.type = "button";
+      attachButton.textContent = "📎 Прикрепить чек";
+
+      attachButton.style.cssText = [
+        "background:#ff812e",
+        "color:#ffffff",
+        "border:0",
+        "border-radius:8px",
+        "padding:10px 14px",
+        "font-size:13px",
+        "font-weight:bold",
+        "cursor:pointer"
+      ].join(";");
+
+      const fileInput = document.createElement("input");
+      fileInput.type = "file";
+      fileInput.accept =
+        ".jpg,.jpeg,.png,.webp,.pdf,image/jpeg,image/png,image/webp,application/pdf";
+      fileInput.hidden = true;
+
+      const uploadMessage = document.createElement("div");
+      uploadMessage.className = "muted";
+      uploadMessage.style.marginTop = "8px";
+
+      attachButton.addEventListener("click", () => {
+        if (isAttachingReceipt || isSubmitting) return;
+
+        fileInput.value = "";
+        fileInput.click();
+      });
+
+      fileInput.addEventListener("change", async () => {
+        const file = fileInput.files?.[0];
+
+        if (!file) return;
+
+        const validationError = validateReceipt(file);
+
+        if (validationError) {
+          uploadMessage.textContent = validationError;
+          uploadMessage.style.color = "#ef4444";
+          return;
+        }
+
+        if (isAttachingReceipt || isSubmitting) return;
+
+        isAttachingReceipt = true;
+        attachButton.disabled = true;
+        attachButton.textContent = "Загрузка...";
+        attachButton.style.opacity = "0.6";
+
+        uploadMessage.style.color = "#a4a7ad";
+        uploadMessage.textContent =
+          "Загружаем чек к существующему расходу...";
+
+        try {
+          await uploadExpenseReceipt(expenseId, file);
+
+          uploadMessage.style.color = "#22a06b";
+          uploadMessage.textContent =
+            "Чек успешно прикреплён!";
+
+          attachButton.textContent = "✓ Чек прикреплён";
+
+          await loadMyExpenses();
+
+        } catch (error) {
+          uploadMessage.style.color = "#ef4444";
+          uploadMessage.textContent =
+            "Ошибка загрузки чека: " + error.message;
+
+          attachButton.disabled = false;
+          attachButton.textContent = "📎 Повторить загрузку";
+          attachButton.style.opacity = "1";
+
+        } finally {
+          isAttachingReceipt = false;
+        }
+      });
+
+      receiptSection.append(
+        attachButton,
+        fileInput,
+        uploadMessage
+      );
+
+      details.appendChild(receiptSection);
     }
 
     const amount = document.createElement("div");
@@ -492,6 +611,12 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ==========================================
 
   async function uploadExpenseReceipt(expenseId, file) {
+    const validationError = validateReceipt(file);
+
+    if (validationError) {
+      throw new Error(validationError);
+    }
+
     const extension = ALLOWED_RECEIPT_TYPES[file.type];
 
     const fileName =
@@ -555,7 +680,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   async function submitNewExpense(event) {
     event.preventDefault();
 
-    if (isSubmitting) return;
+    if (isSubmitting || isAttachingReceipt) return;
 
     const projectId = projectSelect.value;
     const title = titleInput.value.trim();
@@ -565,10 +690,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     const description = descriptionInput.value.trim();
     const receiptFile = receiptInput.files?.[0] || null;
 
-    if (!projectId ||
-        !availableProjects.some(
-          project => project.project_id === projectId
-        )) {
+    if (
+      !projectId ||
+      !availableProjects.some(
+        project => project.project_id === projectId
+      )
+    ) {
       setFormMessage("Выберите доступный объект.", "error");
       return;
     }
@@ -578,11 +705,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       return;
     }
 
-    if (!Number.isFinite(amount) ||
-        amount <= 0 ||
-        Math.abs(
-          Math.round(amount * 100) - amount * 100
-        ) > 0.000001) {
+    if (
+      !Number.isFinite(amount) ||
+      amount <= 0 ||
+      Math.abs(
+        Math.round(amount * 100) - amount * 100
+      ) > 0.000001
+    ) {
       setFormMessage(
         "Введите корректную сумму с точностью до 0,01 zł.",
         "error"
@@ -611,7 +740,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     let expenseCreated = false;
 
     try {
-      setFormMessage("Создаём заявку на расход...", "warning");
+      setFormMessage(
+        "Создаём заявку на расход...",
+        "warning"
+      );
 
       const { data, error } = await client.rpc(
         "submit_expense",
@@ -632,26 +764,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       expenseCreated = true;
 
+      // После успешного создания очищаем форму.
+      // Даже если чек не загрузится, пользователь
+      // не должен случайно создать дубликат.
+
+      expenseForm.reset();
+      clearReceiptPreview();
+
       if (receiptFile) {
         const expenseId = extractExpenseId(data);
 
         if (!expenseId) {
           throw new Error(
-            "Расход создан, но сервер не вернул его ID. " +
-            "Чек не загружен. Не отправляйте расход повторно."
+            "Сервер не вернул ID расхода. " +
+            "Прикрепите чек через список расходов."
           );
         }
 
         setFormMessage(
-          "Заявка создана. Загружаем фотографию чека...",
+          "Заявка создана. Загружаем чек...",
           "warning"
         );
 
         await uploadExpenseReceipt(expenseId, receiptFile);
       }
-
-      expenseForm.reset();
-      clearReceiptPreview();
 
       setFormMessage(
         receiptFile
@@ -665,9 +801,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch (error) {
       setFormMessage(
         expenseCreated
-          ? "Заявка уже создана, но возникла ошибка с чеком: " +
-            error.message +
-            " Проверьте список расходов и не создавайте дубликат."
+          ? "Заявка уже создана. " +
+            "Не создавайте её повторно. " +
+            "Прикрепите чек через список расходов. " +
+            "Подробности: " + error.message
           : "Ошибка создания расхода: " + error.message,
         "error"
       );
