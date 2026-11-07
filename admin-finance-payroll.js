@@ -45,8 +45,7 @@ const [accrualRes, allocationRes, paymentRes, employeeRes, projectRes, cancellat
       if (authError) throw authError;
       if (!session) throw new Error('Войдите в админ-панель для просмотра данных');
 
-      const [accrualRes, allocationRes, paymentRes, employeeRes, projectRes] = await Promise.all([
-        client.from('payroll_accruals').select('id,employee_id,project_id,final_amount,status,currency').eq('status','approved').limit(1000),
+const [accrualRes, allocationRes, paymentRes, employeeRes, projectRes, cancellationRes] = await Promise.all([        client.from('payroll_accruals').select('id,employee_id,project_id,final_amount,status,currency').eq('status','approved').limit(1000),
         client.from('payroll_payment_allocations').select('accrual_id,payment_id,amount').limit(5000),
         client.from('payroll_payments').select('id,status').limit(5000),
         client.from('employees').select('id,full_name').limit(1000),
