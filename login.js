@@ -39,6 +39,7 @@ document.addEventListener("DOMContentLoaded", () => {
     button.disabled = true;
 
     try {
+      // 1. Авторизация
       const { data, error } =
         await client.auth.signInWithPassword({
           email,
@@ -47,6 +48,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (error) throw error;
 
+      // 2. Получаем активные роли пользователя
       const { data: roleData, error: roleError } =
         await client
           .from("app_user_roles")
@@ -60,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
         role => role.role_code
       );
 
+      // 3. Определяем кабинет
       let destination = null;
 
       // Владелец и администратор
@@ -70,25 +73,41 @@ document.addEventListener("DOMContentLoaded", () => {
         destination = "/admin.html";
       }
 
-      // Бригадир
+      // Прораб
       else if (roles.includes("foreman")) {
         destination = "/foreman.html";
       }
 
-      // Остальные роли пока не имеют кабинета
-      if (!destination) {
-        await client.auth.signOut();
+      // Заказчик
+      else if (roles.includes("client")) {
+        destination = "/client.html";
+      }
 
+      // Работник — кабинет создадим следующим этапом
+      else if (roles.includes("worker")) {
+        message.textContent =
+          "Аккаунт работника активен. Кабинет находится в разработке.";
+        return;
+      }
+
+      // Неизвестная роль
+      if (!destination) {
         throw new Error(
-          "Для вашей роли кабинет пока недоступен."
+          "Для вашего аккаунта не назначена активная роль. Обратитесь к администратору."
         );
       }
+
+      // 4. Переход в нужный кабинет
+      message.textContent = "Вход выполнен. Открываем кабинет...";
 
       window.location.replace(destination);
 
     } catch (error) {
+      console.error("Login error:", error);
+
       message.textContent =
         error.message || "Ошибка авторизации.";
+
     } finally {
       button.disabled = false;
     }
