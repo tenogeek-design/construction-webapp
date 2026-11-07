@@ -210,8 +210,39 @@ rows = (accruals || []).map(a => {
       catch(err){notify(err.message,true);}finally{btn.disabled=false;}
     });
     $('payrollTable').addEventListener('click',async e=>{
-      const btn=e.target.closest('[data-approve-accrual]');if(!btn)return;
-      if(!confirm('Утвердить начисление без корректировки суммы?'))return;
+const cancelBtn = e.target.closest('[data-cancel-accrual]');
+
+if (cancelBtn) {
+  const reason = prompt('Причина отмены начисления:');
+
+  if (reason === null) return;
+
+  if (!reason.trim()) {
+    notify('Причина отмены обязательна', true);
+    return;
+  }
+
+  if (!confirm('Отменить начисление? История сохранится.')) return;
+
+  cancelBtn.disabled = true;
+
+  try {
+    await rpc('cancel_payroll_accrual', {
+      p_accrual_id: cancelBtn.dataset.cancelAccrual,
+      p_reason: reason.trim()
+    });
+
+    notify('Начисление отменено');
+    await load();
+  } catch (err) {
+    notify(err.message, true);
+    cancelBtn.disabled = false;
+  }
+
+  return;
+}
+
+const btn=e.target.closest('[data-approve-accrual]');if(!btn)return;      if(!confirm('Утвердить начисление без корректировки суммы?'))return;
       btn.disabled=true;
       try {
         await rpc('approve_payroll_accrual',{p_accrual_id:btn.dataset.approveAccrual,p_final_amount:null,p_adjustment_reason:null,p_message:null});
