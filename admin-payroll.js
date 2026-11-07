@@ -81,10 +81,19 @@ const cancellationMap = new Map(
         if (p?.status !== 'confirmed' || p?.payment_type !== 'salary') continue;
         paidMap.set(a.accrual_id,(paidMap.get(a.accrual_id)||0)+Number(a.amount));
       }
-      rows = (accruals||[]).map(a=>({
-        ...a,name:names.get(a.employee_id)||'Сотрудник',project:projectNames.get(a.project_id)||'Без объекта',
-        paid:paidMap.get(a.id)||0
-      }));
+rows = (accruals || []).map(a => {
+  const cancellation = cancellationMap.get(a.id);
+
+  return {
+    ...a,
+    status: cancellation ? 'cancelled' : a.status,
+    cancellationReason: cancellation?.reason || null,
+    cancelledAt: cancellation?.cancelled_at || null,
+    name: names.get(a.employee_id) || 'Сотрудник',
+    project: projectNames.get(a.project_id) || 'Без объекта',
+    paid: paidMap.get(a.id) || 0
+  };
+});
       render();
       updateOptions();
       await loadWork();
