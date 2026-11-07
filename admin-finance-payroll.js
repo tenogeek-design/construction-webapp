@@ -50,8 +50,8 @@ const [accrualRes, allocationRes, paymentRes, employeeRes, projectRes, cancellat
         client.from('payroll_payment_allocations').select('accrual_id,payment_id,amount').limit(5000),
         client.from('payroll_payments').select('id,status').limit(5000),
         client.from('employees').select('id,full_name').limit(1000),
-        client.from('projects').select('id,name').limit(1000)
-      ]);
+client.from('projects').select('id,name').limit(1000),
+client.from('payroll_accrual_cancellations').select('accrual_id').limit(10000)      ]);
       for (const r of [accrualRes,allocationRes,paymentRes,employeeRes,projectRes]) if(r.error) throw r.error;
       const accruals = accrualRes.data || [];
       const payments = new Map((paymentRes.data||[]).map(p=>[p.id,p]));
