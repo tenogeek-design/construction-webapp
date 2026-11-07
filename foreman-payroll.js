@@ -1,3 +1,4 @@
+
 "use strict";
 /* CONSTRUCTION GROUP: payroll section for foreman. All confirmations enforced by server RPC. */
 document.addEventListener("DOMContentLoaded", async () => {
@@ -10,6 +11,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   const money = n => Number(n || 0).toLocaleString('pl-PL',{minimumFractionDigits:2,maximumFractionDigits:2})+' zł';
   const msg = text => { $('foremanPayrollMessage').textContent = text; };
   const select = $('foremanPayrollBrigade');
+  const paymentForm = $('foremanPaymentForm');
+  let currentUserId = null;
+  let foremanEmployeeId = null;
+  let eligibleEmployees = [];
+  let eligibleProjects = [];
   let projects = [], payments = [], employees = [], accounts = [], brigadeIds = new Set(), busy = false;
   const uuid = v => typeof v === 'string' && /^[0-9a-f]{8}(-[0-9a-f]{4}){3}-[0-9a-f]{12}$/i.test(v);
   const label = (p, type) => {const el=document.createElement(type||'span');el.textContent=String(p??'—');return el;};
@@ -39,6 +45,63 @@ document.addEventListener("DOMContentLoaded", async () => {
     if(brigadeIds.has(selected))select.value=selected;
     else if(select.options.length===2)select.selectedIndex=1;
     return !!select.value;
+  }
+  function fillOptions(id, items, placeholder) {
+    const el=$(id);el.replaceChildren(new Option(placeholder,''));
+    for(const item of items)el.appendChild(new Option(item.name,item.id));
+  }
+  async function loadEligibleOptions(brigadeId) {
+    // A worker must be an active brigade member; projects must belong to this brigade.
+    // Supabase RLS is still responsible for enforcing actual access.
+    const members=await get('brigade_members','brigade_id,employee_id,joined_at,left_at');
+    const today=new Date().toISOString().slice(0,10);
+    const memberIds=new Set(members.filter(m=>m.brigade_id===brigadeId && m.joined_at<=today && (!m.left_at||m.left_at>=today)).map(m=>m.employee_id));
+    eligibleEmployees=employees.filter(e=>memberIds.has(e.id)&&e.id!==foremanEmployeeId);
+    eligibleProjects=projects.filter(p=>p.brigade_id===brigadeId);
+    fillOptions('foremanPaymentEmployee',eligibleEmployees.map(e=>({id:e.id,name:e.full_name})),'Выберите работника');
+    fillOptions('foremanPaymentProject',eligibleProjects.map(p=>({id:p.id,name:p.name})),'Выберите объект');
+    $('foremanNewPayment').disabled=!eligibleEmployees.length||!eligibleProjects.length;
+    if(!eligibleEmployees.length||!eligibleProjects.length)
+      msg('Нет доступных работников или объектов для создания выплаты.');
+  }
+  function closePaymentForm() {
+    $('foremanPaymentFormWrap').hidden=true;
+    paymentForm.reset();
+  }
+  async function savePaymentDraft(event) {
+    event.preventDefault();
+    if(busy)return;
+    const brigadeId=select.value;
+    const employeeId=$('foremanPaymentEmployee').value;
+    const projectId=$('foremanPaymentProject').value;
+    const amount=Number($('foremanPaymentAmount').value);
+    const date=$('foremanPaymentDate').value;
+    const method=$('foremanPaymentMethod').value;
+    const type=$('foremanPaymentType').value;
+    if(!brigadeIds.has(brigadeId)||!eligibleEmployees.some(e=>e.id===employeeId)||!eligibleProjects.some(p=>p.id===projectId)) {
+      msg('Выберите работника и объект своей бригады.');return;
+    }
+    if(employeeId===foremanEmployeeId){msg('Бригадир не может выплачивать самому себе.');return;}
+    if(!Number.isFinite(amount)||amount<=0||Math.abs(amount*100-Math.round(amount*100))>0.00001){msg('Введите корректную сумму с точностью до 0,01 zł.');return;}
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date)||!['cash','bank'].includes(method)||!['advance','salary'].includes(type)){
+      msg('Проверьте дату и параметры выплаты.');return;
+    }
+    const save=$('foremanSavePayment');busy=true;save.disabled=true;
+    try {
+      // The DB must allow this INSERT under its existing RLS policy.
+      // Never use service_role or broaden policies in the browser.
+      const {error}=await client.from('payroll_payments').insert({
+        employee_id:employeeId,project_id:projectId,payment_type:type,amount,
+        currency:'PLN',payment_method:method,payment_date:date,
+        description:$('foremanPaymentDescription').value.trim()||null,
+        status:'draft',created_by:currentUserId
+      });
+      if(error)throw error;
+      closePaymentForm();
+      await refresh(false);
+      msg('Черновик сохранён. Деньги не списаны.');
+    }catch(err){msg('Черновик не создан: '+(err.message||err));}
+    finally{busy=false;save.disabled=false;}
   }
   function renderPayment(p,history=false) {
     const row=document.createElement('div');row.className='payroll-item';
@@ -76,10 +139,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   async function refresh(reloadBrigades=true) {
     if(busy && reloadBrigades)return;
-    reset();msg('Загрузка...');
+    reset();$('foremanNewPayment').disabled=true;closePaymentForm();msg('Загрузка...');
     try {
       const {data:{user},error:authError}=await client.auth.getUser();
       if(authError||!user){msg('Войдите в систему');return;}
+      currentUserId=user.id;
       if(reloadBrigades && !(await loadBrigades()))return;
       const id=select.value;
       if(!brigadeIds.has(id)){msg('Выберите свою бригаду');return;}
@@ -94,8 +158,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const ownProjectIds=new Set(ownProjects.map(p=>p.id));
       // Read operations still require RLS; UI filtering is not a security boundary.
       payments=await get('payroll_payments','id,status,payment_type,employee_id,project_id,amount,currency,payment_method,payment_date');
-      employees=await get('employees','id,full_name');
+      employees=await get('employees','id,full_name,user_id');
+      foremanEmployeeId=employees.find(e=>e.user_id===currentUserId)?.id||null;
       accounts=await get('finance_accounts','id,name,account_type,currency,status');
+      await loadEligibleOptions(id);
       const scoped=payments.filter(p=>ownProjectIds.has(p.project_id) && ['advance','salary'].includes(p.payment_type) && p.currency==='PLN');
       const drafts=scoped.filter(p=>p.status==='draft');
       const confirmed=scoped.filter(p=>p.status==='confirmed');
@@ -107,6 +173,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     }catch(err){msg('Ошибка загрузки зарплат: '+(err.message||err));}
   }
   select.addEventListener('change',()=>refresh(false));
+  $('foremanNewPayment').addEventListener('click',()=>{
+    $('foremanPaymentFormWrap').hidden=false;
+    $('foremanPaymentDate').value=new Date().toLocaleDateString('en-CA');
+  });
+  $('foremanCancelPayment').addEventListener('click',closePaymentForm);
+  paymentForm.addEventListener('submit',savePaymentDraft);
   $('foremanRefreshPayroll').addEventListener('click',()=>refresh(true));
   await refresh(true);
 });
