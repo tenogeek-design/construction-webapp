@@ -8,6 +8,7 @@
   const safe = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let client, rows = [], initialized = false;
   let employeeOptions = [], projectOptions = [], workRows = [], paymentRows = [];
+  let paymentAllocations = [];
   let currentUserId = null;
   let brigadeOptions = [];
   let financeAccountOptions = [];
@@ -60,6 +61,7 @@
       if (accountError) console.warn('Finance accounts:', accountError.message);
       employeeOptions = employees || [];
        paymentRows = payments || [];
+       paymentAllocations = allocs || [];
       projectOptions = projects || [];
       const names = new Map((employees||[]).map(x=>[x.id,x.full_name]));
       const projectNames = new Map((projects||[]).map(x=>[x.id,x.name]));
@@ -351,10 +353,20 @@
        if(!p.project_id) return 'Нет объекта — подтверждение невозможно';
        if(!PAYOUTS_ENABLED) return 'Подтверждение отключено';
        const accounts=financeAccountOptions.filter(a=>a.account_type===p.payment_method);
+       const availableAccruals=rows.filter(a=>a.status==='approved' &&
+         a.employee_id===p.employee_id && a.project_id===p.project_id &&
+         a.currency===p.currency && Number(a.final_amount)-a.paid >= Number(p.amount));
+       const accrualSelect=p.payment_type==='salary'
+         ? `<select data-accrual-for="${safe(p.id)}" aria-label="Начисление">
+              <option value="">Выберите начисление</option>
+              ${availableAccruals.map(a=>`<option value="${safe(a.id)}">${safe(a.period_start)} — ${safe(a.period_end)} · остаток ${money(Number(a.final_amount)-a.paid)}</option>`).join('')}
+            </select>${availableAccruals.length?'':'<small style="color:#ff9b8f">Нет подходящего утверждённого начисления</small>'}`
+         : '';
        return `<div style="display:flex;flex-direction:column;gap:6px;min-width:175px">
          <select data-brigade-for="${safe(p.id)}" aria-label="Бригада">${optionHtml(activeBrigades,'Выберите бригаду')}</select>
          <select data-account-for="${safe(p.id)}" aria-label="Финансовый счёт">${optionHtml(accounts,'Выберите счёт')}</select>
-         <button type="button" data-confirm-payment="${safe(p.id)}" style="cursor:pointer;padding:8px">Подтвердить выплату</button>
+         ${accrualSelect}
+         <button type="button" data-confirm-payment="${safe(p.id)}" style="cursor:pointer;padding:8px">${p.payment_type==='salary'?'Выплатить и привязать':'Подтвердить аванс'}</button>
        </div>`;
      };
      $('ppTable').innerHTML=paymentRows.length?`<table style="width:100%;min-width:920px;border-collapse:collapse;text-align:left"><thead><tr>${['Дата','Сотрудник','Объект','Тип','Сумма','Способ','Статус','Действие'].map(t=>`<th style="padding:10px;border-bottom:1px solid #3b3f46">${t}</th>`).join('')}</tr></thead><tbody>${paymentRows.map(p=>`<tr>${[
@@ -369,29 +381,46 @@
      const payment=paymentRows.find(p=>p.id===id);
      const brigadeId=$('ppTable').querySelector(`[data-brigade-for="${id}"]`)?.value;
      const accountId=$('ppTable').querySelector(`[data-account-for="${id}"]`)?.value;
+     const accrualId=$('ppTable').querySelector(`[data-accrual-for="${id}"]`)?.value;
      const msg=$('ppMessage');
-     try{
+     try {
        if(!payment || payment.status!=='draft') throw Error('Черновик не найден или уже обработан');
+       if(!['salary','advance'].includes(payment.payment_type)) throw Error('Этот вид выплаты пока недоступен');
        if(!brigadeId || !accountId) throw Error('Выберите бригаду и финансовый счёт');
        if(!payment.project_id) throw Error('Выплата должна быть привязана к объекту');
+       if(payment.payment_type==='salary') {
+         if(!accrualId) throw Error('Выберите утверждённое начисление');
+         const accrual=rows.find(a=>a.id===accrualId);
+         if(!accrual || accrual.status!=='approved' ||
+            accrual.employee_id!==payment.employee_id ||
+            accrual.project_id!==payment.project_id ||
+            accrual.currency!==payment.currency ||
+            Number(accrual.final_amount)-accrual.paid < Number(payment.amount))
+           throw Error('Начисление не подходит или недостаточно остатка');
+       }
        const employee=employeeOptions.find(x=>x.id===payment.employee_id)?.full_name||'Сотрудник';
        const account=financeAccountOptions.find(x=>x.id===accountId)?.name||'Счёт';
-       if(!confirm(`Подтвердить реальную выплату ${money(payment.amount)}?\nСотрудник: ${employee}\nСчёт: ${account}\nБудут списаны деньги со счёта и бюджет бригады. Отменить операцию после подтверждения нельзя.`))return;
+       const label=payment.payment_type==='salary'?'зарплату с привязкой к начислению':'аванс';
+       if(!confirm(`Подтвердить ${label} ${money(payment.amount)}?\nСотрудник: ${employee}\nСчёт: ${account}\nДеньги будут списаны со счёта и бюджета бригады. Операцию нельзя отменить.`))return;
        btn.disabled=true;
-       const transactionId=await rpc('confirm_brigade_payroll_payment',{
-         p_payment_id:id,p_brigade_id:brigadeId,p_account_id:accountId
-       });
+       const transactionId=payment.payment_type==='salary'
+         ? await rpc('confirm_and_allocate_salary',{
+             p_payment_id:id,p_brigade_id:brigadeId,p_account_id:accountId,p_accrual_id:accrualId
+           })
+         : await rpc('confirm_brigade_payroll_payment',{
+             p_payment_id:id,p_brigade_id:brigadeId,p_account_id:accountId
+           });
        await load();
        msg.textContent='Выплата подтверждена. Финансовая операция: '+transactionId;
        msg.style.color='#a4d7b5';
-     }catch(err){
+     } catch(err) {
        msg.textContent='Выплата не подтверждена: '+(err.message||err);
        msg.style.color='#ff8d8d';
        btn.disabled=false;
      }
    }
 
-  async function savePaymentDraft(e){
+async function savePaymentDraft(e){
     e.preventDefault();
     const btn=$('ppSave'); btn.disabled=true;
     const msg=$('ppMessage');
