@@ -1,0 +1,489 @@
+
+/* =========================================
+   CONSTRUCTION GROUP — MOBILE ADMIN 1.0
+   Works alongside admin.css
+   ========================================= */
+
+@media (max-width: 760px) {
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 135px;
+  }
+
+  html, body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+  }
+
+  body {
+    font-size: 14px;
+    -webkit-text-size-adjust: 100%;
+  }
+
+  .admin-layout {
+    display: block;
+    width: 100%;
+    min-height: 100dvh;
+  }
+
+  /* Mobile navigation */
+
+  .sidebar {
+    position: relative;
+    z-index: 20;
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 12px 12px 10px;
+    background: #24272c;
+    border-right: none;
+    border-bottom: 1px solid #3b3f46;
+  }
+
+  .brand {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    gap: 10px;
+    padding: 0 4px 12px;
+  }
+
+  .brand > span:last-child {
+    display: block;
+    min-width: 0;
+  }
+
+  .brand-icon {
+    width: 38px;
+    height: 38px;
+    min-width: 38px;
+    border-radius: 11px;
+  }
+
+  .brand strong {
+    font-size: 13px;
+    letter-spacing: .7px;
+  }
+
+  .brand small {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+  }
+
+  .sidebar-label,
+  .sidebar-bottom {
+    display: none;
+  }
+
+  .navigation {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 7px;
+    width: 100%;
+    padding: 0 0 5px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    scrollbar-width: thin;
+    scrollbar-color: #565b64 transparent;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 7px;
+    width: auto;
+    min-width: max-content;
+    min-height: 44px;
+    padding: 0 12px;
+    border: 1px solid #3b3f46;
+    border-radius: 9px;
+    background: #2b2e34;
+    color: #c8cbd0;
+    font-size: 12px;
+    white-space: nowrap;
+  }
+
+  .nav-item > span:first-child {
+    width: auto;
+    font-size: 17px;
+  }
+
+  .nav-item.active {
+    padding: 0 12px;
+    border: 1px solid rgba(255,129,46,.55);
+    border-radius: 9px;
+    background: rgba(255,129,46,.13);
+    color: #ff812e;
+  }
+
+  .nav-count {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    margin-left: 2px;
+    padding: 2px 5px;
+    font-size: 10px;
+  }
+
+  /* Main layout */
+
+  .main-content {
+    display: block;
+    width: 100%;
+    min-width: 0;
+    padding: 0 12px;
+  }
+
+  .topbar {
+    min-height: 65px;
+    gap: 8px;
+  }
+
+  .breadcrumb {
+    font-size: 9px;
+    letter-spacing: .8px;
+  }
+
+  .topbar h1 {
+    font-size: 17px;
+    line-height: 1.3;
+  }
+
+  .topbar-actions {
+    flex-shrink: 0;
+    gap: 8px;
+  }
+
+  .profile {
+    gap: 6px;
+  }
+
+  .profile > div:last-child {
+    display: none;
+  }
+
+  .avatar,
+  .icon-button {
+    width: 40px;
+    height: 40px;
+    min-width: 40px;
+  }
+
+  /* Page headings */
+
+  .dashboard-section,
+  #requests {
+    min-width: 0;
+    padding-top: 18px;
+    padding-bottom: 22px;
+  }
+
+  .welcome {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .welcome h2 {
+    font-size: 21px;
+    line-height: 1.3;
+  }
+
+  .welcome p {
+    line-height: 1.6;
+  }
+
+  .date-label {
+    padding: 9px 12px;
+  }
+
+  /* Statistics */
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .stat-card {
+    min-width: 0;
+    min-height: 115px;
+    padding: 14px;
+    border-radius: 12px;
+  }
+
+  .stat-card > strong {
+    font-size: clamp(19px, 5vw, 26px);
+    overflow-wrap: anywhere;
+  }
+
+  .stat-heading {
+    gap: 6px;
+    font-size: 11px;
+  }
+
+  .stat-card > small {
+    font-size: 10px;
+    line-height: 1.4;
+  }
+
+  .dashboard-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  /* Panels */
+
+  .panel {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    margin-bottom: 14px;
+    border-radius: 12px;
+  }
+
+  .panel-header,
+  #requests .panel-header {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 15px;
+  }
+
+  .panel-header h3 {
+    font-size: 15px;
+    line-height: 1.4;
+  }
+
+  .panel-header p {
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .panel-header button {
+    max-width: 100%;
+  }
+
+  /* Forms */
+
+  .dashboard-section form {
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .dashboard-section form label {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .dashboard-section form input,
+  .dashboard-section form select,
+  .dashboard-section form textarea {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+    min-height: 44px;
+    border-radius: 9px;
+    font-size: 16px;
+  }
+
+  .dashboard-section form textarea {
+    min-height: 90px;
+    padding: 12px;
+  }
+
+  .dashboard-section form button,
+  .dashboard-section button {
+    min-height: 44px;
+    max-width: 100%;
+    touch-action: manipulation;
+  }
+
+  .dashboard-section button:disabled {
+    opacity: .55;
+  }
+
+  #payrollWorkForm,
+  #payrollPaymentForm {
+    grid-template-columns: minmax(0, 1fr) !important;
+    padding: 14px !important;
+  }
+
+  #payrollAccrualForm {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr);
+    align-items: stretch !important;
+    padding: 14px !important;
+  }
+
+  #payrollAccrualForm label,
+  #payrollAccrualForm button {
+    width: 100%;
+  }
+
+  #payrollAccrualForm input,
+  #payrollAccrualForm select {
+    width: 100%;
+  }
+
+  #payrollBrigadeBudgetPanel > div,
+  #payrollPaymentsPanel > div {
+    max-width: 100%;
+  }
+
+  #payrollBrigadeSelect {
+    width: 100%;
+    min-width: 0 !important;
+    max-width: 100%;
+    min-height: 44px;
+  }
+
+  /* Wide tables: scroll within their own areas */
+
+  #requestsTableContainer,
+  #payrollTable,
+  #payrollWorkTable,
+  #ppTable {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto !important;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .dashboard-section table {
+    max-width: none;
+    border-collapse: collapse;
+  }
+
+  .dashboard-section th,
+  .dashboard-section td {
+    vertical-align: top;
+    line-height: 1.5;
+  }
+
+  .dashboard-section td {
+    overflow-wrap: anywhere;
+  }
+
+  #requestDetails {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  #requestDetailsContent {
+    grid-template-columns: minmax(0, 1fr);
+    padding: 5px 12px 15px;
+  }
+
+  .request-detail-field {
+    padding: 12px 8px !important;
+  }
+
+  /* Finance payroll widget */
+
+  #financePayrollObligations {
+    width: 100%;
+    max-width: 100%;
+    padding: 15px !important;
+    margin: 14px 0 !important;
+  }
+
+  #financePayrollObligations h2 {
+    font-size: 17px !important;
+    line-height: 1.4;
+  }
+
+  #financePayrollObligations strong {
+    overflow-wrap: anywhere;
+  }
+
+  #financePayrollObligations button {
+    min-height: 44px;
+  }
+
+  /* Long text and IDs */
+
+  .dashboard-section p,
+  .dashboard-section small,
+  .dashboard-section strong {
+    overflow-wrap: anywhere;
+  }
+
+  /* Footer */
+
+  .footer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 18px 0;
+    line-height: 1.5;
+  }
+}
+
+/* Small phones */
+
+@media (max-width: 390px) {
+
+  .main-content {
+    padding: 0 10px;
+  }
+
+  .sidebar {
+    padding: 10px 9px;
+  }
+
+  .nav-item {
+    padding: 0 10px;
+  }
+
+  .stats-grid {
+    gap: 8px;
+  }
+
+  .stat-card {
+    padding: 11px;
+  }
+
+  .stat-card > strong {
+    font-size: 20px;
+  }
+
+  .panel-header {
+    padding: 12px;
+  }
+
+  .topbar h1 {
+    font-size: 15px;
+  }
+}
+
+/* Respect reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  .stat-card,
+  .nav-item,
+  button {
+    transition: none !important;
+  }
+}
