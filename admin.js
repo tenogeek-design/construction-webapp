@@ -53,6 +53,7 @@
     }
   });
 
+
   // ==========================================
   // 3.1. НАВИГАЦИЯ
   // ==========================================
@@ -74,35 +75,40 @@
 
     const target = document.getElementById(section);
 
-    if (!target) {
-      console.warn(
-        "Раздел не найден в admin.html:",
-        section
-      );
+    if (!target || !target.classList.contains("dashboard-section")) {
+      console.warn("Раздел отсутствует:", section);
       return;
     }
 
-    navItems.forEach(item => {
-      const href = item.getAttribute("href") || "";
-      const itemSection = (
-        href.split("#")[1] ||
-        item.dataset.section ||
-        ""
-      ).toLowerCase();
+    document.querySelectorAll(".dashboard-section")
+      .forEach(page => {
+        page.style.display =
+          page.id === section ? "block" : "none";
+      });
 
+    navItems.forEach(item => {
       item.classList.toggle(
         "active",
-        itemSection === section
+        item.getAttribute("href") === "#" + section
       );
     });
 
-    // Не скрываем другие разделы, так как
-    // их отображением может управлять
-    // существующий код админ-панели.
-    target.scrollIntoView({
-      behavior: "smooth",
-      block: "start"
-    });
+    const pageTitle = document.getElementById("pageTitle");
+
+    if (pageTitle) {
+      const titles = {
+        dashboard: "Панель управления",
+        requests: "Заявки клиентов",
+        payroll: "Зарплаты",
+        finance: "Финансы",
+        time: "Учёт времени"
+      };
+
+      pageTitle.textContent =
+        titles[section] || "CONSTRUCTION GROUP";
+    }
+
+    window.scrollTo(0, 0);
   }
 
   navItems.forEach(item => {
@@ -111,30 +117,28 @@
 
       if (!href.startsWith("#")) return;
 
-      const section = href.slice(1).toLowerCase();
-
-      if (!document.getElementById(section)) {
-        console.warn(
-          "Не найден HTML-раздел для меню:",
-          section
-        );
-        return;
-      }
-
       event.preventDefault();
 
-      if (window.location.hash !== href) {
-        window.location.hash = href;
-      } else {
+      const section = href.slice(1);
+
+      if (window.location.hash === href) {
         openAdminSection(section);
+      } else {
+        window.location.hash = href;
       }
     });
   });
 
   window.addEventListener("hashchange", () => {
-    const section = window.location.hash.slice(1);
-    if (section) openAdminSection(section);
+    openAdminSection(
+      window.location.hash.slice(1) || "dashboard"
+    );
   });
+
+  openAdminSection(
+    window.location.hash.slice(1) || "dashboard"
+  );
+
 
   // ==========================================
   // 4. ДАТА
