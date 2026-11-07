@@ -4,6 +4,8 @@ const permissionList =
     ? permissions
     : [];
 
+const permissionsLoaded = permissionList.length > 0;
+
   const permissionSet = new Set(
     permissionList.map(item => item.permission_code)
   );
