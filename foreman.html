@@ -9,13 +9,17 @@
   <title>CONSTRUCTION GROUP — Бригадир</title>
 
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
 
     body {
       margin: 0;
       background: #202226;
       color: #f5f5f4;
-      font-family: Arial, sans-serif;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 14px;
+      min-height: 100vh;
     }
 
     header {
@@ -28,12 +32,23 @@
       color: #ff812e;
       font-size: 20px;
       font-weight: bold;
+      letter-spacing: 0.5px;
     }
 
     main {
       max-width: 1100px;
       margin: 40px auto;
-      padding: 0 20px;
+      padding: 0 20px 60px;
+    }
+
+    h1 {
+      margin-bottom: 10px;
+    }
+
+    h2 {
+      margin-top: 0;
+      margin-bottom: 15px;
+      font-size: 20px;
     }
 
     .card {
@@ -49,10 +64,12 @@
       font-size: 36px;
       font-weight: bold;
       margin-top: 12px;
+      margin-bottom: 15px;
     }
 
     .muted {
       color: #a4a7ad;
+      line-height: 1.5;
     }
 
     button {
@@ -63,38 +80,127 @@
       border-radius: 8px;
       cursor: pointer;
       font-weight: bold;
+      font: inherit;
+      transition: opacity 0.2s;
+    }
+
+    button:hover:not(:disabled) {
+      opacity: 0.85;
+    }
+
+    button:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .section-header h2 {
+      margin-bottom: 0;
+    }
+
+    .expense-list {
+      margin-top: 20px;
+    }
+
+    .empty-state {
+      color: #a4a7ad;
+      padding: 20px;
+      border: 1px dashed #3b3f46;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .info-text {
+      color: #a4a7ad;
+      font-size: 12px;
+      margin-top: 15px;
+    }
+
+    @media (max-width: 600px) {
+      main {
+        margin-top: 25px;
+        padding: 0 14px 40px;
+      }
+
+      .card {
+        padding: 18px;
+      }
+
+      .balance {
+        font-size: 30px;
+      }
+
+      .section-header {
+        align-items: stretch;
+      }
     }
   </style>
 </head>
 
 <body>
+
   <header>
-    <div class="brand">CONSTRUCTION GROUP</div>
-    <div class="muted">Кабинет бригадира</div>
+    <div class="brand">
+      CONSTRUCTION GROUP
+    </div>
+
+    <div class="muted">
+      Кабинет бригадира
+    </div>
   </header>
 
   <main>
+
     <h1>Панель бригадира</h1>
-    <p class="muted">Управление бригадой и финансами</p>
+
+    <p class="muted">
+      Управление бригадой и финансами
+    </p>
+
+    <!-- МОЯ КАССА -->
 
     <section class="card">
-      <h2>Моя касса</h2>
-      <p class="muted">Доступный баланс</p>
 
-      <div class="balance" id="myBalance">
+      <h2>Моя касса</h2>
+
+      <p class="muted">
+        Доступный баланс
+      </p>
+
+      <div
+        class="balance"
+        id="myBalance"
+      >
         Загрузка...
       </div>
 
-      <p id="cashboxName" class="muted"></p>
+      <p
+        id="cashboxName"
+        class="muted"
+      ></p>
 
-      <button id="refreshBalance">
+      <button
+        id="refreshBalance"
+        type="button"
+      >
         Обновить баланс
       </button>
-   
-   </section>
-    
+
+    </section>
+
+    <!-- ИСТОРИЯ ОПЕРАЦИЙ -->
+
     <section class="card">
+
       <h2>История операций</h2>
+
       <p class="muted">
         Поступления и расходы моей кассы
       </p>
@@ -102,11 +208,55 @@
       <div id="myFinanceHistory">
         Загрузка истории...
       </div>
+
+    </section>
+
+    <!-- РАСХОДЫ И ЧЕКИ -->
+
+    <section class="card">
+
+      <div class="section-header">
+
+        <h2>Расходы и чеки</h2>
+
+        <button
+          id="foremanAddExpense"
+          type="button"
+          disabled
+        >
+          + Добавить расход
+        </button>
+
+      </div>
+
+      <p class="muted">
+        Заявки на расходы, покупки материалов,
+        чеки и согласования по объектам.
+      </p>
+
+      <div
+        class="expense-list"
+        id="foremanExpenses"
+      >
+        <div class="empty-state">
+          Раздел расходов будет подключён
+          к базе данных на следующем этапе.
+        </div>
+      </div>
+
+      <p class="info-text">
+        Собственные расходы бригадира
+        подтверждает владелец компании.
+        Оплата регистрируется отдельно
+        после согласования.
+      </p>
+
     </section>
 
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="foreman.js"></script>
+
 </body>
 </html>
