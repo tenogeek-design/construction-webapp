@@ -1,225 +1,803 @@
+
 <!DOCTYPE html>
 <html lang="pl">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#202226">
-  <title>CONSTRUCTION — Warsaw</title>
+  <meta name="theme-color" content="#1c1b1a">
+  <title>CONSTRUCTION GROUP — Warszawa</title>
   <link rel="stylesheet" href="style.css">
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 </head>
 <body>
 <div class="app-shell">
+
   <header class="topbar">
-    <a class="brand" href="#" id="homeLink" aria-label="CONSTRUCTION home">
-      <span class="brand-mark">C</span><span class="brand-name">CONSTRUCTION</span>
+    <a class="brand" href="#" id="homeLink"
+       aria-label="CONSTRUCTION GROUP — strona główna">
+      <span class="brand-mark">C</span>
+      <span class="brand-identity">
+        <strong>CONSTRUCTION</strong>
+        <small>GROUP</small>
+      </span>
     </a>
+
     <div class="top-actions">
-      <span class="location">WARSAW, POLAND</span>
-      <select id="languageSelect" class="language-select" aria-label="Language">
-        <option value="pl">PL</option><option value="uk">UA</option>
+      <span class="location">WARSZAWA, POLSKA</span>
+
+      <select id="languageSelect" class="language-select"
+              aria-label="Wybierz język">
+        <option value="pl">PL</option>
+        <option value="uk">UA</option>
       </select>
+
+      <a href="/login.html" class="site-login"
+         aria-label="Zaloguj się" title="Zaloguj się">
+        <svg viewBox="0 0 24 24" width="25" height="25"
+             fill="none" stroke="currentColor"
+             stroke-width="2.5" stroke-linecap="round"
+             stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 2v10"/>
+          <path d="M6.2 5.8a9 9 0 1 0 11.6 0"/>
+        </svg>
+      </a>
     </div>
   </header>
 
   <main>
+
+    <!-- ГЛАВНАЯ СТРАНИЦА -->
     <section id="homePage" class="page active">
       <section class="hero">
-        <div class="eyebrow" data-i18n="heroTag">DEMONTAŻ • REMONT • PRZYGOTOWANIE</div>
-        <h1 data-i18n-html="heroTitle">Twój obiekt.<br><span>Nasza praca.</span></h1>
-        <p data-i18n="heroText">Prace demontażowe, remontowe i przygotowanie pomieszczeń w Warszawie.</p>
+        <div class="eyebrow" data-i18n="heroTag">
+          DEMONTAŻ • REMONT • PRZYGOTOWANIE
+        </div>
+        <h1 data-i18n-html="heroTitle">
+          Twój obiekt.<br><span>Nasza praca.</span>
+        </h1>
+        <p data-i18n="heroText">
+          Prace demontażowe, remontowe i przygotowanie
+          pomieszczeń w Warszawie.
+        </p>
       </section>
+
       <section class="home-menu">
         <button class="home-card" data-page="aboutPage">
           <span class="card-index">01</span>
-          <span><strong data-i18n="about">Kim jesteśmy</strong><small data-i18n="aboutShort">Poznaj naszą firmę</small></span>
+          <span>
+            <strong data-i18n="about">Kim jesteśmy</strong>
+            <small data-i18n="aboutShort">Poznaj naszą firmę</small>
+          </span>
           <span class="card-arrow">↗</span>
         </button>
+
         <button class="home-card" data-page="calculatorPage">
           <span class="card-index">02</span>
-          <span><strong data-i18n="calculator">Kalkulator cen</strong><small data-i18n="calculatorShort">Wstępna wycena prac</small></span>
+          <span>
+            <strong data-i18n="calculator">Kalkulator cen</strong>
+            <small data-i18n="calculatorShort">
+              Wstępna wycena prac
+            </small>
+          </span>
           <span class="card-arrow">↗</span>
         </button>
-        <button class="home-card featured" data-page="orderPage" id="homeOrderButton">
+
+        <button class="home-card featured"
+                data-page="orderPage" id="homeOrderButton">
           <span class="card-index">03</span>
-          <span><strong data-i18n="submitRequest">Złóż zgłoszenie</strong><small data-i18n="submitShort">Opowiedz nam o swoim obiekcie</small></span>
+          <span>
+            <strong data-i18n="submitRequest">
+              Złóż zgłoszenie
+            </strong>
+            <small data-i18n="submitShort">
+              Opowiedz nam o swoim obiekcie
+            </small>
+          </span>
           <span class="card-arrow">↗</span>
         </button>
       </section>
     </section>
 
+    <!-- О КОМПАНИИ -->
     <section id="aboutPage" class="page">
-      <button class="back-button" data-page="homePage">← <span data-i18n="back">Powrót</span></button>
+      <button class="back-button" data-page="homePage">
+        ← <span data-i18n="back">Powrót</span>
+      </button>
       <div class="section-heading">
-        <div class="eyebrow" data-i18n="about">KIM JESTEŚMY</div>
-        <h2 data-i18n="aboutHeading">Pracujemy konkretnie.</h2>
-        <p data-i18n="aboutPlaceholder">Tutaj dodamy opis firmy, doświadczenie i informacje o zespole.</p>
+        <div class="eyebrow" data-i18n="about">
+          KIM JESTEŚMY
+        </div>
+        <h2 data-i18n="aboutHeading">
+          Pracujemy konkretnie.
+        </h2>
+        <p data-i18n="aboutPlaceholder">
+          Tutaj dodamy opis firmy, doświadczenie
+          i informacje o zespole.
+        </p>
       </div>
     </section>
 
+    <!-- КАЛЬКУЛЯТОР -->
     <section id="calculatorPage" class="page">
-      <button class="back-button" data-page="homePage">← <span data-i18n="back">Powrót</span></button>
+      <button class="back-button" data-page="homePage">
+        ← <span data-i18n="back">Powrót</span>
+      </button>
+
       <div class="section-heading">
-        <div class="eyebrow" data-i18n="calculator">KALKULATOR CEN</div>
-        <h2 data-i18n="calculatorHeading">Zbuduj swoją wycenę.</h2>
-        <p data-i18n="calculatorIntro">Wybierz zakres prac, podaj ilości i zobacz wstępny koszt.</p>
+        <div class="eyebrow" data-i18n="calculator">
+          KALKULATOR CEN
+        </div>
+        <h2 data-i18n="calculatorHeading">
+          Zbuduj swoją wycenę.
+        </h2>
+        <p data-i18n="calculatorIntro">
+          Wybierz zakres prac, podaj ilości
+          i zobacz wstępny koszt.
+        </p>
       </div>
+
       <div class="mode-grid">
-        <button class="mode-card selected" data-mode="demo"><span class="mode-number">01</span><strong data-i18n="modeDemo">Demontaż</strong><small data-i18n="modeDemoDesc">Prace rozbiórkowe</small></button>
-        <button class="mode-card" data-mode="reno"><span class="mode-number">02</span><strong data-i18n="modeReno">Remont / Montaż</strong><small data-i18n="modeRenoDesc">Prace remontowe i montażowe</small></button>
-        <button class="mode-card mode-wide" data-mode="both"><span class="mode-number">03</span><strong data-i18n="modeBoth">Demontaż + Montaż</strong><small data-i18n="modeBothDesc">Kompleksowy zakres prac</small></button>
+        <button class="mode-card selected" data-mode="demo">
+          <span class="mode-number">01</span>
+          <strong data-i18n="modeDemo">Demontaż</strong>
+          <small data-i18n="modeDemoDesc">
+            Prace rozbiórkowe
+          </small>
+        </button>
+
+        <button class="mode-card" data-mode="reno">
+          <span class="mode-number">02</span>
+          <strong data-i18n="modeReno">Remont / Montaż</strong>
+          <small data-i18n="modeRenoDesc">
+            Prace remontowe i montażowe
+          </small>
+        </button>
+
+        <button class="mode-card mode-wide" data-mode="both">
+          <span class="mode-number">03</span>
+          <strong data-i18n="modeBoth">
+            Demontaż + Montaż
+          </strong>
+          <small data-i18n="modeBothDesc">
+            Kompleksowy zakres prac
+          </small>
+        </button>
       </div>
+
       <div class="calculator-layout">
         <div class="work-panel">
           <div class="panel-title">
-            <div><div class="eyebrow" data-i18n="chooseWorks">WYBIERZ PRACE</div><h3 data-i18n="workList">Lista usług</h3></div>
-            <span class="test-label" data-i18n="testPrices">CENY TESTOWE</span>
+            <div>
+              <div class="eyebrow" data-i18n="chooseWorks">
+                WYBIERZ PRACE
+              </div>
+              <h3 data-i18n="workList">Lista usług</h3>
+            </div>
+            <span class="test-label" data-i18n="testPrices">
+              CENY TESTOWE
+            </span>
           </div>
           <div id="workList" class="work-list"></div>
         </div>
+
         <aside class="summary-panel">
-          <div class="eyebrow" data-i18n="yourEstimate">TWOJA WYCENA</div>
+          <div class="eyebrow" data-i18n="yourEstimate">
+            TWOJA WYCENA
+          </div>
           <h3 data-i18n="summary">Podsumowanie</h3>
-          <div id="selectedList" class="selected-list"><p class="empty-state" data-i18n="empty">Nie wybrano jeszcze żadnych prac.</p></div>
-          <div class="total-row"><span data-i18n="estimatedTotal">Szacunkowa suma</span><strong id="totalPrice">0 zł</strong></div>
-          <div class="option-group">
-            <div class="option-title" data-i18n="delivery">Dostawa / transport</div>
-            <label class="check-row"><input type="radio" name="delivery" id="ourDelivery" value="company"><span data-i18n="ourDelivery">Nasza dostawa / transport</span></label>
-            <label class="check-row"><input type="radio" name="delivery" id="clientDelivery" value="client"><span data-i18n="clientDelivery">Własna dostawa / transport</span></label>
+
+          <div id="selectedList" class="selected-list">
+            <p class="empty-state" data-i18n="empty">
+              Nie wybrano jeszcze żadnych prac.
+            </p>
           </div>
-          <div class="option-group">
-            <div class="option-title" data-i18n="tools">Narzędzia</div>
-            <label class="check-row"><input type="radio" name="tools" id="ourTools" value="company"><span data-i18n="ourTools">Nasz sprzęt</span></label>
-            <label class="check-row"><input type="radio" name="tools" id="clientTools" value="client"><span data-i18n="clientTools">Własny sprzęt</span></label>
+
+          <div class="total-row">
+            <span data-i18n="estimatedTotal">
+              Szacunkowa suma
+            </span>
+            <strong id="totalPrice">0 zł</strong>
           </div>
+
           <div class="option-group">
-            <div class="option-title" data-i18n="clientType">Kto zleca pracę?</div>
-            <label class="check-row"><input type="checkbox" id="ownerDirect"><span data-i18n="ownerDirect">Bezpośrednio od właściciela nieruchomości</span></label>
+            <div class="option-title" data-i18n="delivery">
+              Dostawa / transport
+            </div>
+            <label class="check-row">
+              <input type="radio" name="delivery"
+                     id="ourDelivery" value="company">
+              <span data-i18n="ourDelivery">
+                Nasza dostawa / transport
+              </span>
+            </label>
+            <label class="check-row">
+              <input type="radio" name="delivery"
+                     id="clientDelivery" value="client">
+              <span data-i18n="clientDelivery">
+                Własna dostawa / transport
+              </span>
+            </label>
           </div>
-          <p class="estimate-note" data-i18n="estimateNote">To wstępna wycena. Ostateczna cena może zostać ustalona po obejrzeniu obiektu.</p>
-          <button class="button button-primary button-full" id="sendEstimate"><span data-i18n="sendEstimate">Przejdź do zgłoszenia</span><span>↗</span></button>
+
+          <div class="option-group">
+            <div class="option-title" data-i18n="tools">
+              Narzędzia
+            </div>
+            <label class="check-row">
+              <input type="radio" name="tools"
+                     id="ourTools" value="company">
+              <span data-i18n="ourTools">Nasz sprzęt</span>
+            </label>
+            <label class="check-row">
+              <input type="radio" name="tools"
+                     id="clientTools" value="client">
+              <span data-i18n="clientTools">
+                Własny sprzęt
+              </span>
+            </label>
+          </div>
+
+          <div class="option-group">
+            <div class="option-title" data-i18n="clientType">
+              Kto zleca pracę?
+            </div>
+            <label class="check-row">
+              <input type="checkbox" id="ownerDirect">
+              <span data-i18n="ownerDirect">
+                Bezpośrednio od właściciela nieruchomości
+              </span>
+            </label>
+          </div>
+
+          <p class="estimate-note" data-i18n="estimateNote">
+            To wstępna wycena. Ostateczna cena może zostać
+            ustalona po obejrzeniu obiektu.
+          </p>
+
+          <button class="button button-primary button-full"
+                  id="sendEstimate">
+            <span data-i18n="sendEstimate">
+              Przejdź do zgłoszenia
+            </span>
+            <span>↗</span>
+          </button>
         </aside>
       </div>
     </section>
 
+    <!-- ЗАЯВКА -->
     <section id="orderPage" class="page">
-      <button class="back-button" data-page="homePage">← <span data-i18n="back">Powrót</span></button>
+      <button class="back-button" data-page="homePage">
+        ← <span data-i18n="back">Powrót</span>
+      </button>
+
       <div class="section-heading">
         <div class="eyebrow">CONSTRUCTION / REQUEST</div>
         <h2 data-i18n="formHeading">Złóż zgłoszenie.</h2>
-        <p data-i18n="formIntro">Wypełnij formularz krok po kroku. Skontaktujemy się z Tobą, aby omówić szczegóły.</p>
+        <p data-i18n="formIntro">
+          Wypełnij formularz krok po kroku.
+          Skontaktujemy się z Tobą, aby omówić szczegóły.
+        </p>
       </div>
 
       <div class="step-progress" aria-label="Form progress">
-        <div class="progress-step active" data-progress="1"><span>01</span><small data-i18n="stepContact">Kontakt</small></div>
+        <div class="progress-step active" data-progress="1">
+          <span>01</span>
+          <small data-i18n="stepContact">Kontakt</small>
+        </div>
         <div class="progress-line"></div>
-        <div class="progress-step" data-progress="2"><span>02</span><small data-i18n="stepWork">Praca i opis</small></div>
+        <div class="progress-step" data-progress="2">
+          <span>02</span>
+          <small data-i18n="stepWork">Praca i opis</small>
+        </div>
         <div class="progress-line"></div>
-        <div class="progress-step" data-progress="3"><span>03</span><small data-i18n="stepExtras">Dodatkowe usługi</small></div>
+        <div class="progress-step" data-progress="3">
+          <span>03</span>
+          <small data-i18n="stepExtras">Dodatkowe usługi</small>
+        </div>
       </div>
 
       <form id="requestForm" novalidate>
+
         <section class="form-step active" data-step="1">
           <div class="form-panel">
-            <h3 data-i18n="contactDetails">Dane kontaktowe</h3>
+            <h3 data-i18n="contactDetails">
+              Dane kontaktowe
+            </h3>
+
             <div class="field-grid">
-              <label class="field"><span data-i18n="fullName">Imię i nazwisko *</span><input id="customerName" name="name" autocomplete="name" required></label>
-              <label class="field"><span data-i18n="phone">Numer telefonu *</span><input id="customerPhone" name="phone" type="tel" autocomplete="tel" placeholder="+48..." required></label>
+              <label class="field">
+                <span data-i18n="fullName">
+                  Imię i nazwisko *
+                </span>
+                <input id="customerName" name="name"
+                       autocomplete="name" required>
+              </label>
+              <label class="field">
+                <span data-i18n="phone">
+                  Numer telefonu *
+                </span>
+                <input id="customerPhone" name="phone"
+                       type="tel" autocomplete="tel"
+                       placeholder="+48..." required>
+              </label>
             </div>
-            <button type="button" class="button button-secondary" id="shareContact" data-i18n="shareContact">Udostępnij kontakt w Telegramie</button>
+
+            <button type="button"
+                    class="button button-secondary"
+                    id="shareContact"
+                    data-i18n="shareContact">
+              Udostępnij kontakt w Telegramie
+            </button>
+
             <div class="field-grid address-grid">
-              <label class="field"><span data-i18n="city">Miasto *</span><input id="customerCity" name="city" value="Warszawa" required></label>
-              <label class="field"><span data-i18n="street">Ulica *</span><input id="customerStreet" name="street" required></label>
-              <label class="field"><span data-i18n="building">Numer budynku *</span><input id="customerBuilding" name="building" required></label>
-              <label class="field"><span data-i18n="apartment">Numer mieszkania (opcjonalnie)</span><input id="customerApartment" name="apartment"></label>
+              <label class="field">
+                <span data-i18n="city">Miasto *</span>
+                <input id="customerCity" name="city"
+                       value="Warszawa" required>
+              </label>
+              <label class="field">
+                <span data-i18n="street">Ulica *</span>
+                <input id="customerStreet" name="street"
+                       required>
+              </label>
+              <label class="field">
+                <span data-i18n="building">
+                  Numer budynku *
+                </span>
+                <input id="customerBuilding" name="building"
+                       required>
+              </label>
+              <label class="field">
+                <span data-i18n="apartment">
+                  Numer mieszkania (opcjonalnie)
+                </span>
+                <input id="customerApartment" name="apartment">
+              </label>
             </div>
-            <p class="field-hint" data-i18n="addressHint">Podaj miasto, ulicę i numer budynku. Numer mieszkania możemy ustalić później.</p>
+
+            <p class="field-hint" data-i18n="addressHint">
+              Podaj miasto, ulicę i numer budynku.
+              Numer mieszkania możemy ustalić później.
+            </p>
           </div>
         </section>
 
         <section class="form-step" data-step="2">
           <div class="form-panel">
-            <h3 data-i18n="workDescription">Zakres prac i opis</h3>
-            <div id="estimateCarry" class="estimate-carry"></div>
-            <label class="field"><span data-i18n="description">Opis zlecenia *</span><textarea id="jobDescription" name="description" rows="5" required></textarea></label>
+            <h3 data-i18n="workDescription">
+              Zakres prac i opis
+            </h3>
+
+            <div id="estimateCarry"
+                 class="estimate-carry"></div>
+
+            <label class="field">
+              <span data-i18n="description">
+                Opis zlecenia *
+              </span>
+              <textarea id="jobDescription"
+                        name="description"
+                        rows="5" required></textarea>
+            </label>
+
             <div class="field-grid">
-              <label class="field"><span data-i18n="objectType">Rodzaj obiektu</span><select id="objectType" name="objectType"><option value="">—</option><option>Mieszkanie</option><option>Dom</option><option>Lokal usługowy</option><option>Biuro</option><option>Inne</option></select></label>
-              <label class="field"><span data-i18n="area">Powierzchnia (m²)</span><input id="objectArea" name="area" type="number" min="0" placeholder="np. 65"></label>
+              <label class="field">
+                <span data-i18n="objectType">
+                  Rodzaj obiektu
+                </span>
+                <select id="objectType" name="objectType">
+                  <option value="">—</option>
+                  <option>Mieszkanie</option>
+                  <option>Dom</option>
+                  <option>Lokal usługowy</option>
+                  <option>Biuro</option>
+                  <option>Inne</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span data-i18n="area">
+                  Powierzchnia (m²)
+                </span>
+                <input id="objectArea" name="area"
+                       type="number" min="0"
+                       placeholder="np. 65">
+              </label>
             </div>
+
             <div class="field-grid">
-              <label class="field"><span data-i18n="condition">Stan obiektu</span><select id="objectCondition" name="condition"><option value="">—</option><option>Stan deweloperski</option><option>Do remontu</option><option>Po remoncie</option><option>Inne</option></select></label>
-              <label class="field"><span data-i18n="startDate">Kiedy rozpocząć?</span><select id="startDate" name="startDate"><option value="">Do ustalenia</option><option>Jak najszybciej</option><option>W ciągu tygodnia</option><option>W ciągu miesiąca</option><option>Konkretna data</option></select></label>
+              <label class="field">
+                <span data-i18n="condition">
+                  Stan obiektu
+                </span>
+                <select id="objectCondition" name="condition">
+                  <option value="">—</option>
+                  <option>Stan deweloperski</option>
+                  <option>Do remontu</option>
+                  <option>Po remoncie</option>
+                  <option>Inne</option>
+                </select>
+              </label>
+
+              <label class="field">
+                <span data-i18n="startDate">
+                  Kiedy rozpocząć?
+                </span>
+                <select id="startDate" name="startDate">
+                  <option value="">Do ustalenia</option>
+                  <option>Jak najszybciej</option>
+                  <option>W ciągu tygodnia</option>
+                  <option>W ciągu miesiąca</option>
+                  <option>Konkretna data</option>
+                </select>
+              </label>
             </div>
-            <label class="field"><span data-i18n="photos">Zdjęcia obiektu (opcjonalnie)</span><input id="jobPhotos" type="file" accept="image/*" multiple></label>
-            <p class="field-hint" data-i18n="photosHint">Dodaj dowolną liczbę zdjęć. Przed wysłaniem zobaczysz podgląd i będziesz mógł usunąć wybrane fotografie.</p>
-            <div id="photoPreview" class="photo-preview"></div>
+
+            <label class="field">
+              <span data-i18n="photos">
+                Zdjęcia obiektu (opcjonalnie)
+              </span>
+              <input id="jobPhotos" type="file"
+                     accept="image/*" multiple>
+            </label>
+
+            <p class="field-hint" data-i18n="photosHint">
+              Dodaj dowolną liczbę zdjęć. Przed wysłaniem
+              zobaczysz podgląd i będziesz mógł usunąć
+              wybrane fotografie.
+            </p>
+            <div id="photoPreview"
+                 class="photo-preview"></div>
           </div>
         </section>
 
         <section class="form-step" data-step="3">
           <div class="form-panel">
-            <h3 data-i18n="extraServices">Dodatkowe usługi</h3>
-            <p class="field-hint" data-i18n="extrasIntro">Zaznacz usługi, których potrzebujesz. Duże ilości i nietypowe warunki wyceniamy indywidualnie.</p>
+            <h3 data-i18n="extraServices">
+              Dodatkowe usługi
+            </h3>
+            <p class="field-hint" data-i18n="extrasIntro">
+              Zaznacz usługi, których potrzebujesz.
+              Duże ilości i nietypowe warunki wyceniamy
+              indywidualnie.
+            </p>
 
             <div class="extra-category">
-              <h4 data-i18n="wasteTitle">Wynoszenie i odpady budowlane</h4>
-              <label class="check-row"><input type="checkbox" name="extras" value="wasteCarry"><span data-i18n="wasteCarry">Wynoszenie gruzu i odpadów budowlanych</span></label>
+              <h4 data-i18n="wasteTitle">
+                Wynoszenie i odpady budowlane
+              </h4>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="wasteCarry">
+                <span data-i18n="wasteCarry">
+                  Wynoszenie gruzu i odpadów budowlanych
+                </span>
+              </label>
+
               <div class="field-grid">
-                <label class="field"><span data-i18n="wasteAmount">Szacunkowa ilość</span><select id="wasteAmount"><option value="">Nie wiem / do oceny</option><option value="small">Niewielka ilość</option><option value="10">Do 10 worków</option><option value="20">10–20 worków</option><option value="40">20–40 worków</option><option value="more">Ponad 40 worków</option><option value="room">Całe pomieszczenie</option></select></label>
-                <label class="field"><span data-i18n="floor">Piętro</span><select id="wasteFloor"><option value="">Nie dotyczy / do ustalenia</option><option value="1">Parter</option><option value="2">1–2 piętro</option><option value="3">2–3 piętro</option><option value="5">3–5 piętro</option><option value="6">Powyżej 5 piętra</option></select></label>
+                <label class="field">
+                  <span data-i18n="wasteAmount">
+                    Szacunkowa ilość
+                  </span>
+                  <select id="wasteAmount">
+                    <option value="">
+                      Nie wiem / do oceny
+                    </option>
+                    <option value="small">
+                      Niewielka ilość
+                    </option>
+                    <option value="10">Do 10 worków</option>
+                    <option value="20">10–20 worków</option>
+                    <option value="40">20–40 worków</option>
+                    <option value="more">
+                      Ponad 40 worków
+                    </option>
+                    <option value="room">
+                      Całe pomieszczenie
+                    </option>
+                  </select>
+                </label>
+
+                <label class="field">
+                  <span data-i18n="floor">Piętro</span>
+                  <select id="wasteFloor">
+                    <option value="">
+                      Nie dotyczy / do ustalenia
+                    </option>
+                    <option value="1">Parter</option>
+                    <option value="2">1–2 piętro</option>
+                    <option value="3">2–3 piętro</option>
+                    <option value="5">3–5 piętro</option>
+                    <option value="6">
+                      Powyżej 5 piętra
+                    </option>
+                  </select>
+                </label>
               </div>
-              <label class="check-row"><input type="checkbox" id="hasElevator"><span data-i18n="elevator">W budynku jest winda</span></label>
-              <label class="check-row"><input type="checkbox" name="extras" value="containerLoad"><span data-i18n="containerLoad">Załadunek kontenera (1 szt.)</span></label>
-              <label class="check-row"><input type="checkbox" name="extras" value="bagging"><span data-i18n="bagging">Zbieranie i pakowanie odpadów do worków</span></label>
+
+              <label class="check-row">
+                <input type="checkbox" id="hasElevator">
+                <span data-i18n="elevator">
+                  W budynku jest winda
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="containerLoad">
+                <span data-i18n="containerLoad">
+                  Załadunek kontenera (1 szt.)
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="bagging">
+                <span data-i18n="bagging">
+                  Zbieranie i pakowanie odpadów do worków
+                </span>
+              </label>
             </div>
 
             <div class="extra-category">
-              <h4 data-i18n="cleaningTitle">Sprzątanie po pracach</h4>
-              <label class="check-row"><input type="radio" name="cleaning" value="light"><span data-i18n="cleanLight">Lekkie sprzątanie</span></label>
-              <label class="check-row"><input type="radio" name="cleaning" value="standard"><span data-i18n="cleanStandard">Standardowe sprzątanie</span></label>
-              <label class="check-row"><input type="radio" name="cleaning" value="deep"><span data-i18n="cleanDeep">Generalne sprzątanie</span></label>
+              <h4 data-i18n="cleaningTitle">
+                Sprzątanie po pracach
+              </h4>
+              <label class="check-row">
+                <input type="radio" name="cleaning"
+                       value="light">
+                <span data-i18n="cleanLight">
+                  Lekkie sprzątanie
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="radio" name="cleaning"
+                       value="standard">
+                <span data-i18n="cleanStandard">
+                  Standardowe sprzątanie
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="radio" name="cleaning"
+                       value="deep">
+                <span data-i18n="cleanDeep">
+                  Generalne sprzątanie
+                </span>
+              </label>
             </div>
 
             <div class="extra-category">
-              <h4 data-i18n="transportTitle">Dostawa i przenoszenie</h4>
-              <label class="check-row"><input type="checkbox" name="extras" value="materialDelivery"><span data-i18n="materialDelivery">Dostawa materiałów budowlanych (według gabarytów i odległości)</span></label>
-              <label class="check-row"><input type="checkbox" name="extras" value="unload"><span data-i18n="unload">Rozładunek materiałów</span></label>
-              <label class="check-row"><input type="checkbox" name="extras" value="carryUp"><span data-i18n="carryUp">Wniesienie materiałów na piętro</span></label>
-              <label class="check-row"><input type="checkbox" name="extras" value="furnitureCarry"><span data-i18n="furnitureCarry">Wynoszenie / wywóz starych mebli</span></label>
+              <h4 data-i18n="transportTitle">
+                Dostawa i przenoszenie
+              </h4>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="materialDelivery">
+                <span data-i18n="materialDelivery">
+                  Dostawa materiałów budowlanych
+                  (według gabarytów i odległości)
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="unload">
+                <span data-i18n="unload">
+                  Rozładunek materiałów
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="carryUp">
+                <span data-i18n="carryUp">
+                  Wniesienie materiałów na piętro
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="furnitureCarry">
+                <span data-i18n="furnitureCarry">
+                  Wynoszenie / wywóz starych mebli
+                </span>
+              </label>
             </div>
 
             <div class="extra-category">
               <h4 data-i18n="otherTitle">Pozostałe</h4>
-              <label class="check-row"><input type="checkbox" name="extras" value="protect"><span data-i18n="protect">Zabezpieczenie podłóg, ścian, drzwi lub windy — wycena indywidualna</span></label>
-              <label class="check-row"><input type="checkbox" name="extras" value="carefulFurniture"><span data-i18n="carefulFurniture">Demontaż mebli z zachowaniem elementów</span></label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="protect">
+                <span data-i18n="protect">
+                  Zabezpieczenie podłóg, ścian, drzwi
+                  lub windy — wycena indywidualna
+                </span>
+              </label>
+              <label class="check-row">
+                <input type="checkbox" name="extras"
+                       value="carefulFurniture">
+                <span data-i18n="carefulFurniture">
+                  Demontaż mebli z zachowaniem elementów
+                </span>
+              </label>
             </div>
 
             <div class="field-grid">
-              <label class="field"><span data-i18n="floorNumber">Piętro obiektu</span><input id="objectFloor" type="number" min="0" placeholder="np. 4"></label>
-              <label class="field"><span data-i18n="elevatorAccess">Dostęp do windy</span><select id="objectElevator"><option value="">Do ustalenia</option><option>Tak</option><option>Nie</option></select></label>
+              <label class="field">
+                <span data-i18n="floorNumber">
+                  Piętro obiektu
+                </span>
+                <input id="objectFloor" type="number"
+                       min="0" placeholder="np. 4">
+              </label>
+
+              <label class="field">
+                <span data-i18n="elevatorAccess">
+                  Dostęp do windy
+                </span>
+                <select id="objectElevator">
+                  <option value="">Do ustalenia</option>
+                  <option>Tak</option>
+                  <option>Nie</option>
+                </select>
+              </label>
             </div>
-            <label class="field"><span data-i18n="extraComment">Dodatkowe informacje</span><textarea id="extraComment" rows="3"></textarea></label>
-            <p class="individual-note" data-i18n="individualNote">W przypadku większych ilości odpadów, materiałów lub gabarytów koszt wynoszenia, wnoszenia, załadunku i transportu może być ustalany indywidualnie po uzgodnieniu szczegółów.</p>
+
+            <label class="field">
+              <span data-i18n="extraComment">
+                Dodatkowe informacje
+              </span>
+              <textarea id="extraComment"
+                        rows="3"></textarea>
+            </label>
+
+            <p class="individual-note"
+               data-i18n="individualNote">
+              W przypadku większych ilości odpadów,
+              materiałów lub gabarytów koszt wynoszenia,
+              wnoszenia, załadunku i transportu może być
+              ustalany indywidualnie po uzgodnieniu szczegółów.
+            </p>
           </div>
         </section>
 
         <div class="form-actions">
-          <button type="button" class="button button-secondary" id="prevStep">← <span data-i18n="previous">Wstecz</span></button>
-          <button type="button" class="button button-primary" id="nextStep"><span data-i18n="next">Dalej</span><span>↗</span></button>
-          <button type="submit" class="button button-primary hidden" id="submitRequest"><span data-i18n="submitNow">Wyślij zgłoszenie</span><span>↗</span></button>
+          <button type="button"
+                  class="button button-secondary"
+                  id="prevStep">
+            ← <span data-i18n="previous">Wstecz</span>
+          </button>
+
+          <button type="button"
+                  class="button button-primary"
+                  id="nextStep">
+            <span data-i18n="next">Dalej</span>
+            <span>↗</span>
+          </button>
+
+          <button type="submit"
+                  class="button button-primary hidden"
+                  id="submitRequest">
+            <span data-i18n="submitNow">
+              Wyślij zgłoszenie
+            </span>
+            <span>↗</span>
+          </button>
         </div>
-        <p class="privacy-note" data-i18n="privacyNote">Wysyłając formularz, wyrażasz zgodę na kontakt w sprawie zgłoszenia. Politykę prywatności dodamy przed uruchomieniem formularza.</p>
+
+        <p class="privacy-note" data-i18n="privacyNote">
+          Wysyłając formularz, wyrażasz zgodę na kontakt
+          w sprawie zgłoszenia. Politykę prywatności
+          dodamy przed uruchomieniem formularza.
+        </p>
       </form>
     </section>
   </main>
 
   <footer class="footer">
-    <div class="footer-main"><strong>CONSTRUCTION</strong><span data-i18n="footerDescription">Firma zajmująca się pracami demontażowymi, montażowymi i remontowymi.</span><span data-i18n="copyright">© 2026 CONSTRUCTION. Wszelkie prawa zastrzeżone.</span></div>
-    <div class="footer-links"><a href="#" data-i18n="agreement">Regulamin</a><a href="#" data-i18n="deal">Jak przebiega współpraca</a><a href="#" data-i18n="guarantees">Gwarancje</a></div>
-    <div class="social-links"><span>Instagram</span><span>TikTok</span><span>Facebook</span><span>Telegram</span></div>
+    <div class="footer-main">
+      <strong>CONSTRUCTION GROUP</strong>
+      <span data-i18n="footerDescription">
+        Firma zajmująca się pracami demontażowymi,
+        montażowymi i remontowymi.
+      </span>
+      <span data-i18n="copyright">
+        © 2026 CONSTRUCTION GROUP.
+        Wszelkie prawa zastrzeżone.
+      </span>
+    </div>
+
+    <div class="footer-links">
+      <a href="#" data-i18n="agreement">Regulamin</a>
+      <a href="#" data-i18n="deal">
+        Jak przebiega współpraca
+      </a>
+      <a href="#" data-i18n="guarantees">Gwarancje</a>
+    </div>
+
+    <div class="social-links">
+      <span>Instagram</span>
+      <span>TikTok</span>
+      <span>Facebook</span>
+      <span>Telegram</span>
+    </div>
   </footer>
 </div>
-<div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+<div id="toast" class="toast"
+     role="status" aria-live="polite"></div>
+
 <script src="script.js"></script>
 </body>
 </html>
+
+/* =====================================
+   CONSTRUCTION GROUP — HEADER
+   ===================================== */
+
+.brand-identity {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.brand-identity strong {
+  color: #ffffff;
+  font-size: 15px;
+  letter-spacing: 1.6px;
+  line-height: 1;
+}
+
+.brand-identity small {
+  color: #ed862f;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 5px;
+}
+
+.site-login {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ff913b;
+  background: #292421;
+  border: 1px solid #ad6b3b;
+  border-radius: 14px;
+  text-decoration: none;
+  transition: .25s ease;
+  box-shadow: 0 0 18px #ed862f15;
+}
+
+.site-login:hover {
+  color: #ffffff;
+  background: #ed862f;
+  border-color: #ed862f;
+  box-shadow: 0 0 25px #ed862f55;
+  transform: translateY(-2px);
+}
+
+.site-login:focus-visible {
+  outline: 2px solid #ffb06b;
+  outline-offset: 3px;
+}
+
+@media (max-width: 480px) {
+  .top-actions {
+    gap: 10px;
+  }
+
+  .brand-identity strong {
+    font-size: 11px;
+    letter-spacing: .8px;
+  }
+
+  .brand-identity small {
+    font-size: 9px;
+    letter-spacing: 3px;
+  }
+
+  .site-login {
+    width: 42px;
+    height: 42px;
+    border-radius: 12px;
+  }
+}
