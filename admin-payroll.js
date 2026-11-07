@@ -9,6 +9,7 @@
   let client, rows = [], initialized = false;
   let employeeOptions = [], projectOptions = [], workRows = [], paymentRows = [];
   let currentUserId = null;
+  let brigadeOptions = [];
   const moneyInput = v => Number(v || 0).toLocaleString('pl-PL', {minimumFractionDigits:2,maximumFractionDigits:2});
 
   async function load() {
@@ -219,6 +220,52 @@
       $('payrollWorkTable').innerHTML=workRows.length?`<table style="width:100%;min-width:700px;text-align:left;border-collapse:collapse"><thead><tr>${['Дата','Сотрудник','Объект','Работа','Сумма','Статус','Действие'].map(x=>`<th style="padding:10px;border-bottom:1px solid #3b3f46">${x}</th>`).join('')}</tr></thead><tbody>${workRows.map(r=>`<tr><td style="padding:10px">${safe(r.work_date)}</td><td>${safe(names.get(r.employee_id)||'—')}</td><td>${safe(projects.get(r.project_id)||'—')}</td><td>${r.work_type==='hourly'?safe(r.hours)+' ч':safe(r.quantity)+' '+safe(r.unit||'')}</td><td>${money(r.calculated_amount)}</td><td>${safe(r.status)}</td><td>${['draft','submitted'].includes(r.status)?`<button type="button" data-approve-work="${safe(r.id)}" style="cursor:pointer">Подтвердить</button>`:'—'}</td></tr>`).join('')}</tbody></table>`:'Записей работ пока нет.';
     }catch(err){$('payrollWorkTable').textContent='Ошибка загрузки работ: '+err.message;}
   }
+   function setupBrigadeBudget(){
+     if ($('payrollBrigadeBudgetPanel')) return;
+     const section = $('payroll');
+     const anchor = $('payrollActions');
+     if (!section || !anchor) return;
+     const panel = document.createElement('section');
+     panel.id = 'payrollBrigadeBudgetPanel';
+     panel.className = 'panel';
+     panel.style.marginBottom = '20px';
+     panel.innerHTML = `
+       <div class="panel-header"><div><h3>Бюджеты бригад</h3>
+       <p>Выделенные лимиты зарплат по каждой бригаде отдельно</p></div></div>
+       <div style="padding:18px;display:flex;gap:12px;align-items:end;flex-wrap:wrap">
+         <label>Бригада<select id="payrollBrigadeSelect" style="display:block;min-width:230px;padding:12px;margin-top:5px"></select></label>
+         <button id="payrollBudgetRefresh" type="button" style="padding:12px;cursor:pointer">Обновить бюджет</button>
+       </div>
+       <div id="payrollBrigadeBudget" style="padding:0 18px 18px">Загрузка бюджета…</div>
+       <p style="padding:0 18px 18px;color:#a4a7ad">Бюджет — разрешённый лимит, а не фактический остаток кассы. Здесь пока только просмотр: подтверждение денежных выплат включим после отдельной проверки.</p>`;
+     anchor.insertAdjacentElement('afterend', panel);
+     $('payrollBrigadeSelect').addEventListener('change',loadBrigadeBudget);
+     $('payrollBudgetRefresh').addEventListener('click',loadBrigadeBudget);
+   }
+
+   async function loadBrigadeBudget(){
+     const select = $('payrollBrigadeSelect');
+     const out = $('payrollBrigadeBudget');
+     if (!select || !out || !client) return;
+     const selected = select.value;
+     select.innerHTML = optionHtml(brigadeOptions.filter(b=>b.status==='active'),'Выберите бригаду');
+     if (brigadeOptions.some(b=>b.id===selected && b.status==='active')) select.value=selected;
+     else if (brigadeOptions.some(b=>b.status==='active')) select.value=brigadeOptions.find(b=>b.status==='active').id;
+     if (!select.value){out.textContent='Активных бригад пока нет.';return;}
+     out.textContent='Загрузка бюджета…';
+     try {
+       const data=await rpc('get_brigade_payroll_budget',{p_brigade_id:select.value});
+       const b=Array.isArray(data)?data[0]:data;
+       if(!b) throw Error('Функция не вернула бюджет');
+       const allocated=Number(b.allocated||0),spent=Number(b.spent||0),available=Number(b.available||0);
+       out.innerHTML=`<div style="display:flex;flex-wrap:wrap;gap:28px">
+         <div><small>Выделено</small><h3>${money(allocated)}</h3></div>
+         <div><small>Потрачено</small><h3>${money(spent)}</h3></div>
+         <div><small>Доступно</small><h3>${money(available)}</h3></div>
+       </div>`;
+     } catch(err){out.textContent='Ошибка бюджета: '+(err.message||err);}
+   }
+
   function setupPayments(){
     if ($('payrollPaymentsPanel')) return;
     const section = $('payroll');
