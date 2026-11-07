@@ -784,8 +784,9 @@
 
       </div><p style="color:#a4a7ad;margin-top:12px;font-size:12px">Бюджет — лимит выплат, а не остаток кассы.</p>`;
 
-      const {data: entries, error} = await client.from('brigade_payroll_budget_entries')
-
+const {data: entries, error} = await client.from('brigade_payroll_budget_entries')
+  .select('id,entry_type,amount,note,created_at,created_by')
+  .eq('brigade_id', brigadeId).order('created_at', {ascending:false}).limit(100);
         .select('id,entry_type,amount,note,created_at,created_by')
 
         .eq('brigade_id', brigadeId).order('created_at', {ascending:false}).limit(100);
