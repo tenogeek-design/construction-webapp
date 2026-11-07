@@ -17,34 +17,37 @@ document.addEventListener("DOMContentLoaded", async () => {
     "application/pdf": "pdf"
   };
 
-  const balanceElement = document.getElementById("myBalance");
-  const nameElement = document.getElementById("cashboxName");
-  const historyElement = document.getElementById("myFinanceHistory");
-  const refreshButton = document.getElementById("refreshBalance");
+  const $ = id => document.getElementById(id);
 
-  const expensesElement = document.getElementById("foremanExpenses");
-  const addExpenseButton = document.getElementById("foremanAddExpense");
+  const balanceElement = $("myBalance");
+  const nameElement = $("cashboxName");
+  const historyElement = $("myFinanceHistory");
+  const refreshButton = $("refreshBalance");
 
-  const formContainer = document.getElementById("expenseFormContainer");
-  const expenseForm = document.getElementById("foremanExpenseForm");
-  const projectSelect = document.getElementById("expenseProject");
-  const titleInput = document.getElementById("expenseTitle");
-  const amountInput = document.getElementById("expenseAmount");
-  const categorySelect = document.getElementById("expenseCategory");
-  const paymentSelect = document.getElementById("expensePaymentMethod");
-  const descriptionInput = document.getElementById("expenseDescription");
-  const receiptInput = document.getElementById("expenseReceipt");
-  const receiptInfo = document.getElementById("expenseReceiptInfo");
-  const receiptFileName = document.getElementById("expenseReceiptFileName");
-  const receiptPreview = document.getElementById("expenseReceiptPreview");
-  const receiptPreviewImage = document.getElementById("expenseReceiptPreviewImage");
-  const submitButton = document.getElementById("submitExpenseButton");
-  const cancelButton = document.getElementById("cancelExpenseButton");
-  const formMessage = document.getElementById("expenseFormMessage");
+  const expensesElement = $("foremanExpenses");
+  const addExpenseButton = $("foremanAddExpense");
+
+  const formContainer = $("expenseFormContainer");
+  const expenseForm = $("foremanExpenseForm");
+  const projectSelect = $("expenseProject");
+  const titleInput = $("expenseTitle");
+  const amountInput = $("expenseAmount");
+  const categorySelect = $("expenseCategory");
+  const paymentSelect = $("expensePaymentMethod");
+  const descriptionInput = $("expenseDescription");
+  const receiptInput = $("expenseReceipt");
+  const receiptInfo = $("expenseReceiptInfo");
+  const receiptFileName = $("expenseReceiptFileName");
+  const receiptPreview = $("expenseReceiptPreview");
+  const receiptPreviewImage = $("expenseReceiptPreviewImage");
+  const submitButton = $("submitExpenseButton");
+  const cancelButton = $("cancelExpenseButton");
+  const formMessage = $("expenseFormMessage");
 
   if (!window.supabase) {
     if (balanceElement) {
-      balanceElement.textContent = "Ошибка загрузки авторизации";
+      balanceElement.textContent =
+        "Ошибка загрузки авторизации";
     }
     return;
   }
@@ -79,18 +82,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   }
 
-  function clearReceiptPreview() {
-    if (previewUrl) {
-      URL.revokeObjectURL(previewUrl);
-      previewUrl = null;
-    }
-
-    receiptPreviewImage.removeAttribute("src");
-    receiptPreview.hidden = true;
-    receiptInfo.hidden = true;
-    receiptFileName.textContent = "";
-  }
-
   function validateReceipt(file) {
     if (!file) return null;
 
@@ -112,6 +103,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     return null;
   }
 
+  function clearReceiptPreview() {
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+
+    receiptPreviewImage.removeAttribute("src");
+    receiptPreview.hidden = true;
+    receiptInfo.hidden = true;
+    receiptFileName.textContent = "";
+  }
+
   function handleReceiptChange() {
     clearReceiptPreview();
     setFormMessage("");
@@ -129,7 +132,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     receiptFileName.textContent =
-      `${file.name} (${(file.size / 1024 / 1024).toFixed(2)} МБ)`;
+      `${file.name} (${(file.size / 1048576).toFixed(2)} МБ)`;
 
     receiptInfo.hidden = false;
 
@@ -156,7 +159,9 @@ document.addEventListener("DOMContentLoaded", async () => {
       await client.rpc("get_my_effective_permissions");
 
     if (permissionsError) {
-      showError("Не удалось проверить права пользователя");
+      showError(
+        "Не удалось проверить права пользователя"
+      );
       return false;
     }
 
@@ -188,7 +193,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     const total = data.reduce(
-      (sum, account) => sum + Number(account.balance || 0),
+      (sum, account) =>
+        sum + Number(account.balance || 0),
       0
     );
 
@@ -288,7 +294,187 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 4. СПИСОК РАСХОДОВ
+  // 4. ПРОСМОТР ЧЕКОВ
+  // ==========================================
+
+  function getReceiptBucket(path) {
+    // Старые чеки хранились в request-photos,
+    // новые — в expense-receipts.
+    const parts = String(path || "").split("/");
+
+    if (parts.length === 3) {
+      return "request-photos";
+    }
+
+    return "expense-receipts";
+  }
+
+  function isPdfReceipt(path) {
+    return /\.pdf$/i.test(
+      String(path || "").split("?")[0]
+    );
+  }
+
+  function openReceiptViewer(url, title, isPdf) {
+    if (isPdf) {
+      const link = document.createElement("a");
+      link.href = url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      return;
+    }
+
+    const overlay = document.createElement("div");
+
+    overlay.style.cssText = [
+      "position:fixed",
+      "inset:0",
+      "z-index:99999",
+      "background:rgba(0,0,0,0.92)",
+      "display:flex",
+      "flex-direction:column",
+      "align-items:center",
+      "justify-content:center",
+      "padding:20px",
+      "box-sizing:border-box"
+    ].join(";");
+
+    const header = document.createElement("div");
+
+    header.style.cssText = [
+      "width:100%",
+      "max-width:1100px",
+      "display:flex",
+      "justify-content:space-between",
+      "align-items:center",
+      "gap:16px",
+      "margin-bottom:15px"
+    ].join(";");
+
+    const heading = document.createElement("div");
+    heading.textContent = "Чек — " + title;
+    heading.style.cssText = [
+      "color:white",
+      "font-size:17px",
+      "font-weight:bold",
+      "overflow-wrap:anywhere"
+    ].join(";");
+
+    const closeButton = document.createElement("button");
+    closeButton.type = "button";
+    closeButton.textContent = "✕ Закрыть";
+
+    closeButton.style.cssText = [
+      "background:#ff812e",
+      "color:white",
+      "border:0",
+      "border-radius:8px",
+      "padding:11px 16px",
+      "cursor:pointer",
+      "white-space:nowrap"
+    ].join(";");
+
+    const image = document.createElement("img");
+    image.src = url;
+    image.alt = "Фотография чека";
+
+    image.style.cssText = [
+      "display:block",
+      "max-width:100%",
+      "max-height:80vh",
+      "object-fit:contain",
+      "border-radius:8px"
+    ].join(";");
+
+    const errorMessage = document.createElement("div");
+    errorMessage.style.color = "#ef4444";
+    errorMessage.style.marginTop = "12px";
+
+    image.addEventListener("error", () => {
+      errorMessage.textContent =
+        "Не удалось открыть фотографию чека.";
+    });
+
+    function closeViewer() {
+      document.removeEventListener("keydown", handleKey);
+      overlay.remove();
+    }
+
+    function handleKey(event) {
+      if (event.key === "Escape") {
+        closeViewer();
+      }
+    }
+
+    closeButton.addEventListener("click", closeViewer);
+
+    overlay.addEventListener("click", event => {
+      if (event.target === overlay) {
+        closeViewer();
+      }
+    });
+
+    document.addEventListener("keydown", handleKey);
+
+    header.append(heading, closeButton);
+    overlay.append(header, image, errorMessage);
+    document.body.appendChild(overlay);
+
+    closeButton.focus();
+  }
+
+  async function viewExpenseReceipt(item, button, message) {
+    const path = item.receipt_path;
+
+    if (!path) {
+      message.textContent = "У этого расхода нет чека.";
+      return;
+    }
+
+    button.disabled = true;
+    button.textContent = "Открываем...";
+
+    message.textContent = "";
+    message.style.color = "#ef4444";
+
+    try {
+      const bucket = getReceiptBucket(path);
+
+      const { data, error } = await client.storage
+        .from(bucket)
+        .createSignedUrl(path, 120);
+
+      if (error) {
+        throw error;
+      }
+
+      if (!data?.signedUrl) {
+        throw new Error(
+          "Сервер не вернул ссылку на чек."
+        );
+      }
+
+      openReceiptViewer(
+        data.signedUrl,
+        item.title || "Расход",
+        isPdfReceipt(path)
+      );
+
+    } catch (error) {
+      message.textContent =
+        "Не удалось открыть чек: " + error.message;
+
+    } finally {
+      button.disabled = false;
+      button.textContent = "👁 Посмотреть чек";
+    }
+  }
+
+  // ==========================================
+  // 5. СПИСОК РАСХОДОВ
   // ==========================================
 
   const expenseStatusLabels = {
@@ -304,7 +490,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (
       typeof value === "string" &&
-      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(value)
     ) {
       return value;
     }
@@ -356,16 +542,54 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     details.append(title, description, status, date);
 
+    // Просмотр уже прикреплённого чека.
+
     if (item.receipt_path) {
-      const receipt = document.createElement("div");
-      receipt.style.color = "#22a06b";
-      receipt.style.marginTop = "6px";
-      receipt.textContent = "✓ Чек прикреплён";
-      details.appendChild(receipt);
+      const receiptSection = document.createElement("div");
+      receiptSection.style.marginTop = "10px";
+
+      const receiptLabel = document.createElement("div");
+      receiptLabel.style.color = "#22a06b";
+      receiptLabel.style.marginBottom = "8px";
+      receiptLabel.textContent = "✓ Чек прикреплён";
+
+      const viewButton = document.createElement("button");
+      viewButton.type = "button";
+      viewButton.textContent = "👁 Посмотреть чек";
+
+      viewButton.style.cssText = [
+        "background:#30343a",
+        "color:#ffffff",
+        "border:1px solid #ff812e",
+        "border-radius:8px",
+        "padding:10px 14px",
+        "font-size:13px",
+        "font-weight:bold",
+        "cursor:pointer"
+      ].join(";");
+
+      const viewMessage = document.createElement("div");
+      viewMessage.style.marginTop = "8px";
+      viewMessage.style.fontSize = "12px";
+
+      viewButton.addEventListener("click", () => {
+        viewExpenseReceipt(
+          item,
+          viewButton,
+          viewMessage
+        );
+      });
+
+      receiptSection.append(
+        receiptLabel,
+        viewButton,
+        viewMessage
+      );
+
+      details.appendChild(receiptSection);
     }
 
-    // КНОПКА ПРИКРЕПЛЕНИЯ ЧЕКА
-    // Только для ожидающих расходов без чека.
+    // Прикрепление чека к существующему расходу.
 
     const expenseId = getExpenseId(item);
 
@@ -511,7 +735,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 5. ЗАГРУЗКА ОБЪЕКТОВ
+  // 6. ЗАГРУЗКА ОБЪЕКТОВ
   // ==========================================
 
   async function loadMyProjects() {
@@ -576,7 +800,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 6. ОТКРЫТИЕ И ЗАКРЫТИЕ ФОРМЫ
+  // 7. ФОРМА РАСХОДА
   // ==========================================
 
   async function openExpenseForm() {
@@ -607,7 +831,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 7. ЗАГРУЗКА ЧЕКА
+  // 8. ЗАГРУЗКА ЧЕКА
   // ==========================================
 
   async function uploadExpenseReceipt(expenseId, file) {
@@ -674,7 +898,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 8. СОЗДАНИЕ РАСХОДА
+  // 9. СОЗДАНИЕ РАСХОДА
   // ==========================================
 
   async function submitNewExpense(event) {
@@ -764,10 +988,6 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       expenseCreated = true;
 
-      // После успешного создания очищаем форму.
-      // Даже если чек не загрузится, пользователь
-      // не должен случайно создать дубликат.
-
       expenseForm.reset();
       clearReceiptPreview();
 
@@ -823,7 +1043,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 9. ОБНОВЛЕНИЕ ДАННЫХ
+  // 10. ОБНОВЛЕНИЕ ДАННЫХ
   // ==========================================
 
   async function refreshFinance() {
@@ -841,7 +1061,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // 10. ЗАПУСК
+  // 11. ЗАПУСК
   // ==========================================
 
   const hasAccess = await checkAccess();
