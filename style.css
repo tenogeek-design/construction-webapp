@@ -251,8 +251,7 @@ body {
       rgba(20, 21, 24, .82),
       rgba(20, 21, 24, .15)
     ),
-    url("construction-logo.png")
-    center / cover no-repeat;
+url("construction-logo.png")    center / cover no-repeat;
 
   border: 1px solid #52677d;
 }
