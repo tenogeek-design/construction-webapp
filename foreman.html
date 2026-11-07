@@ -307,6 +307,12 @@
         width: 100%;
       }
     }
+
+    /* ЗАДАЧИ БРИГАДИРА */
+    .foreman-task-item {background:#24272b;border:1px solid #3b3f46;border-radius:9px;padding:18px;overflow-wrap:anywhere;}
+    .foreman-task-item h3 {margin:0 0 9px;font-size:17px;color:#ff812e;}
+    .foreman-task-item p {margin:8px 0;line-height:1.5;}
+
   </style>
 </head>
 
@@ -657,11 +663,47 @@
 
     </section>
 
+
+    <!-- ЗАДАЧИ БРИГАДИРА: отдельный модуль, финансы не затрагивает -->
+    <section class="card" id="foremanTasksSection">
+      <div class="section-header">
+        <h2>Задачи моей бригады</h2>
+        <button id="foremanRefreshTasks" type="button" class="secondary-button">Обновить</button>
+      </div>
+      <p class="muted">Задачи назначенных объектов. Доступ ограничивается правами Supabase.</p>
+      <div class="payroll-summary">
+        <div class="payroll-metric">Всего<strong id="foremanTasksTotal">—</strong></div>
+        <div class="payroll-metric">В работе<strong id="foremanTasksActive">—</strong></div>
+        <div class="payroll-metric">На проверке<strong id="foremanTasksReview">—</strong></div>
+      </div>
+      <p class="muted">Завершено: <strong id="foremanTasksCompleted">—</strong></p>
+      <div class="form-grid" style="margin-top:18px">
+        <div class="form-field">
+          <label for="foremanTasksProject">Объект</label>
+          <select id="foremanTasksProject"><option value="">Все мои объекты</option></select>
+        </div>
+        <div class="form-field">
+          <label for="foremanTasksStatus">Статус</label>
+          <select id="foremanTasksStatus">
+            <option value="">Все статусы</option>
+            <option value="new">Новая</option>
+            <option value="in_progress">В работе</option>
+            <option value="review">На проверке</option>
+            <option value="completed">Завершена</option>
+          </select>
+        </div>
+      </div>
+      <p id="foremanTasksMessage" class="muted" role="status" aria-live="polite">Загрузка задач...</p>
+      <div id="foremanTasksList" class="payroll-list"></div>
+      <p class="info-text">На этом этапе доступен просмотр. Фотоотчёты и отправку на проверку подключим после настройки серверных прав для бригадиров.</p>
+    </section>
+
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="foreman.js"></script>
   <script src="foreman-payroll.js"></script>
+  <script src="foreman-tasks.js"></script>
 
 </body>
 </html>
