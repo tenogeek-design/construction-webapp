@@ -33,6 +33,17 @@
       if (eErr) throw eErr;
       const {data:projects,error:pErr} = await client.from('projects').select('id,name').limit(1000);
       if (pErr) throw pErr;
+      // Список бригад нужен для отдельного бюджета каждой команды.
+      // Ошибка этого блока не должна ломать начисления и учёт работ.
+      let brigadeLoadError = null;
+      const {data:brigades,error:bErr} = await client.from('brigades')
+        .select('id,name,status').order('name',{ascending:true}).limit(1000);
+      if (bErr) {
+        brigadeOptions = [];
+        brigadeLoadError = bErr.message;
+      } else {
+        brigadeOptions = brigades || [];
+      }
       const {data:allocs,error:lErr} = await client.from('payroll_payment_allocations')
         .select('accrual_id,payment_id,amount').limit(10000);
       if (lErr) throw lErr;
@@ -59,6 +70,13 @@
       updateOptions();
       await loadWork();
        renderPayments();
+      if ($('payrollBrigadeBudget')) {
+        if (brigadeLoadError) {
+          $('payrollBrigadeBudget').textContent = 'Ошибка загрузки бригад: ' + brigadeLoadError;
+        } else {
+          await loadBrigadeBudget();
+        }
+      }
       $('payrollMessage').textContent = `Загружено начислений: ${rows.length}. Данные только для просмотра.`;
     } catch (err) {
       $('payrollMessage').textContent = `Ошибка загрузки: ${err.message || err}`;
@@ -168,6 +186,7 @@
     });
     updateOptions();
     setupPayments();
+    setupBrigadeBudget();
   }
   function updateOptions(){
     for(const id of ['pwEmployee','paEmployee']) if($(id)) $(id).innerHTML=optionHtml(employeeOptions,'Выберите сотрудника');
