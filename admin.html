@@ -443,6 +443,58 @@
         <footer class="footer"><span>CONSTRUCTION GROUP</span><span>Projects · Version 1.0</span></footer>
       </section>
 
+      <!-- TASKS -->
+      <section id="tasks" class="dashboard-section" style="display:none;">
+        <div class="welcome">
+          <div>
+            <span class="eyebrow">УПРАВЛЕНИЕ РАБОТАМИ</span>
+            <h2>Задачи компании</h2>
+            <p>Задачи по объектам, исполнители, сроки и фотоотчёты.</p>
+          </div>
+          <button type="button" id="taskNewBtn" disabled title="Подключим на следующем шаге">+ Новая задача (скоро)</button>
+        </div>
+        <div class="stats-grid">
+          <article class="stat-card"><div class="stat-heading"><span>Всего задач</span><span class="stat-icon orange">☑</span></div><strong id="tasksTotal">—</strong><small>После подключения базы</small></article>
+          <article class="stat-card"><div class="stat-heading"><span>В работе</span><span class="stat-icon blue">◷</span></div><strong id="tasksActive">—</strong><small>Активные задачи</small></article>
+          <article class="stat-card"><div class="stat-heading"><span>На проверке</span><span class="stat-icon purple">▣</span></div><strong id="tasksReview">—</strong><small>Ожидают подтверждения</small></article>
+          <article class="stat-card"><div class="stat-heading"><span>Завершено</span><span class="stat-icon green">✓</span></div><strong id="tasksCompleted">—</strong><small>Подтверждённые работы</small></article>
+        </div>
+        <section class="panel">
+          <div class="panel-header">
+            <div><h3>Все задачи</h3><p>Список работ по объектам CONSTRUCTION GROUP</p></div>
+            <button type="button" id="tasksRefreshBtn" class="text-link" disabled>↻ Обновить</button>
+          </div>
+          <div style="display:flex;gap:12px;flex-wrap:wrap;padding:16px;">
+            <input type="search" id="tasksSearch" placeholder="Поиск по названию задачи" aria-label="Поиск задач" disabled style="flex:1;min-width:220px;padding:12px;border-radius:6px;">
+            <select id="tasksProjectFilter" aria-label="Фильтр объекта" disabled style="min-width:180px;padding:12px;border-radius:6px;"><option value="">Все объекты</option></select>
+            <select id="tasksStatusFilter" aria-label="Фильтр статуса" disabled style="min-width:180px;padding:12px;border-radius:6px;"><option value="">Все статусы</option></select>
+          </div>
+          <p id="tasksMessage" role="status" style="padding:16px 20px;color:#a4a7ad;">Раздел открыт. Следующий шаг — подключить admin-tasks.js к Supabase.</p>
+          <div id="tasksTable" style="overflow-x:auto;padding:0 16px 20px;"></div>
+        </section>
+        <section class="panel" id="taskEditorPanel" style="display:none;margin-top:20px;">
+          <div class="panel-header"><div><h3 id="taskEditorTitle">Новая задача</h3><p>Работа на объекте и ответственные</p></div><button type="button" id="taskEditorCloseBtn" class="text-link">Закрыть ✕</button></div>
+          <form id="taskForm" style="padding:20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;">
+            <input type="hidden" id="taskId">
+            <label>Объект *<select id="taskProject" required style="display:block;width:100%;padding:10px;"><option value="">Выберите объект</option></select></label>
+            <label>Название задачи *<input id="taskTitle" required maxlength="200" style="display:block;width:100%;padding:10px;"></label>
+            <label>Бригада<select id="taskBrigade" style="display:block;width:100%;padding:10px;"><option value="">Не назначена</option></select></label>
+            <label>Исполнитель<select id="taskEmployee" style="display:block;width:100%;padding:10px;"><option value="">Не назначен</option></select></label>
+            <label>Приоритет<select id="taskPriority" style="display:block;width:100%;padding:10px;"><option value="normal">Обычный</option><option value="high">Высокий</option><option value="low">Низкий</option></select></label>
+            <label>Статус<select id="taskStatus" style="display:block;width:100%;padding:10px;"><option value="new">Новая</option><option value="in_progress">В работе</option><option value="review">На проверке</option><option value="completed">Завершена</option></select></label>
+            <label>Срок выполнения<input id="taskDueDate" type="date" style="display:block;width:100%;padding:10px;"></label>
+            <label style="display:flex;align-items:center;gap:10px;"><input id="taskPhotoRequired" type="checkbox"> Фотоотчёт обязателен</label>
+            <label style="grid-column:1/-1;">Описание<textarea id="taskDescription" rows="3" style="display:block;width:100%;padding:10px;"></textarea></label>
+            <div style="grid-column:1/-1;display:flex;gap:12px;align-items:center;flex-wrap:wrap;">
+              <button type="submit" id="taskSaveBtn">Сохранить задачу</button>
+              <button type="button" id="taskCancelBtn">Отмена</button>
+              <span id="taskFormMessage" role="status"></span>
+            </div>
+          </form>
+        </section>
+        <footer class="footer"><span>CONSTRUCTION GROUP</span><span>Tasks · Version 1.0</span></footer>
+      </section>
+
       <!-- TIME TRACKING -->
 <section id="time" class="dashboard-section" style="display:none;">
 
