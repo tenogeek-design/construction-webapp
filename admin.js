@@ -1,5 +1,8 @@
 
-  const permissionList = permissions || [];
+const permissionList =
+  typeof permissions !== "undefined" && Array.isArray(permissions)
+    ? permissions
+    : [];
 
   const permissionSet = new Set(
     permissionList.map(item => item.permission_code)
