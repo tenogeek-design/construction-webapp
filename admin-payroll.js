@@ -130,8 +130,14 @@ rows = (accruals || []).map(a => {
         <td style="padding:12px;border-bottom:1px solid #3b3f46;">${safe(r.name)}</td>
         <td style="padding:12px;border-bottom:1px solid #3b3f46;">${safe(r.project)}</td>
         <td style="padding:12px;border-bottom:1px solid #3b3f46;">${safe(r.period_start)} — ${safe(r.period_end)}</td>
-        <td style="padding:12px;border-bottom:1px solid #3b3f46;">${safe(labels[r.status]||r.status)}</td>
-        <td style="padding:12px;border-bottom:1px solid #3b3f46;">${money(r.final_amount)}</td>
+<td style="padding:12px;border-bottom:1px solid #3b3f46;">
+  ${safe(labels[r.status] || r.status)}
+  ${r.cancellationReason
+    ? `<div style="font-size:12px;color:#a4a7ad;margin-top:5px">
+         Причина: ${safe(r.cancellationReason)}
+       </div>`
+    : ''}
+</td>        <td style="padding:12px;border-bottom:1px solid #3b3f46;">${money(r.final_amount)}</td>
         <td style="padding:12px;border-bottom:1px solid #3b3f46;">${r.status==='approved'?money(r.paid):'—'}</td>
         <td style="padding:12px;border-bottom:1px solid #3b3f46;">${r.status==='approved'?money(Number(r.final_amount)-r.paid):'—'} ${r.status==='submitted'?`<button type="button" data-approve-accrual="${safe(r.id)}" style="cursor:pointer">Утвердить</button>`:''}</td>
       </tr>`).join('')}</tbody></table>`;
