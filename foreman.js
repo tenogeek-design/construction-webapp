@@ -13,12 +13,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const historyElement = document.getElementById("myFinanceHistory");
   const refreshButton = document.getElementById("refreshBalance");
 
+  const expensesElement = document.getElementById("foremanExpenses");
+  const addExpenseButton = document.getElementById("foremanAddExpense");
+
   if (!window.supabase) {
     balanceElement.textContent = "Ошибка загрузки авторизации";
     return;
   }
 
-  // Используем общую сессию с login.html.
+  // Общая сессия с login.html
   const client = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
@@ -35,6 +38,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     balanceElement.textContent = "Ошибка";
     nameElement.textContent = message;
   }
+
+  // ==========================================
+  // 1. АВТОРИЗАЦИЯ
+  // ==========================================
 
   async function checkAccess() {
     const { data, error } = await client.auth.getUser();
@@ -54,6 +61,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     return true;
   }
+
+  // ==========================================
+  // 2. МОЯ КАССА
+  // ==========================================
 
   async function loadMyBalance() {
     balanceElement.textContent = "Загрузка...";
@@ -86,6 +97,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     nameElement.textContent =
       data.map(account => account.account_name).join(", ");
   }
+
+  // ==========================================
+  // 3. ИСТОРИЯ КАССЫ
+  // ==========================================
 
   function createHistoryRow(item) {
     const row = document.createElement("div");
@@ -160,19 +175,127 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     if (!Array.isArray(data) || data.length === 0) {
-      historyElement.textContent =
-        "Операций пока нет.";
+      historyElement.textContent = "Операций пока нет.";
       return;
     }
 
     historyElement.replaceChildren();
 
     for (const item of data) {
-      historyElement.appendChild(
-        createHistoryRow(item)
-      );
+      historyElement.appendChild(createHistoryRow(item));
     }
   }
+
+  // ==========================================
+  // 4. РАСХОДЫ И ЧЕКИ
+  // ==========================================
+
+  const expenseStatusLabels = {
+    pending: "Ожидает подтверждения",
+    approved: "Подтверждён",
+    rejected: "Отклонён",
+    paid: "Оплачен"
+  };
+
+  function createExpenseRow(item) {
+    const row = document.createElement("div");
+
+    row.style.cssText = [
+      "padding:16px 0",
+      "border-bottom:1px solid #3b3f46",
+      "display:flex",
+      "justify-content:space-between",
+      "align-items:center",
+      "gap:16px",
+      "flex-wrap:wrap"
+    ].join(";");
+
+    const details = document.createElement("div");
+
+    const title = document.createElement("div");
+    title.style.fontWeight = "bold";
+    title.textContent = item.title || "Расход";
+
+    const description = document.createElement("div");
+    description.className = "muted";
+    description.style.marginTop = "6px";
+    description.textContent =
+      item.description || item.category || "Без описания";
+
+    const status = document.createElement("div");
+    status.className = "muted";
+    status.style.marginTop = "6px";
+
+    status.textContent =
+      expenseStatusLabels[item.status] ||
+      item.status ||
+      "Статус неизвестен";
+
+    const date = document.createElement("div");
+    date.className = "muted";
+    date.style.marginTop = "6px";
+
+    date.textContent = item.expense_date
+      ? item.expense_date.split("-").reverse().join(".")
+      : "Дата не указана";
+
+    details.append(title, description, status, date);
+
+    const amount = document.createElement("div");
+    amount.style.fontWeight = "bold";
+    amount.style.fontSize = "20px";
+    amount.style.color = "#ff812e";
+
+    amount.textContent = moneyFormat(
+      item.amount,
+      item.currency || "PLN"
+    );
+
+    row.append(details, amount);
+
+    return row;
+  }
+
+  async function loadMyExpenses() {
+    if (!expensesElement) return;
+
+    expensesElement.textContent = "Загрузка расходов...";
+
+    // Эта функция будет создана следующим шагом.
+    // До её появления не запрашиваем таблицу напрямую.
+    const { data, error } = await client.rpc(
+      "get_my_expense_requests"
+    );
+
+    if (error) {
+      if (error.code === "PGRST202" ||
+          error.code === "42883") {
+        expensesElement.textContent =
+          "Раздел готов. Ожидается подключение функции расходов.";
+        return;
+      }
+
+      expensesElement.textContent =
+        "Ошибка загрузки расходов: " + error.message;
+      return;
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      expensesElement.textContent =
+        "Заявок на расходы пока нет.";
+      return;
+    }
+
+    expensesElement.replaceChildren();
+
+    for (const item of data) {
+      expensesElement.appendChild(createExpenseRow(item));
+    }
+  }
+
+  // ==========================================
+  // 5. ОБНОВЛЕНИЕ ДАННЫХ
+  // ==========================================
 
   async function refreshFinance() {
     refreshButton.disabled = true;
@@ -180,12 +303,17 @@ document.addEventListener("DOMContentLoaded", async () => {
     try {
       await Promise.all([
         loadMyBalance(),
-        loadMyHistory()
+        loadMyHistory(),
+        loadMyExpenses()
       ]);
     } finally {
       refreshButton.disabled = false;
     }
   }
+
+  // ==========================================
+  // 6. ЗАПУСК
+  // ==========================================
 
   const hasAccess = await checkAccess();
 
@@ -195,6 +323,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     "click",
     refreshFinance
   );
+
+  // Пока создание расходов не подключено,
+  // кнопка остаётся отключённой.
+  if (addExpenseButton) {
+    addExpenseButton.disabled = true;
+  }
 
   await refreshFinance();
 });
