@@ -1,0 +1,183 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#191a1b">
+  <title>Личный кабинет — CONSTRUCTION GROUP</title>
+
+  <link rel="stylesheet" href="client.css">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="client.js" defer></script>
+</head>
+
+<body>
+
+<div class="client-layout">
+
+  <header class="topbar">
+    <a href="/" class="brand">
+      <span class="brand-mark">C</span>
+      <span>
+        <strong>CONSTRUCTION</strong>
+        <small>GROUP · CLIENT</small>
+      </span>
+    </a>
+
+    <div class="top-actions">
+      <span class="online-status">ЛИЧНЫЙ КАБИНЕТ</span>
+      <button id="logoutButton" class="logout-button">
+        Выйти ↗
+      </button>
+    </div>
+  </header>
+
+  <main class="main-content">
+
+    <section class="welcome-section">
+      <div class="eyebrow">CLIENT PERSONAL ACCOUNT</div>
+      <h1>Добро пожаловать,<br><span id="clientName">Заказчик</span></h1>
+      <p>
+        Управляйте своими заявками, следите за ходом работ
+        и оставайтесь на связи с CONSTRUCTION GROUP.
+      </p>
+    </section>
+
+    <section class="stats-grid">
+
+      <article class="stat-card">
+        <span class="stat-icon">▤</span>
+        <span class="stat-label">МОИ ЗАЯВКИ</span>
+        <strong id="requestsCount">—</strong>
+        <small>Всего обращений</small>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-icon">◷</span>
+        <span class="stat-label">В ОБРАБОТКЕ</span>
+        <strong id="activeCount">—</strong>
+        <small>Ожидают обработки</small>
+      </article>
+
+      <article class="stat-card">
+        <span class="stat-icon">✓</span>
+        <span class="stat-label">ПРИНЯТО</span>
+        <strong id="acceptedCount">—</strong>
+        <small>Принятые заявки</small>
+      </article>
+
+    </section>
+
+    <section class="action-grid">
+
+      <a href="/#calculator" class="action-card">
+        <span class="action-number">01</span>
+        <span class="action-icon">＋</span>
+        <strong>Новая заявка</strong>
+        <small>Рассчитать и отправить запрос на работы</small>
+        <span class="action-arrow">↗</span>
+      </a>
+
+      <a href="#requests" class="action-card">
+        <span class="action-number">02</span>
+        <span class="action-icon">▤</span>
+        <strong>Мои заявки</strong>
+        <small>Статусы и история обращений</small>
+        <span class="action-arrow">↗</span>
+      </a>
+
+      <a href="#projects" class="action-card">
+        <span class="action-number">03</span>
+        <span class="action-icon">▧</span>
+        <strong>Мои объекты</strong>
+        <small>Информация о текущих проектах</small>
+        <span class="action-arrow">↗</span>
+      </a>
+
+      <a href="#reports" class="action-card">
+        <span class="action-number">04</span>
+        <span class="action-icon">▣</span>
+        <strong>Фотоотчёты</strong>
+        <small>Фотографии выполненных работ</small>
+        <span class="action-arrow">↗</span>
+      </a>
+
+    </section>
+
+    <section class="content-section" id="requests">
+
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">YOUR ACTIVITY</div>
+          <h2>Мои заявки</h2>
+          <p>История ваших обращений в компанию.</p>
+        </div>
+
+        <button id="refreshButton" class="secondary-button">
+          ↻ Обновить
+        </button>
+      </div>
+
+      <div id="requestsList" class="requests-list">
+        <div class="loading-state">Загружаем ваши заявки...</div>
+      </div>
+
+    </section>
+
+    <section class="content-section" id="projects">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">YOUR PROJECTS</div>
+          <h2>Мои объекты</h2>
+          <p>Ваши проекты и ход выполнения работ.</p>
+        </div>
+      </div>
+
+      <div class="empty-card">
+        <span>▧</span>
+        <strong>Объекты появятся здесь</strong>
+        <small>После принятия заявки и создания проекта.</small>
+      </div>
+    </section>
+
+    <section class="content-section" id="reports">
+      <div class="section-heading">
+        <div>
+          <div class="eyebrow">WORK PROGRESS</div>
+          <h2>Фотоотчёты</h2>
+          <p>Фотографии и результаты выполненных работ.</p>
+        </div>
+      </div>
+
+      <div class="empty-card">
+        <span>▣</span>
+        <strong>Фотоотчётов пока нет</strong>
+        <small>Отчёты появятся после начала работ на объекте.</small>
+      </div>
+    </section>
+
+    <section class="profile-section">
+      <div>
+        <div class="eyebrow">ACCOUNT INFORMATION</div>
+        <h2>Мой профиль</h2>
+        <p id="clientEmail">Загрузка...</p>
+        <p id="clientPhone">Телефон не указан</p>
+      </div>
+      <span class="profile-symbol">C</span>
+    </section>
+
+    <div id="clientMessage" class="message"></div>
+
+  </main>
+
+  <footer class="footer">
+    <strong>CONSTRUCTION GROUP</strong>
+    <span>CLIENT CABINET · 2026</span>
+  </footer>
+
+</div>
+
+</body>
+</html>
