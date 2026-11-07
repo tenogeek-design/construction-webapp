@@ -1,4 +1,3 @@
-
 "use strict";
 /* CONSTRUCTION GROUP — payroll admin: work, accruals, payment drafts */
 (() => {
@@ -195,6 +194,7 @@
     });
     updateOptions();
     setupPayments();
+    $('ppTable')?.addEventListener('click', confirmPayment);
     setupBrigadeBudget();
   }
   function updateOptions(){
