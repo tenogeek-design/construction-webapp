@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -265,6 +264,18 @@
       color: #ffbd73;
     }
 
+
+    /* ЗАРПЛАТЫ БРИГАДЫ */
+    .payroll-summary { display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:18px 0; }
+    .payroll-metric { background:#24272b;border:1px solid #3b3f46;border-radius:9px;padding:15px; }
+    .payroll-metric strong { display:block;font-size:23px;color:#ff812e;margin-top:8px; }
+    .payroll-list { display:grid;gap:12px;margin-top:15px; }
+    .payroll-item { background:#24272b;border:1px solid #3b3f46;border-radius:9px;padding:16px;display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;align-items:center; }
+    .payroll-item p {margin:5px 0;}
+    .payroll-item-actions {display:flex;gap:9px;flex-wrap:wrap;align-items:center;}
+    .payroll-item select {background:#30343a;color:white;border:1px solid #454a52;border-radius:7px;padding:10px;max-width:240px;}
+    @media(max-width:600px){.payroll-summary{grid-template-columns:1fr}.payroll-item-actions{width:100%}.payroll-item-actions select,.payroll-item-actions button{width:100%;max-width:none}}
+
     @media (max-width: 600px) {
       main {
         margin-top: 25px;
@@ -354,6 +365,29 @@
         Загрузка истории...
       </div>
 
+    </section>
+
+
+    <!-- БЮДЖЕТ И ВЫПЛАТЫ БРИГАДЫ -->
+    <section class="card" id="foremanPayrollSection">
+      <div class="section-header">
+        <h2>Зарплаты и авансы бригады</h2>
+        <button id="foremanRefreshPayroll" type="button" class="secondary-button">Обновить</button>
+      </div>
+      <p class="muted">Выплаты только своей бригаде. Подтверждение списывает деньги из кассы и бюджета.</p>
+      <div class="form-field" style="margin-top:18px">
+        <label for="foremanPayrollBrigade">Бригада</label>
+        <select id="foremanPayrollBrigade"><option value="">Загрузка...</option></select>
+      </div>
+      <div class="payroll-summary">
+        <div class="payroll-metric">Выделено<strong id="foremanBudgetAllocated">—</strong></div>
+        <div class="payroll-metric">Выплачено<strong id="foremanBudgetSpent">—</strong></div>
+        <div class="payroll-metric">Осталось<strong id="foremanBudgetAvailable">—</strong></div>
+      </div>
+      <div id="foremanPayrollMessage" class="muted" role="status" aria-live="polite">Загрузка выплат...</div>
+      <div id="foremanPayrollDrafts" class="payroll-list"></div>
+      <h2 style="margin-top:24px">История выплат</h2>
+      <div id="foremanPayrollHistory" class="payroll-list"></div>
     </section>
 
     <!-- РАСХОДЫ И ЧЕКИ -->
@@ -607,6 +641,7 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="foreman.js"></script>
+  <script src="foreman-payroll.js"></script>
 
 </body>
 </html>
