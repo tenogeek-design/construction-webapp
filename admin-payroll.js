@@ -1,5 +1,5 @@
 "use strict";
-/* CONSTRUCTION GROUP — payroll read-only admin module */
+/* CONSTRUCTION GROUP — payroll admin: work, accruals, payment drafts */
 (() => {
   const URL = "https://yepxskcfxyiyqqhmdpve.supabase.co";
   const KEY = "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH";
@@ -7,7 +7,8 @@
   const money = (v) => `${Number(v || 0).toLocaleString("pl-PL", {minimumFractionDigits:2,maximumFractionDigits:2})} zł`;
   const safe = (v) => String(v ?? "").replace(/[&<>"']/g, (c) => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
   let client, rows = [], initialized = false;
-  let employeeOptions = [], projectOptions = [], workRows = [];
+  let employeeOptions = [], projectOptions = [], workRows = [], paymentRows = [];
+  let currentUserId = null;
   const moneyInput = v => Number(v || 0).toLocaleString('pl-PL', {minimumFractionDigits:2,maximumFractionDigits:2});
 
   async function load() {
@@ -19,6 +20,7 @@
       client ||= window.supabase.createClient(URL, KEY);
       const {data:{user}, error:authError} = await client.auth.getUser();
       if (authError || !user) throw new Error('Сначала войдите в админку');
+      currentUserId = user.id;
       const {data:owner,error:ownerError}=await client.rpc('is_owner');
       if(ownerError||owner!==true) throw new Error('Этот интерфейс пока доступен только владельцу');
       // The owner-only RLS policy is the authority. Never query owner_message.
@@ -34,9 +36,10 @@
         .select('accrual_id,payment_id,amount').limit(10000);
       if (lErr) throw lErr;
       const {data:payments,error:payErr} = await client.from('payroll_payments')
-        .select('id,status,payment_type,employee_id,currency').limit(10000);
+        .select('id,status,payment_type,employee_id,project_id,amount,currency,payment_method,payment_date,description').order('payment_date',{ascending:false}).limit(10000);
       if (payErr) throw payErr;
       employeeOptions = employees || [];
+       paymentRows = payments || [];
       projectOptions = projects || [];
       const names = new Map((employees||[]).map(x=>[x.id,x.full_name]));
       const projectNames = new Map((projects||[]).map(x=>[x.id,x.name]));
@@ -54,6 +57,7 @@
       render();
       updateOptions();
       await loadWork();
+       renderPayments();
       $('payrollMessage').textContent = `Загружено начислений: ${rows.length}. Данные только для просмотра.`;
     } catch (err) {
       $('payrollMessage').textContent = `Ошибка загрузки: ${err.message || err}`;
@@ -162,10 +166,12 @@
       }catch(err){notify(err.message,true);}finally{btn.disabled=false;}
     });
     updateOptions();
+    setupPayments();
   }
   function updateOptions(){
     for(const id of ['pwEmployee','paEmployee']) if($(id)) $(id).innerHTML=optionHtml(employeeOptions,'Выберите сотрудника');
     for(const id of ['pwProject','paProject']) if($(id)) $(id).innerHTML=optionHtml(projectOptions,'Выберите объект');
+    updatePaymentOptions();
   }
   function calcWork(){
     if(!$('pwTotal'))return;
@@ -213,6 +219,86 @@
       $('payrollWorkTable').innerHTML=workRows.length?`<table style="width:100%;min-width:700px;text-align:left;border-collapse:collapse"><thead><tr>${['Дата','Сотрудник','Объект','Работа','Сумма','Статус','Действие'].map(x=>`<th style="padding:10px;border-bottom:1px solid #3b3f46">${x}</th>`).join('')}</tr></thead><tbody>${workRows.map(r=>`<tr><td style="padding:10px">${safe(r.work_date)}</td><td>${safe(names.get(r.employee_id)||'—')}</td><td>${safe(projects.get(r.project_id)||'—')}</td><td>${r.work_type==='hourly'?safe(r.hours)+' ч':safe(r.quantity)+' '+safe(r.unit||'')}</td><td>${money(r.calculated_amount)}</td><td>${safe(r.status)}</td><td>${['draft','submitted'].includes(r.status)?`<button type="button" data-approve-work="${safe(r.id)}" style="cursor:pointer">Подтвердить</button>`:'—'}</td></tr>`).join('')}</tbody></table>`:'Записей работ пока нет.';
     }catch(err){$('payrollWorkTable').textContent='Ошибка загрузки работ: '+err.message;}
   }
+  function setupPayments(){
+    if ($('payrollPaymentsPanel')) return;
+    const section = $('payroll');
+    const anchor = $('payrollActions');
+    if (!section || !anchor) return;
+    const panel = document.createElement('section');
+    panel.id = 'payrollPaymentsPanel';
+    panel.className = 'panel';
+    panel.style.marginBottom = '20px';
+    panel.innerHTML = `
+      <div class="panel-header"><div><h3>Авансы и выплаты</h3>
+      <p>Учёт выплат работникам — черновики отдельно от подтверждённых операций</p></div></div>
+      <div style="padding:16px;display:flex;flex-wrap:wrap;gap:20px">
+        <div><small>Подтверждённые авансы</small><h3 id="payrollAdvancesTotal">—</h3></div>
+        <div><small>Подтверждённая зарплата</small><h3 id="payrollSalaryTotal">—</h3></div>
+        <div><small>Черновики выплат</small><h3 id="payrollDraftsTotal">—</h3></div>
+      </div>
+      <form id="payrollPaymentForm" style="padding:18px;display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px">
+        <label>Сотрудник<select id="ppEmployee" required style="display:block;width:100%;padding:12px;margin-top:5px"></select></label>
+        <label>Объект (необязательно)<select id="ppProject" style="display:block;width:100%;padding:12px;margin-top:5px"></select></label>
+        <label>Вид выплаты<select id="ppType" required style="display:block;width:100%;padding:12px;margin-top:5px"><option value="advance">Аванс</option><option value="salary">Зарплата</option><option value="bonus">Премия</option></select></label>
+        <label>Сумма, zł<input id="ppAmount" type="number" min="0.01" step="0.01" required style="display:block;width:100%;padding:12px;margin-top:5px"></label>
+        <label>Способ<select id="ppMethod" required style="display:block;width:100%;padding:12px;margin-top:5px"><option value="cash">Наличные</option><option value="bank">Банк</option></select></label>
+        <label>Дата<input id="ppDate" type="date" required style="display:block;width:100%;padding:12px;margin-top:5px"></label>
+        <label style="grid-column:1/-1">Примечание<input id="ppDescription" maxlength="500" placeholder="За какой период / комментарий" style="display:block;width:100%;padding:12px;margin-top:5px"></label>
+        <div style="grid-column:1/-1"><button id="ppSave" type="submit" style="padding:12px 18px;cursor:pointer">Создать черновик выплаты</button></div>
+      </form>
+      <p id="ppMessage" role="status" style="padding:0 18px 18px;color:#a4a7ad">Черновик не означает, что деньги выданы. Подтверждение и движение средств подключим после проверки финансовой операции.</p>
+      <div class="panel-header"><div><h3>История выплат</h3><p>Черновики и подтверждённые платежи</p></div></div>
+      <div id="ppTable" style="padding:12px 18px 20px;overflow-x:auto">Загрузка...</div>`;
+    anchor.insertAdjacentElement('afterend', panel);
+    $('ppDate').value = new Date().toLocaleDateString('en-CA');
+    $('payrollPaymentForm').addEventListener('submit', savePaymentDraft);
+    updatePaymentOptions();
+    renderPayments();
+  }
+  function updatePaymentOptions(){
+    if ($('ppEmployee')) $('ppEmployee').innerHTML=optionHtml(employeeOptions,'Выберите сотрудника');
+    if ($('ppProject')) $('ppProject').innerHTML=optionHtml(projectOptions,'Без объекта');
+  }
+  function renderPayments(){
+    if (!$('ppTable')) return;
+    const confirmed = paymentRows.filter(p=>p.status==='confirmed');
+    const total = type=>confirmed.filter(p=>p.payment_type===type).reduce((s,p)=>s+Number(p.amount||0),0);
+    $('payrollAdvancesTotal').textContent=money(total('advance'));
+    $('payrollSalaryTotal').textContent=money(total('salary'));
+    $('payrollDraftsTotal').textContent=String(paymentRows.filter(p=>p.status==='draft').length);
+    const names=new Map(employeeOptions.map(e=>[e.id,e.full_name]));
+    const types={advance:'Аванс',salary:'Зарплата',bonus:'Премия',adjustment:'Корректировка'};
+    const statuses={draft:'Черновик',confirmed:'Подтверждено',cancelled:'Отменено'};
+    $('ppTable').innerHTML=paymentRows.length?`<table style="width:100%;min-width:730px;border-collapse:collapse;text-align:left"><thead><tr>${['Дата','Сотрудник','Тип','Сумма','Способ','Статус'].map(t=>`<th style="padding:10px;border-bottom:1px solid #3b3f46">${t}</th>`).join('')}</tr></thead><tbody>${paymentRows.map(p=>`<tr>${[
+      safe(p.payment_date),safe(names.get(p.employee_id)||'—'),safe(types[p.payment_type]||p.payment_type),money(p.amount),p.payment_method==='cash'?'Наличные':'Банк',safe(statuses[p.status]||p.status)
+    ].map(v=>`<td style="padding:10px;border-bottom:1px solid #3b3f46">${v}</td>`).join('')}</tr>`).join('')}</tbody></table>`:'Выплат пока нет.';
+  }
+  async function savePaymentDraft(e){
+    e.preventDefault();
+    const btn=$('ppSave'); btn.disabled=true;
+    const msg=$('ppMessage');
+    try {
+      if (!client || !currentUserId) throw Error('Сначала обновите данные зарплат');
+      const amount=Number($('ppAmount').value);
+      if(!Number.isFinite(amount)||amount<=0)throw Error('Укажите сумму больше нуля');
+      const {error}=await client.from('payroll_payments').insert({
+        employee_id:$('ppEmployee').value,
+        project_id:$('ppProject').value||null,
+        payment_type:$('ppType').value,
+        amount, currency:'PLN', payment_method:$('ppMethod').value,
+        payment_date:$('ppDate').value,
+        description:$('ppDescription').value.trim()||null,
+        status:'draft',created_by:currentUserId
+      });
+      if(error)throw error;
+      msg.textContent='Черновик выплаты сохранён. Деньги ещё не списаны и выплата не подтверждена.';
+      msg.style.color='#a4d7b5';
+      $('ppAmount').value='';$('ppDescription').value='';
+      await load();
+    }catch(err){msg.textContent='Ошибка: '+(err.message||err);msg.style.color='#ff8d8d';}
+    finally{btn.disabled=false;}
+  }
+
   function show() {
     document.querySelectorAll('.dashboard-section').forEach(s=>s.style.display='none');
     $('payroll').style.display='block';
