@@ -1,3 +1,4 @@
+
 "use strict";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -434,6 +435,159 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =========================================
+  // ОБЩИЙ ФИНАНСОВЫЙ DASHBOARD
+  // =========================================
+
+  function dashboardPanel() {
+    let panel = document.getElementById("financeDashboard");
+    if (panel) return panel;
+    panel = document.createElement("section");
+    panel.id = "financeDashboard";
+    Object.assign(panel.style, {
+      marginTop: "20px", padding: "20px", border: "1px solid #3b3f46",
+      borderRadius: "10px", background: "#292c31", color: "#f5f5f4"
+    });
+    section.insertBefore(panel, section.firstChild);
+    return panel;
+  }
+
+  function dashboardCard(label, value, hint) {
+    const card = document.createElement("article");
+    Object.assign(card.style, {
+      minWidth: "170px", flex: "1 1 170px", padding: "16px",
+      border: "1px solid #3b3f46", borderRadius: "9px", background: "#24272c"
+    });
+    const title = document.createElement("div");
+    title.textContent = label;
+    title.style.color = "#a4a7ad";
+    const amount = document.createElement("strong");
+    amount.textContent = value;
+    amount.style.cssText = "display:block;font-size:22px;margin:9px 0;";
+    const note = document.createElement("small");
+    note.textContent = hint || "";
+    note.style.color = "#a4a7ad";
+    card.append(title, amount, note);
+    return card;
+  }
+
+  function dashboardHeading(text) {
+    const h = document.createElement("h3");
+    h.textContent = text;
+    h.style.margin = "20px 0 10px";
+    return h;
+  }
+
+  async function loadDashboard() {
+    const panel = dashboardPanel();
+    panel.replaceChildren();
+    const title = document.createElement("h2");
+    title.textContent = "Обзор финансов компании";
+    title.style.marginTop = "0";
+    const subtitle = document.createElement("p");
+    subtitle.textContent = "Подтверждённые операции в PLN. Внутренние переводы не считаются доходом или расходом.";
+    subtitle.style.color = "#a4a7ad";
+    panel.append(title, subtitle);
+
+    const { data, error } = await client.rpc("get_finance_dashboard");
+    if (error) {
+      const err = document.createElement("p");
+      err.textContent = "Не удалось загрузить финансовую статистику: " + error.message;
+      err.style.color = "#ff7373";
+      panel.appendChild(err);
+      throw error;
+    }
+    const stats = data || {};
+    const all = stats.all_time || {};
+    const month = stats.month || {};
+    const week = stats.week || {};
+    const net = Number(all.income || 0) - Number(all.expenses || 0);
+
+    panel.appendChild(dashboardHeading("За всё время"));
+    const allCards = document.createElement("div");
+    Object.assign(allCards.style, { display: "flex", flexWrap: "wrap", gap: "12px" });
+    allCards.append(
+      dashboardCard("Поступления", money(all.income), "Подтверждённые доходные операции"),
+      dashboardCard("Расходы", money(all.expenses), "Подтверждённые расходы"),
+      dashboardCard("Денежный результат", money(net), "Поступления минус расходы"),
+      dashboardCard("Операции", String(all.operations || 0), "Включая внутренние переводы")
+    );
+    panel.appendChild(allCards);
+
+    panel.appendChild(dashboardHeading("Периоды"));
+    const periodCards = document.createElement("div");
+    Object.assign(periodCards.style, { display: "flex", flexWrap: "wrap", gap: "12px" });
+    periodCards.append(
+      dashboardCard("Доходы за месяц", money(month.income), "С начала текущего месяца"),
+      dashboardCard("Расходы за месяц", money(month.expenses), "С начала текущего месяца"),
+      dashboardCard("Доходы за 7 дней", money(week.income), "Последние 7 календарных дней"),
+      dashboardCard("Расходы за 7 дней", money(week.expenses), "Последние 7 календарных дней")
+    );
+    panel.appendChild(periodCards);
+
+    panel.appendChild(dashboardHeading("Расходы по категориям"));
+    const categories = document.createElement("div");
+    if (!stats.categories?.length) {
+      categories.textContent = "Подтверждённых расходов пока нет.";
+    } else {
+      const list = document.createElement("div");
+      list.style.display = "grid";
+      list.style.gap = "8px";
+      stats.categories.forEach(item => {
+        const row = document.createElement("div");
+        Object.assign(row.style, { display: "flex", justifyContent: "space-between", gap: "12px", padding: "10px", background: "#24272c", borderRadius: "7px" });
+        const name = document.createElement("span");
+        name.textContent = `${item.category || "Без категории"} · ${item.operations} оп.`;
+        const amount = document.createElement("strong");
+        amount.textContent = money(item.total);
+        row.append(name, amount);
+        list.appendChild(row);
+      });
+      categories.appendChild(list);
+    }
+    panel.appendChild(categories);
+
+    panel.appendChild(dashboardHeading("Финансы по объектам"));
+    const projects = stats.projects || [];
+    if (!projects.length) {
+      const empty = document.createElement("p");
+      empty.textContent = "Объектов пока нет.";
+      panel.appendChild(empty);
+    } else {
+      const wrap = document.createElement("div");
+      wrap.style.overflowX = "auto";
+      const table = document.createElement("table");
+      table.style.cssText = "width:100%;border-collapse:collapse;color:#f5f5f4;";
+      const headers = ["Объект", "Поступления", "Расходы", "Денежный результат"];
+      const thead = document.createElement("thead");
+      const trh = document.createElement("tr");
+      headers.forEach(label => {
+        const th = document.createElement("th");
+        th.textContent = label;
+        th.style.cssText = "text-align:left;padding:10px;border-bottom:1px solid #444;";
+        trh.appendChild(th);
+      });
+      thead.appendChild(trh);
+      table.appendChild(thead);
+      const tbody = document.createElement("tbody");
+      projects.forEach(project => {
+        const tr = document.createElement("tr");
+        const income = Number(project.income || 0);
+        const expenses = Number(project.expenses || 0);
+        [project.project_name || "Без названия", money(income), money(expenses), money(income - expenses)].forEach(value => {
+          const td = document.createElement("td");
+          td.textContent = String(value);
+          td.style.cssText = "padding:10px;border-bottom:1px solid #383838;";
+          tr.appendChild(td);
+        });
+        tbody.appendChild(tr);
+      });
+      table.appendChild(tbody);
+      wrap.appendChild(table);
+      panel.appendChild(wrap);
+    }
+  }
+
+  // =========================================
   // ЗАГРУЗКА ФИНАНСОВ
   // =========================================
 
@@ -448,7 +602,8 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       const results = await Promise.allSettled([
         loadBalances(),
-        loadHistory()
+        loadHistory(),
+        loadDashboard()
       ]);
 
       const errors = results
