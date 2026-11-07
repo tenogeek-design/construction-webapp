@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   const balanceElement = document.getElementById("myBalance");
   const nameElement = document.getElementById("cashboxName");
+  const historyElement = document.getElementById("myFinanceHistory");
   const refreshButton = document.getElementById("refreshBalance");
 
   if (!window.supabase) {
@@ -17,11 +18,18 @@ document.addEventListener("DOMContentLoaded", async () => {
     return;
   }
 
-  // Используем ту же сессию, что и login.html.
+  // Используем общую сессию с login.html.
   const client = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_KEY
   );
+
+  const moneyFormat = (amount, currency = "PLN") => {
+    return new Intl.NumberFormat("pl-PL", {
+      style: "currency",
+      currency
+    }).format(Number(amount || 0));
+  };
 
   function showError(message) {
     balanceElement.textContent = "Ошибка";
@@ -32,15 +40,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     const { data, error } = await client.auth.getUser();
 
     if (error || !data.user) {
-      window.location.replace(
-        "/login.html?next=" +
-        encodeURIComponent("/foreman.html")
-      );
+      window.location.replace("/login.html");
       return false;
     }
 
-    // Проверяем роль через серверную функцию.
-    const { data: permissions, error: permissionsError } =
+    const { error: permissionsError } =
       await client.rpc("get_my_effective_permissions");
 
     if (permissionsError) {
@@ -48,8 +52,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       return false;
     }
 
-    // Роль и назначение кассы дополнительно
-    // проверяются на сервере внутри RPC.
     return true;
   }
 
@@ -78,25 +80,121 @@ document.addEventListener("DOMContentLoaded", async () => {
       0
     );
 
-    const currency = data[0].currency || "PLN";
-
     balanceElement.textContent =
-      new Intl.NumberFormat("pl-PL", {
-        style: "currency",
-        currency
-      }).format(total);
+      moneyFormat(total, data[0].currency || "PLN");
 
     nameElement.textContent =
       data.map(account => account.account_name).join(", ");
   }
 
-  const hasAccess = await checkAccess();
+  function createHistoryRow(item) {
+    const row = document.createElement("div");
 
-  if (!hasAccess) {
-    return;
+    row.style.cssText = [
+      "padding:16px 0",
+      "border-bottom:1px solid #3b3f46",
+      "display:flex",
+      "justify-content:space-between",
+      "align-items:center",
+      "gap:16px",
+      "flex-wrap:wrap"
+    ].join(";");
+
+    const details = document.createElement("div");
+
+    const title = document.createElement("div");
+    title.style.fontWeight = "bold";
+
+    const isIncome = item.direction === "income";
+
+    title.textContent = isIncome
+      ? "Поступление"
+      : "Расход";
+
+    const description = document.createElement("div");
+    description.className = "muted";
+    description.style.marginTop = "6px";
+    description.textContent =
+      item.description || item.category || "Без описания";
+
+    const date = document.createElement("div");
+    date.className = "muted";
+    date.style.marginTop = "6px";
+
+    date.textContent = item.transaction_date
+      ? item.transaction_date.split("-").reverse().join(".")
+      : "Дата не указана";
+
+    details.append(title, description, date);
+
+    const amount = document.createElement("div");
+    amount.style.fontWeight = "bold";
+    amount.style.fontSize = "20px";
+    amount.style.color = isIncome
+      ? "#22a06b"
+      : "#ff812e";
+
+    amount.textContent =
+      (isIncome ? "+" : "−") +
+      moneyFormat(item.amount, item.currency || "PLN");
+
+    row.append(details, amount);
+
+    return row;
   }
 
-  refreshButton.addEventListener("click", loadMyBalance);
+  async function loadMyHistory() {
+    if (!historyElement) return;
 
-  await loadMyBalance();
+    historyElement.textContent = "Загрузка истории...";
+
+    const { data, error } = await client.rpc(
+      "get_my_finance_history",
+      { p_limit: 50 }
+    );
+
+    if (error) {
+      historyElement.textContent =
+        "Ошибка загрузки истории: " + error.message;
+      return;
+    }
+
+    if (!Array.isArray(data) || data.length === 0) {
+      historyElement.textContent =
+        "Операций пока нет.";
+      return;
+    }
+
+    historyElement.replaceChildren();
+
+    for (const item of data) {
+      historyElement.appendChild(
+        createHistoryRow(item)
+      );
+    }
+  }
+
+  async function refreshFinance() {
+    refreshButton.disabled = true;
+
+    try {
+      await Promise.all([
+        loadMyBalance(),
+        loadMyHistory()
+      ]);
+    } finally {
+      refreshButton.disabled = false;
+    }
+  }
+
+  const hasAccess = await checkAccess();
+
+  if (!hasAccess) return;
+
+  refreshButton.addEventListener(
+    "click",
+    refreshFinance
+  );
+
+  await refreshFinance();
 });
