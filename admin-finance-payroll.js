@@ -1,4 +1,4 @@
-/* CONSTRUCTION GROUP — Finance Payroll Obligations 1.0
+const [accrualRes, allocationRes, paymentRes, employeeRes, projectRes, cancellationRes] = await Promise.all([/* CONSTRUCTION GROUP — Finance Payroll Obligations 1.0
    Read-only. Does not modify financial transactions or payroll records.
 */
 (() => {
