@@ -6,177 +6,131 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#18191a">
   <title>Регистрация — CONSTRUCTION GROUP</title>
-
   <link rel="stylesheet" href="register.css">
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="register.js" defer></script>
 </head>
-
 <body>
-  <main class="register-shell">
 
-    <header class="register-header">
-      <a href="/" class="brand">
-        <span class="brand-mark">C</span>
-        <span class="brand-name">
-          <strong>CONSTRUCTION</strong>
-          <small>G R O U P</small>
-        </span>
-      </a>
+<main class="register-shell">
 
-      <a href="/login.html" class="login-link">
-        Уже есть аккаунт? <span>Войти</span>
-      </a>
-    </header>
+  <header class="register-header">
+    <a href="/" class="brand">
+      <span class="brand-mark">C</span>
+      <span class="brand-name">
+        <strong>CONSTRUCTION</strong>
+        <small>GROUP</small>
+      </span>
+    </a>
+    <a href="/login.html" class="login-link">
+      Уже есть аккаунт? <b>Войти</b>
+    </a>
+  </header>
 
-    <section class="register-content">
+  <section class="register-content">
 
-      <div class="register-intro">
-        <div class="eyebrow">
-          <span class="status-dot"></span>
-          PERSONAL ACCOUNT
+    <div class="register-intro">
+      <div class="eyebrow">◆ PERSONAL ACCOUNT</div>
+      <h1>Создайте свой<br><span>аккаунт.</span></h1>
+      <p>
+        Добро пожаловать в CONSTRUCTION GROUP.
+        Создайте личный кабинет для работы с заявками,
+        объектами и услугами нашей компании.
+      </p>
+    </div>
+
+    <div class="register-card">
+
+      <div class="card-heading">
+        <div>
+          <span class="card-label">НОВЫЙ АККАУНТ</span>
+          <h2>Регистрация заказчика</h2>
         </div>
-
-        <h1>Создайте свой<br><span>аккаунт.</span></h1>
-
-        <p>
-          Зарегистрируйтесь в CONSTRUCTION GROUP,
-          чтобы отправлять заявки, следить за объектами
-          и получать информацию о ходе работ.
-        </p>
+        <div class="card-symbol">C</div>
       </div>
 
-      <div class="register-card">
+      <form id="registerForm">
 
-        <div class="card-heading">
-          <div>
-            <span class="card-label">НОВЫЙ АККАУНТ</span>
-            <h2>Регистрация заказчика</h2>
-          </div>
-          <div class="card-symbol">C</div>
+        <div class="field-row">
+          <label class="field">
+            Имя
+            <input id="firstName" type="text"
+              placeholder="Ваше имя" required minlength="2">
+          </label>
+
+          <label class="field">
+            Фамилия
+            <input id="lastName" type="text"
+              placeholder="Ваша фамилия" required minlength="2">
+          </label>
         </div>
 
-        <form id="registerForm">
+        <label class="field">
+          Телефон
+          <input id="phone" type="tel"
+            placeholder="+48 000 000 000" required>
+        </label>
 
-          <div class="field-row">
-            <label class="field">
-              Имя
-              <input
-                type="text"
-                id="firstName"
-                name="firstName"
-                placeholder="Ваше имя"
-                autocomplete="given-name"
-                required
-                minlength="2"
-                maxlength="60"
-              >
-            </label>
+        <label class="field">
+          Электронная почта
+          <input id="email" type="email"
+            placeholder="example@email.com" required>
+        </label>
 
-            <label class="field">
-              Фамилия
-              <input
-                type="text"
-                id="lastName"
-                name="lastName"
-                placeholder="Ваша фамилия"
-                autocomplete="family-name"
-                required
-                minlength="2"
-                maxlength="60"
-              >
-            </label>
-          </div>
+        <label class="field">
+          Пароль
+          <input id="password" type="password"
+            placeholder="Минимум 8 символов"
+            required minlength="8">
+        </label>
 
-          <label class="field">
-            Номер телефона
-            <input
-              type="tel"
-              id="phone"
-              name="phone"
-              placeholder="+48 000 000 000"
-              autocomplete="tel"
-              required
-              maxlength="25"
-            >
-          </label>
+        <label class="field">
+          Повторите пароль
+          <input id="passwordConfirm" type="password"
+            placeholder="Повторите пароль"
+            required minlength="8">
+        </label>
 
-          <label class="field">
-            Электронная почта
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="example@email.com"
-              autocomplete="email"
-              required
-              maxlength="254"
-            >
-          </label>
+        <label class="agreement">
+          <input type="checkbox" id="agreement" required>
+          <span>
+            Я согласен с обработкой персональных данных
+            и условиями использования сервиса.
+          </span>
+        </label>
 
-          <label class="field">
-            Пароль
-            <input
-              type="password"
-              id="password"
-              name="password"
-              placeholder="Минимум 8 символов"
-              autocomplete="new-password"
-              required
-              minlength="8"
-            >
-          </label>
+        <div id="registerMessage"
+          class="message"
+          role="status"
+          aria-live="polite"></div>
 
-          <label class="field">
-            Повторите пароль
-            <input
-              type="password"
-              id="passwordConfirm"
-              name="passwordConfirm"
-              placeholder="Повторите пароль"
-              autocomplete="new-password"
-              required
-              minlength="8"
-            >
-          </label>
+        <button type="submit" id="registerButton"
+          class="submit-button">
+          <span>СОЗДАТЬ АККАУНТ</span>
+          <span class="button-arrow">↗</span>
+        </button>
 
-          <label class="agreement">
-            <input type="checkbox" id="agreement" required>
-            <span>
-              Я согласен с обработкой персональных данных
-              и условиями использования сервиса.
-            </span>
-          </label>
+      </form>
 
-          <div id="registerMessage" class="message" role="status" aria-live="polite"></div>
-
-          <button type="submit" id="registerButton" class="submit-button">
-            <span>СОЗДАТЬ АККАУНТ</span>
-            <span class="button-arrow">↗</span>
-          </button>
-
-        </form>
-
-        <div class="card-footer">
-          Уже зарегистрированы?
-          <a href="/login.html">Войти в систему</a>
-        </div>
-
+      <div class="card-footer">
+        Уже зарегистрированы?
+        <a href="/login.html">Войти в систему</a>
       </div>
 
-      <div class="register-note">
-        <span>◆</span>
-        Безопасная регистрация через CONSTRUCTION GROUP
-      </div>
+    </div>
 
-    </section>
+    <div class="register-note">
+      ◆ Безопасная регистрация CONSTRUCTION GROUP
+    </div>
 
-    <footer class="register-footer">
-      <span>CONSTRUCTION GROUP © 2026</span>
-      <span>WARSAW · POLAND</span>
-    </footer>
+  </section>
 
-  </main>
+  <footer class="register-footer">
+    <span>CONSTRUCTION GROUP © 2026</span>
+    <span>WARSAW · POLAND</span>
+  </footer>
+
+</main>
+
 </body>
 </html>
