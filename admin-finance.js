@@ -1781,6 +1781,243 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // =========================================
+  // ДОЛГИ И ЗАДОЛЖЕННОСТИ КОМПАНИИ
+  // =========================================
+
+  function debtPanel() {
+    let panel = document.getElementById("companyDebtsPanel");
+    if (panel) return panel;
+    panel = document.createElement("section");
+    panel.id = "companyDebtsPanel";
+    Object.assign(panel.style, {
+      marginTop: "20px", padding: "20px", border: "1px solid #3b3f46",
+      borderRadius: "10px", background: "#292c31", color: "#f5f5f4"
+    });
+    const account = document.getElementById("financeAccountsPanel");
+    if (account?.parentElement) account.parentElement.insertBefore(panel, account.nextSibling);
+    else section.appendChild(panel);
+    return panel;
+  }
+
+  function debtButton(label, primary = false) {
+    return createButton(label, primary);
+  }
+
+  function debtDate(value) {
+    if (!value) return "—";
+    return new Date(value + "T00:00:00").toLocaleDateString("pl-PL");
+  }
+
+  async function loadCompanyDebts() {
+    const panel = debtPanel();
+    panel.replaceChildren();
+
+    const header = document.createElement("div");
+    Object.assign(header.style, {
+      display: "flex", justifyContent: "space-between", alignItems: "center",
+      flexWrap: "wrap", gap: "12px"
+    });
+    const heading = document.createElement("h3");
+    heading.textContent = "Долги и задолженности";
+    heading.style.margin = "0";
+    const add = debtButton("+ Добавить задолженность", true);
+    add.addEventListener("click", () => openCompanyDebtForm().catch(e => showMessage(e.message, true)));
+    header.append(heading, add);
+    panel.appendChild(header);
+
+    const subtitle = document.createElement("p");
+    subtitle.textContent = "Нам должны и мы должны. Частичные оплаты автоматически отражаются в финансовой истории.";
+    subtitle.style.color = "#a4a7ad";
+    panel.appendChild(subtitle);
+
+    const tabs = document.createElement("div");
+    Object.assign(tabs.style, { display: "flex", gap: "8px", flexWrap: "wrap", margin: "14px 0" });
+    const listWrap = document.createElement("div");
+    let currentType = "all";
+    const tabButtons = [];
+    const tabDefs = [
+      ["all", "Все задолженности"],
+      ["receivable", "Нам должны"],
+      ["payable", "Мы должны"]
+    ];
+    tabDefs.forEach(([value, label]) => {
+      const b = debtButton(label, value === currentType);
+      b.addEventListener("click", () => {
+        currentType = value;
+        tabButtons.forEach(x => { x.button.style.background = x.value === value ? "#ff812e" : "#444"; x.button.style.color = x.value === value ? "#202226" : "#fff"; });
+        renderRows();
+      });
+      tabButtons.push({ value, button: b });
+      tabs.appendChild(b);
+    });
+    panel.append(tabs, listWrap);
+
+    const { data, error } = await client.from("company_debts")
+      .select("id,debt_type,counterparty_name,counterparty_type,project_id,description,document_number,total_amount,currency,debt_date,due_date,status,created_at")
+      .order("created_at", { ascending: false }).limit(300);
+    if (error) {
+      const err = document.createElement("p");
+      err.style.color = "#ff7373";
+      err.textContent = "Не удалось загрузить задолженности: " + error.message;
+      listWrap.appendChild(err);
+      return;
+    }
+
+    const debtRows = data || [];
+    const { data: payments, error: paymentsError } = await client.from("company_debt_payments")
+      .select("id,debt_id,amount,payment_date,note,created_at")
+      .order("payment_date", { ascending: false }).limit(1000);
+    if (paymentsError) {
+      const err = document.createElement("p");
+      err.style.color = "#ff7373";
+      err.textContent = "Не удалось загрузить историю оплат: " + paymentsError.message;
+      listWrap.appendChild(err);
+      return;
+    }
+    const paymentRows = payments || [];
+    const paidByDebt = new Map();
+    paymentRows.forEach(p => paidByDebt.set(p.debt_id, (paidByDebt.get(p.debt_id) || 0) + Number(p.amount || 0)));
+
+    const summary = document.createElement("div");
+    Object.assign(summary.style, { display: "flex", flexWrap: "wrap", gap: "10px", margin: "12px 0 18px" });
+    const openReceivable = debtRows.filter(d => d.debt_type === "receivable" && d.status === "open").reduce((s,d) => s + Math.max(0, Number(d.total_amount) - (paidByDebt.get(d.id) || 0)), 0);
+    const openPayable = debtRows.filter(d => d.debt_type === "payable" && d.status === "open").reduce((s,d) => s + Math.max(0, Number(d.total_amount) - (paidByDebt.get(d.id) || 0)), 0);
+    summary.append(
+      dashboardCard("Нам должны", money(openReceivable), "Остаток открытых долгов"),
+      dashboardCard("Мы должны", money(openPayable), "Остаток наших обязательств")
+    );
+    panel.insertBefore(summary, tabs);
+
+    function renderRows() {
+      listWrap.replaceChildren();
+      const visible = debtRows.filter(d => currentType === "all" || d.debt_type === currentType);
+      if (!visible.length) {
+        const empty = document.createElement("p");
+        empty.textContent = "Задолженностей в этой категории пока нет.";
+        empty.style.color = "#a4a7ad";
+        listWrap.appendChild(empty);
+      }
+      visible.forEach(debt => {
+        const paid = paidByDebt.get(debt.id) || 0;
+        const remaining = Math.max(0, Number(debt.total_amount) - paid);
+        const card = document.createElement("article");
+        Object.assign(card.style, { padding: "14px", marginTop: "10px", border: "1px solid #444", borderRadius: "8px", background: "#24272c" });
+        const name = document.createElement("strong");
+        name.textContent = `${debt.debt_type === "receivable" ? "Нам должны: " : "Мы должны: "}${debt.counterparty_name}`;
+        name.style.display = "block";
+        const details = document.createElement("p");
+        details.textContent = `${debt.counterparty_type || "other"} · ${debt.status === "closed" ? "Закрыт" : debt.status === "cancelled" ? "Отменён" : "Открыт"} · Дата: ${debtDate(debt.debt_date)} · Срок: ${debtDate(debt.due_date)}`;
+        details.style.color = "#a4a7ad";
+        const amounts = document.createElement("p");
+        amounts.innerHTML = "";
+        amounts.textContent = `Всего: ${money(debt.total_amount)} · Оплачено: ${money(paid)} · Остаток: ${money(remaining)}`;
+        amounts.style.fontWeight = "600";
+        card.append(name, details, amounts);
+        if (debt.description) {
+          const desc = document.createElement("p"); desc.textContent = debt.description; card.appendChild(desc);
+        }
+        if (debt.document_number) {
+          const doc = document.createElement("small"); doc.textContent = "Документ: " + debt.document_number; doc.style.color = "#a4a7ad"; card.appendChild(doc);
+        }
+        const actions = document.createElement("div");
+        Object.assign(actions.style, { display: "flex", gap: "8px", flexWrap: "wrap", marginTop: "12px" });
+        if (debt.status === "open" && remaining > 0.000001) {
+          const pay = debtButton(debt.debt_type === "receivable" ? "Принять оплату" : "Погасить долг", true);
+          pay.addEventListener("click", () => openDebtPaymentForm(debt, remaining).catch(e => showMessage(e.message, true)));
+          actions.appendChild(pay);
+        }
+        const history = debtButton("История оплат");
+        history.addEventListener("click", () => showDebtPaymentHistory(debt, paymentRows));
+        actions.appendChild(history);
+        card.appendChild(actions);
+        listWrap.appendChild(card);
+      });
+    }
+    renderRows();
+  }
+
+  async function openCompanyDebtForm() {
+    const modal = createModal("Новая задолженность", "Создай обязательство клиента или компании. Валюта — PLN.");
+    const type = createSelect([["receivable", "Нам должны (клиент/заказчик)"], ["payable", "Мы должны (поставщик/работник/подрядчик)"]]);
+    const counterparty = createInput("text", "Название клиента или компании"); counterparty.maxLength = 160;
+    const counterpartyType = createSelect([["client", "Клиент"], ["supplier", "Поставщик"], ["employee", "Работник"], ["contractor", "Подрядчик"], ["other", "Другое"]]);
+    const amount = createInput("number", "0.00");
+    const debtDateInput = createInput("date"); debtDateInput.value = new Date().toISOString().slice(0,10);
+    const dueDate = createInput("date");
+    const project = createSelect([["", "Без привязки к объекту"]]);
+    const docNumberInput = createInput("text", "Номер счёта / документа (необязательно)");
+    const description = document.createElement("textarea"); description.rows = 3; description.maxLength = 2000; description.placeholder = "Описание задолженности...";
+    addFields(modal, [["Тип задолженности", type], ["Контрагент", counterparty], ["Тип контрагента", counterpartyType], ["Общая сумма (PLN)", amount], ["Дата возникновения", debtDateInput], ["Срок оплаты", dueDate], ["Объект", project], ["Номер документа", docNumberInput], ["Описание", description]]);
+    try {
+      const projects = await loadExpenseProjects();
+      projects.forEach(p => { const o = document.createElement("option"); o.value = p.id; o.textContent = p.name; project.appendChild(o); });
+    } catch (e) { console.warn("Debt projects unavailable", e); }
+    modal.submit.textContent = "Создать задолженность";
+    attachSubmit(modal, async () => {
+      modal.errorText.textContent = "";
+      if (!counterparty.value.trim()) { modal.errorText.textContent = "Укажи контрагента."; return; }
+      if (!validAmount(amount.value)) { modal.errorText.textContent = "Укажи корректную сумму."; return; }
+      if (!debtDateInput.value || (dueDate.value && dueDate.value < debtDateInput.value)) { modal.errorText.textContent = "Проверь даты задолженности."; return; }
+      setBusy(modal, true, "Сохраняем...");
+      try {
+        const { error } = await client.from("company_debts").insert({
+          debt_type: type.value, counterparty_name: counterparty.value.trim(), counterparty_type: counterpartyType.value,
+          project_id: project.value || null, description: description.value.trim() || null,
+          document_number: docNumberInput.value.trim() || null, total_amount: Number(amount.value), currency: "PLN",
+          debt_date: debtDateInput.value, due_date: dueDate.value || null, status: "open"
+        });
+        if (error) throw error;
+        modal.close(); await loadCompanyDebts(); showMessage("Задолженность создана.");
+      } catch (e) { modal.errorText.textContent = e.message; setBusy(modal, false); }
+    });
+  }
+
+  async function openDebtPaymentForm(debt, remaining) {
+    await loadBalances();
+    const accounts = accountsCache.filter(a => a.currency === debt.currency && a.account_id);
+    if (!accounts.length) throw new Error("Нет доступных активных счетов PLN.");
+    const modal = createModal(debt.debt_type === "receivable" ? "Принять оплату долга" : "Погасить задолженность", `Контрагент: ${debt.counterparty_name}. Остаток: ${money(remaining)}.`);
+    const account = createSelect(accountOptions(accounts));
+    const amount = createInput("number", "0.00"); amount.value = remaining.toFixed(2); amount.max = remaining.toFixed(2);
+    const date = createInput("date"); date.value = new Date().toISOString().slice(0,10);
+    const note = document.createElement("textarea"); note.rows = 2; note.maxLength = 1000; note.placeholder = "Комментарий (необязательно)";
+    addFields(modal, [[debt.debt_type === "receivable" ? "Счёт зачисления" : "Счёт списания", account], ["Сумма (PLN)", amount], ["Дата оплаты", date], ["Комментарий", note]]);
+    modal.submit.textContent = "Провести оплату";
+    attachSubmit(modal, async () => {
+      modal.errorText.textContent = "";
+      if (!validAmount(amount.value) || Number(amount.value) > remaining + 0.000001) { modal.errorText.textContent = `Сумма должна быть больше 0 и не превышать ${money(remaining)}.`; return; }
+      if (!date.value) { modal.errorText.textContent = "Укажи дату оплаты."; return; }
+      if (!window.confirm(`Провести ${money(amount.value)} по задолженности «${debt.counterparty_name}»?`)) return;
+      setBusy(modal, true, "Проводим...");
+      try {
+        const { data, error } = await client.rpc("register_company_debt_payment", {
+          p_debt_id: debt.id, p_account_id: account.value, p_amount: Number(amount.value),
+          p_payment_date: date.value, p_note: note.value.trim() || null
+        });
+        if (error) throw error;
+        modal.close();
+        await loadFinance(); await loadCompanyDebts();
+        showMessage(`Оплата зарегистрирована. Остаток: ${money(data?.remaining)}.`);
+      } catch (e) { modal.errorText.textContent = e.message; setBusy(modal, false); }
+    });
+  }
+
+  function showDebtPaymentHistory(debt, payments) {
+    const modal = createModal("История оплат", `Задолженность: ${debt.counterparty_name}`);
+    modal.submit.remove();
+    const rows = payments.filter(p => p.debt_id === debt.id);
+    if (!rows.length) {
+      const empty = document.createElement("p"); empty.textContent = "Оплат пока нет."; modal.fields.appendChild(empty); return;
+    }
+    rows.forEach(p => {
+      const item = document.createElement("p");
+      item.style.cssText = "padding:10px 0;border-bottom:1px solid #444;";
+      item.textContent = `${debtDate(p.payment_date)} · ${money(p.amount)}${p.note ? " · " + p.note : ""}`;
+      modal.fields.appendChild(item);
+    });
+  }
+
+  // =========================================
   // ПОДКЛЮЧЕНИЕ КНОПОК
   // =========================================
 
@@ -1836,6 +2073,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     async () => {
       await loadFinance();
       await loadExpenseRequests();
+      await loadCompanyDebts();
     }
   );
 
@@ -1863,6 +2101,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   try {
     await loadAccountPanel();
     await loadExpenseRequests();
+    await loadCompanyDebts();
   } catch (error) {
     console.error(
       "Expense requests initialization error:",
