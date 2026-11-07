@@ -1,4 +1,3 @@
-
 "use strict";
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -297,22 +296,84 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 4. ПРОСМОТР ЧЕКОВ
   // ==========================================
 
-  function getReceiptBucket(path) {
-    // Старые чеки хранились в request-photos,
-    // новые — в expense-receipts.
-    const parts = String(path || "").split("/");
-
-    if (parts.length === 3) {
-      return "request-photos";
+  function normalizeReceiptPath(rawPath) {
+    if (!rawPath || typeof rawPath !== "string") {
+      throw new Error("В заявке не указан путь к чеку.");
     }
 
-    return "expense-receipts";
+    let value = rawPath.trim();
+    let explicitBucket = null;
+
+    // Поддерживаем как относительный путь из БД,
+    // так и полный URL Storage, если он туда попадёт.
+    if (/^https?:\/\//i.test(value)) {
+      let parsed;
+
+      try {
+        parsed = new URL(value);
+      } catch {
+        throw new Error("Некорректная ссылка на чек.");
+      }
+
+      const match = parsed.pathname.match(
+        /\/storage\/v1\/object\/(?:sign|public|authenticated)\/([^/]+)\/(.+)$/i
+      );
+
+      if (!match) {
+        throw new Error("Не удалось определить bucket и путь чека.");
+      }
+
+      explicitBucket = match[1];
+      value = match[2];
+    }
+
+    value = value.replace(/^\/+/, "");
+
+    // Если путь уже содержит имя bucket — убираем его из пути.
+    for (const bucket of ["expense-receipts", "request-photos"]) {
+      if (value.startsWith(bucket + "/")) {
+        explicitBucket = bucket;
+        value = value.slice(bucket.length + 1);
+        break;
+      }
+    }
+
+    try {
+      value = value.split("/").map(part => decodeURIComponent(part)).join("/");
+    } catch {
+      throw new Error("Путь к чеку содержит некорректное кодирование.");
+    }
+
+    if (!value || value.split("/").some(part => !part || part === "." || part === "..")) {
+      throw new Error("Путь к чеку пустой или некорректный.");
+    }
+
+    let primaryBucket = explicitBucket;
+
+    if (!primaryBucket) {
+      // Старые файлы имели структуру project/employee/file.
+      // Новые файлы имеют структуру expense_id/file.
+      primaryBucket = value.split("/").length >= 3
+        ? "request-photos"
+        : "expense-receipts";
+    }
+
+    if (!["expense-receipts", "request-photos"].includes(primaryBucket)) {
+      throw new Error("Неизвестное хранилище чека: " + primaryBucket);
+    }
+
+    const buckets = [
+      primaryBucket,
+      ...(primaryBucket === "expense-receipts"
+        ? ["request-photos"]
+        : ["expense-receipts"])
+    ];
+
+    return { path: value, buckets };
   }
 
   function isPdfReceipt(path) {
-    return /\.pdf$/i.test(
-      String(path || "").split("?")[0]
-    );
+    return /\.pdf$/i.test(String(path || "").split("?")[0]);
   }
 
   function openReceiptViewer(url, title, isPdf) {
@@ -395,7 +456,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     image.addEventListener("error", () => {
       errorMessage.textContent =
-        "Не удалось открыть фотографию чека.";
+        "Ссылка создана, но браузер не смог загрузить изображение. Обновите страницу и попробуйте ещё раз.";
     });
 
     function closeViewer() {
@@ -404,17 +465,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     function handleKey(event) {
-      if (event.key === "Escape") {
-        closeViewer();
-      }
+      if (event.key === "Escape") closeViewer();
     }
 
     closeButton.addEventListener("click", closeViewer);
 
     overlay.addEventListener("click", event => {
-      if (event.target === overlay) {
-        closeViewer();
-      }
+      if (event.target === overlay) closeViewer();
     });
 
     document.addEventListener("keydown", handleKey);
@@ -422,50 +479,64 @@ document.addEventListener("DOMContentLoaded", async () => {
     header.append(heading, closeButton);
     overlay.append(header, image, errorMessage);
     document.body.appendChild(overlay);
-
     closeButton.focus();
   }
 
   async function viewExpenseReceipt(item, button, message) {
-    const path = item.receipt_path;
+    const rawPath = item.receipt_path;
 
-    if (!path) {
+    if (!rawPath) {
       message.textContent = "У этого расхода нет чека.";
       return;
     }
 
     button.disabled = true;
     button.textContent = "Открываем...";
-
     message.textContent = "";
     message.style.color = "#ef4444";
 
     try {
-      const bucket = getReceiptBucket(path);
+      const receipt = normalizeReceiptPath(rawPath);
+      let signedUrl = null;
+      let lastError = null;
+      let usedBucket = null;
 
-      const { data, error } = await client.storage
-        .from(bucket)
-        .createSignedUrl(path, 120);
+      // Сначала используем ожидаемый bucket, затем проверяем второй
+      // на случай старого пути или миграции файлов.
+      for (const bucket of receipt.buckets) {
+        const { data, error } = await client.storage
+          .from(bucket)
+          .createSignedUrl(receipt.path, 300);
 
-      if (error) {
-        throw error;
+        if (!error && data?.signedUrl) {
+          signedUrl = data.signedUrl;
+          usedBucket = bucket;
+          break;
+        }
+
+        lastError = error || new Error("Storage не вернул временную ссылку.");
       }
 
-      if (!data?.signedUrl) {
-        throw new Error(
-          "Сервер не вернул ссылку на чек."
-        );
+      if (!signedUrl) {
+        const detail = lastError?.message || "Файл не найден или нет прав на чтение.";
+        throw new Error(detail);
       }
+
+      console.info("Receipt signed URL created", {
+        bucket: usedBucket,
+        path: receipt.path
+      });
 
       openReceiptViewer(
-        data.signedUrl,
+        signedUrl,
         item.title || "Расход",
-        isPdfReceipt(path)
+        isPdfReceipt(receipt.path)
       );
 
     } catch (error) {
+      console.error("Receipt viewing error:", error);
       message.textContent =
-        "Не удалось открыть чек: " + error.message;
+        "Не удалось открыть чек: " + (error.message || "неизвестная ошибка");
 
     } finally {
       button.disabled = false;
