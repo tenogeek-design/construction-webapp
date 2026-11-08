@@ -297,27 +297,43 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
-  async function loadEntries() {
-    const from = `${monthKey()}-01`;
-    const last = new Date(year, month + 1, 0).getDate();
-    const to = (
-      `${monthKey()}-${String(last).padStart(2, "0")}`
+
+async function loadEntries() {
+  const from = `${monthKey()}-01`;
+
+  const last = new Date(
+    year,
+    month + 1,
+    0
+  ).getDate();
+
+  const to =
+    `${monthKey()}-${String(last).padStart(2, "0")}`;
+
+  const { data, error } = await db.rpc(
+    "get_my_work_hours",
+    {
+      p_from: from,
+      p_to: to
+    }
+  );
+
+  if (error) {
+    console.error(
+      "Ошибка загрузки часов:",
+      error
     );
-
-    const { data, error } = await db
-      .from("payroll_work_entries")
-      .select(
-        "id,project_id,work_date,work_type,hours,status,description"
-      )
-      .eq("work_type", "hourly")
-      .gte("work_date", from)
-      .lte("work_date", to)
-      .order("work_date", { ascending: true });
-
-    if (error) throw error;
-
-    entries = Array.isArray(data) ? data : [];
+    throw error;
   }
+
+  entries = Array.isArray(data) ? data : [];
+
+  console.log(
+    "CONSTRUCTION GROUP — часы за месяц:",
+    entries
+  );
+}
+
 
   function stat(label, value) {
     const box = el("div", "cgt-stat");
