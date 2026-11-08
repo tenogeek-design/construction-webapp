@@ -1,0 +1,267 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0">
+
+  <title>Работник — CONSTRUCTION GROUP</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: #202226;
+      color: #f5f5f4;
+      font-family: Arial, sans-serif;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      padding: 22px 30px;
+      background: #292c31;
+      border-bottom: 1px solid #3b3f46;
+    }
+
+    .brand {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .brand span { color: #ff812e; }
+
+    .container {
+      max-width: 1100px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .eyebrow {
+      color: #ff812e;
+      font-size: 12px;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+
+    h1 { font-size: 32px; }
+
+    .subtitle {
+      color: #a4a7ad;
+      line-height: 1.6;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns:
+        repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-top: 30px;
+    }
+
+    .card {
+      background: #292c31;
+      border: 1px solid #3b3f46;
+      border-radius: 12px;
+      padding: 24px;
+      min-height: 155px;
+    }
+
+    .card h3 { margin-top: 0; }
+
+    .card p {
+      color: #a4a7ad;
+      line-height: 1.5;
+    }
+
+    button, .link-button {
+      border: 1px solid #474b52;
+      background: #30343a;
+      color: white;
+      padding: 12px 17px;
+      border-radius: 8px;
+      cursor: pointer;
+      text-decoration: none;
+      font-size: 14px;
+    }
+
+    button:hover, .link-button:hover {
+      background: #444951;
+    }
+
+    .status {
+      background: #292c31;
+      border-radius: 10px;
+      padding: 18px;
+      margin-top: 25px;
+    }
+
+    .error { color: #ff938a; }
+
+    [hidden] { display: none !important; }
+
+    @media (max-width: 600px) {
+      header { padding: 18px; }
+      h1 { font-size: 26px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="brand">
+      <span>◆</span> CONSTRUCTION GROUP
+    </div>
+
+    <div>
+      <a id="clientLink" class="link-button"
+        href="/client.html" hidden>
+        Кабинет заказчика
+      </a>
+      <button id="logoutButton" type="button">
+        Выйти
+      </button>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="eyebrow">WORKER PERSONAL ACCOUNT</div>
+
+    <h1 id="welcome">Кабинет работника</h1>
+
+    <p class="subtitle">
+      Ваше рабочее пространство CONSTRUCTION GROUP.
+    </p>
+
+    <div id="status" class="status">
+      Проверяем авторизацию...
+    </div>
+
+    <div id="workerContent" hidden>
+      <div class="cards">
+        <div class="card">
+          <h3>Мои объекты</h3>
+          <p>Здесь будут объекты, к которым вы прикреплены.</p>
+        </div>
+
+        <div class="card">
+          <h3>Мои задания</h3>
+          <p>Поставленные задачи и этапы выполнения.</p>
+        </div>
+
+        <div class="card">
+          <h3>Учёт времени</h3>
+          <p>Рабочие часы и выполненные объёмы.</p>
+        </div>
+
+        <div class="card">
+          <h3>Моя зарплата</h3>
+          <p>Начисления, авансы и история выплат.</p>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    "use strict";
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const status = document.getElementById("status");
+      const content = document.getElementById("workerContent");
+      const welcome = document.getElementById("welcome");
+      const logoutButton =
+        document.getElementById("logoutButton");
+
+      const clientLink =
+        document.getElementById("clientLink");
+
+      if (!window.supabase) {
+        status.textContent = "Ошибка загрузки авторизации.";
+        status.classList.add("error");
+        return;
+      }
+
+      const db = window.supabase.createClient(
+        "https://yepxskcfxyiyqqhmdpve.supabase.co",
+        "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH"
+      );
+
+      logoutButton.addEventListener("click", async () => {
+        logoutButton.disabled = true;
+
+        const { error } = await db.auth.signOut();
+
+        if (error) {
+          status.textContent = error.message;
+          status.classList.add("error");
+          logoutButton.disabled = false;
+          return;
+        }
+
+        window.location.replace("/login.html");
+      });
+
+      try {
+        const { data: userData, error: userError } =
+          await db.auth.getUser();
+
+        if (userError || !userData?.user) {
+          window.location.replace("/login.html");
+          return;
+        }
+
+        const user = userData.user;
+
+        const { data: roles, error: roleError } =
+          await db
+            .from("app_user_roles")
+            .select("role_code")
+            .eq("user_id", user.id)
+            .is("revoked_at", null);
+
+        if (roleError) throw roleError;
+
+        const activeRoles = (roles || [])
+          .map(item => item.role_code);
+
+        if (!activeRoles.includes("worker")) {
+          status.textContent =
+            "Доступ запрещён. Требуется роль работника.";
+          status.classList.add("error");
+          return;
+        }
+
+        // Имя из профиля авторизации.
+        const metadata = user.user_metadata || {};
+        const name =
+          metadata.full_name ||
+          user.email ||
+          "Сотрудник";
+
+        welcome.textContent = "Добро пожаловать, " + name;
+
+        clientLink.hidden =
+          !activeRoles.includes("client");
+
+        status.textContent =
+          "Рабочий аккаунт активен. Доступ подтверждён.";
+
+        content.hidden = false;
+
+      } catch (error) {
+        console.error("Worker cabinet error:", error);
+        status.textContent =
+          error.message || "Ошибка загрузки кабинета.";
+        status.classList.add("error");
+      }
+    });
+  </script>
+</body>
+</html>
