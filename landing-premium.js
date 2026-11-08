@@ -9,6 +9,11 @@
 */
 
 window.addEventListener("DOMContentLoaded", () => {
+ // Подключаем стили напрямую
+const premiumCSS = document.createElement("link");
+premiumCSS.rel = "stylesheet";
+premiumCSS.href = "/landing-premium.css?v=5";
+document.head.appendChild(premiumCSS);
   const home = document.getElementById("homePage");
 
   if (!home || document.getElementById("cgLanding")) return;
