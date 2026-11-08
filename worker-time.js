@@ -3,11 +3,19 @@
 
 /*
   CONSTRUCTION GROUP
-  Календарь рабочего времени работника.
+  Календарь рабочего времени.
 
-  Данные: Supabase
-  Создание: submit_my_work_hours RPC
-  Просмотр: payroll_work_entries RLS
+  Функции Supabase:
+  - get_my_worker_projects
+  - get_my_work_hours
+  - submit_my_work_hours
+  - update_my_work_hours
+
+  Работник:
+  - видит свои часы;
+  - создаёт черновики;
+  - редактирует свои черновики;
+  - не изменяет ставки или подтверждения.
 */
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -25,7 +33,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     "#workerContent .cards .card:nth-child(3)"
   );
 
-  if (!card || card.dataset.timeReady === "true") return;
+  if (!card) return;
+  if (card.dataset.timeReady === "true") return;
+
   card.dataset.timeReady = "true";
 
   const oldDescription = card.querySelector("p");
@@ -35,190 +45,300 @@ document.addEventListener("DOMContentLoaded", async () => {
   root.id = "cgTimeCalendar";
   card.appendChild(root);
 
-  const styles = document.createElement("style");
-  styles.textContent = `
+  // ==========================================
+  // STYLES
+  // ==========================================
+
+  const style = document.createElement("style");
+
+  style.textContent = `
     #cgTimeCalendar {
+      width: 100%;
       max-width: 680px;
       margin: 0 auto;
-      color: #e9edf4;
+      color: #eef2f7;
     }
-    #cgTimeCalendar * { box-sizing: border-box; }
+
+    #cgTimeCalendar * {
+      box-sizing: border-box;
+    }
+
     .cgt-stats {
       display: grid;
-      grid-template-columns: repeat(3,minmax(0,1fr));
-      gap: 8px;
-      margin: 15px 0;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 9px;
+      margin: 14px 0;
     }
+
     .cgt-stat {
       background: #222a35;
       border: 1px solid #3c4653;
-      border-radius: 10px;
+      border-radius: 11px;
       padding: 12px;
+      min-width: 0;
     }
+
     .cgt-stat small {
       display: block;
-      color: #9daabd;
       font-size: 11px;
-      margin-bottom: 7px;
+      color: #a4b1c2;
+      margin-bottom: 6px;
     }
-    .cgt-stat strong { font-size: 21px; }
+
+    .cgt-stat strong {
+      font-size: 20px;
+      color: #fff;
+    }
+
     .cgt-month {
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin: 17px 0 12px;
+      margin: 20px 0 12px;
     }
+
     .cgt-arrow {
       background: #313e50;
-      color: #eef4ff;
+      color: white;
       border: 1px solid #45566b;
-      border-radius: 8px;
+      border-radius: 9px;
       padding: 9px 14px;
       cursor: pointer;
     }
+
     .cgt-month-title {
       font-size: 15px;
       font-weight: 700;
       text-align: center;
       text-transform: capitalize;
     }
+
     .cgt-calendar {
       display: grid;
-      grid-template-columns: repeat(7,minmax(0,1fr));
+      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 5px;
     }
+
     .cgt-weekday {
       text-align: center;
+      color: #a5b1c1;
       font-size: 11px;
-      color: #9daabd;
       padding: 9px 0;
     }
+
     .cgt-day {
       display: flex;
       flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
       gap: 4px;
       min-width: 0;
-      min-height: 53px;
-      padding: 5px 2px;
+      min-height: 52px;
+      background: #262f3a;
       border: 1px solid #3c4653;
       border-radius: 9px;
-      background: #262f3a;
-      color: #e9edf4;
+      color: #edf3fa;
       cursor: pointer;
+      padding: 5px 1px;
     }
-    .cgt-day:hover { background: #334456; }
+
+    .cgt-day:hover {
+      background: #354456;
+    }
+
     .cgt-day.active {
       border: 2px solid #659ff0;
       background: #294569;
     }
-    .cgt-day.today {
-      box-shadow: inset 0 0 0 1px #6587ab;
+
+    .cgt-day.future {
+      opacity: 0.5;
     }
-    .cgt-day.future { opacity: 0.48; }
+
     .cgt-day small {
+      color: #b7c8dc;
       font-size: 10px;
-      color: #b8c8db;
     }
+
     .cgt-dot {
-      width: 6px;
-      height: 6px;
+      width: 7px;
+      height: 7px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
+
     .cgt-legend {
       display: flex;
-      gap: 12px;
       flex-wrap: wrap;
-      margin: 13px 0;
-      color: #aab7c7;
+      gap: 12px;
+      color: #adbacb;
       font-size: 11px;
+      margin: 14px 0;
     }
-    .cgt-legend span {
+
+    .cgt-legend-item {
       display: inline-flex;
       align-items: center;
       gap: 5px;
     }
+
     .cgt-editor {
-      border-top: 1px solid #424d5a;
       margin-top: 18px;
       padding-top: 18px;
+      border-top: 1px solid #424d5a;
     }
+
+    .cgt-entry {
+      background: #222b36;
+      border: 1px solid #3d4857;
+      border-radius: 11px;
+      padding: 13px;
+      margin-top: 10px;
+    }
+
+    .cgt-entry-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .cgt-entry-hours {
+      font-size: 19px;
+      font-weight: 700;
+    }
+
+    .cgt-status {
+      font-size: 11px;
+      border-radius: 7px;
+      padding: 5px 8px;
+      background: #354355;
+      color: #d7e8fc;
+    }
+
+    .cgt-entry-info {
+      font-size: 12px;
+      color: #b2c0d0;
+      line-height: 1.5;
+      margin: 9px 0;
+    }
+
     .cgt-field {
       display: block;
-      margin: 12px 0;
+      margin: 13px 0;
     }
+
     .cgt-field label {
       display: block;
-      color: #bdc8d7;
+      color: #c1cbd8;
       font-size: 12px;
       margin-bottom: 7px;
     }
-    .cgt-field select,
+
     .cgt-field input,
+    .cgt-field select,
     .cgt-field textarea {
       display: block;
       width: 100%;
+      min-width: 0;
       background: #1e2630;
-      color: #ffffff;
+      color: #fff;
       border: 1px solid #465364;
       border-radius: 9px;
       padding: 11px;
       font: inherit;
       font-size: 14px;
     }
+
     .cgt-field textarea {
       resize: vertical;
       min-height: 70px;
     }
-    .cgt-field :disabled { opacity: 0.65; }
-    .cgt-save {
-      background: #3d82df;
-      color: #ffffff;
+
+    .cgt-button {
+      display: block;
+      width: 100%;
+      padding: 11px 13px;
       border: 0;
       border-radius: 9px;
-      padding: 12px 18px;
-      width: 100%;
       font-weight: 700;
       cursor: pointer;
-      margin-top: 8px;
+      margin-top: 10px;
+      background: #3d82df;
+      color: #fff;
     }
-    .cgt-save:hover { background: #5594e9; }
-    .cgt-save:disabled {
-      opacity: .5;
+
+    .cgt-button:hover {
+      background: #5795eb;
+    }
+
+    .cgt-button.secondary {
+      background: #354356;
+      border: 1px solid #53647a;
+    }
+
+    .cgt-button:disabled {
       cursor: not-allowed;
+      opacity: .5;
     }
+
+    .cgt-message {
+      margin: 12px 0;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #9ce2bb;
+    }
+
+    .cgt-message.error {
+      color: #ff9898;
+    }
+
     .cgt-note {
-      color: #aab7c7;
+      color: #a9b8c9;
       font-size: 12px;
       line-height: 1.5;
       margin: 10px 0;
     }
-    .cgt-message {
-      font-size: 13px;
-      margin-top: 12px;
-      line-height: 1.5;
-      color: #9ce2bb;
-    }
-    @media(max-width:480px) {
-      .cgt-stat { padding: 9px; }
-      .cgt-stat strong { font-size: 17px; }
-      .cgt-day { min-height: 44px; }
-      .cgt-calendar { gap: 3px; }
-      .cgt-month-title { font-size: 13px; }
+
+    @media (max-width: 480px) {
+      .cgt-stat {
+        padding: 9px;
+      }
+
+      .cgt-stat strong {
+        font-size: 17px;
+      }
+
+      .cgt-calendar {
+        gap: 3px;
+      }
+
+      .cgt-day {
+        min-height: 45px;
+      }
     }
   `;
-  document.head.appendChild(styles);
 
-  const now = new Date();
+  document.head.appendChild(style);
 
-  let year = now.getFullYear();
-  let month = now.getMonth();
-  let selectedDate = formatDate(now);
+  // ==========================================
+  // STATE
+  // ==========================================
+
+  const initialDate = new Date();
+
+  let year = initialDate.getFullYear();
+  let month = initialDate.getMonth();
+
+  let selectedDate = formatDate(initialDate);
+
   let entries = [];
   let projects = [];
-  let saving = false;
+
+  let editingId = null;
+  let busy = false;
+  let notice = null;
 
   const statusNames = {
     draft: "Черновик",
@@ -234,22 +354,39 @@ document.addEventListener("DOMContentLoaded", async () => {
     rejected: "#e77878"
   };
 
+  // ==========================================
+  // HELPERS
+  // ==========================================
+
+  function el(tag, className = "", value) {
+    const node = document.createElement(tag);
+
+    if (className) node.className = className;
+
+    if (value !== undefined) {
+      node.textContent = value;
+    }
+
+    return node;
+  }
+
   function formatDate(date) {
     const y = date.getFullYear();
     const m = String(date.getMonth() + 1).padStart(2, "0");
     const d = String(date.getDate()).padStart(2, "0");
+
     return `${y}-${m}-${d}`;
   }
 
-  function localToday() {
+  function today() {
     return formatDate(new Date());
   }
 
-  function el(tag, className, content) {
-    const node = document.createElement(tag);
-    if (className) node.className = className;
-    if (content !== undefined) node.textContent = content;
-    return node;
+  function monthKey() {
+    return (
+      year + "-" +
+      String(month + 1).padStart(2, "0")
+    );
   }
 
   function dateEntries(date) {
@@ -260,134 +397,201 @@ document.addEventListener("DOMContentLoaded", async () => {
     );
   }
 
-  function sumHours(items) {
-    return items.reduce(
-      (total, entry) => total + Number(entry.hours || 0),
+  function sumHours(list) {
+    return list.reduce(
+      (sum, entry) => sum + Number(entry.hours || 0),
       0
     );
   }
 
-  function monthKey() {
-    return (
-      year + "-" +
-      String(month + 1).padStart(2, "0")
+  function formatHours(number) {
+    return Number(number.toFixed(2)).toString();
+  }
+
+  function projectName(projectId) {
+    const project = projects.find(
+      item => item.id === projectId
     );
+
+    return project
+      ? project.name
+      : "Объект";
+  }
+
+  function validHours(value) {
+    const number = Number(value);
+
+    return (
+      value !== "" &&
+      Number.isFinite(number) &&
+      number > 0 &&
+      number <= 24 &&
+      Math.abs(number * 100 -
+        Math.round(number * 100)) < 0.000001
+    );
+  }
+
+  function field(parent, title, control) {
+    const wrapper = el("div", "cgt-field");
+    const label = el("label", "", title);
+
+    wrapper.append(label, control);
+    parent.appendChild(wrapper);
+
+    return wrapper;
+  }
+
+  function button(text, callback, secondary = false) {
+    const btn = el(
+      "button",
+      secondary
+        ? "cgt-button secondary"
+        : "cgt-button",
+      text
+    );
+
+    btn.type = "button";
+    btn.addEventListener("click", callback);
+
+    return btn;
+  }
+
+  function showNotice(text, error = false) {
+    notice = { text, error };
+    render();
+  }
+
+  // ==========================================
+  // SUPABASE
+  // ==========================================
+
+  async function requireUser() {
+    const { data, error } = await db.auth.getUser();
+
+    if (error || !data?.user) {
+      throw new Error("Войдите в аккаунт заново.");
+    }
+
+    return data.user;
   }
 
   async function loadProjects() {
     const { data, error } = await db.rpc(
       "get_my_worker_projects"
     );
+
     if (error) throw error;
 
-    projects = (Array.isArray(data) ? data : [])
-      .map(project => ({
-        id: project.project_id || project.id,
-        name:
-          project.project_name ||
-          project.name ||
-          "Без названия"
-      }))
-      .filter(project => project.id);
+    const list = Array.isArray(data) ? data : [];
 
-    // Убираем повторяющиеся объекты
+    projects = list.map(project => ({
+      id: project.project_id || project.id,
+      name:
+        project.project_name ||
+        project.name ||
+        "Без названия"
+    })).filter(project => project.id);
+
     projects = projects.filter(
-      (p, index, array) =>
-        array.findIndex(item => item.id === p.id) === index
+      (project, index, array) =>
+        array.findIndex(
+          item => item.id === project.id
+        ) === index
     );
   }
 
+  async function loadEntries() {
+    const from = `${monthKey()}-01`;
 
-async function loadEntries() {
-  const from = `${monthKey()}-01`;
+    const last = new Date(
+      year,
+      month + 1,
+      0
+    ).getDate();
 
-  const last = new Date(
-    year,
-    month + 1,
-    0
-  ).getDate();
+    const to =
+      `${monthKey()}-${String(last).padStart(2, "0")}`;
 
-  const to =
-    `${monthKey()}-${String(last).padStart(2, "0")}`;
-
-  const { data, error } = await db.rpc(
-    "get_my_work_hours",
-    {
-      p_from: from,
-      p_to: to
-    }
-  );
-
-  if (error) {
-    console.error(
-      "Ошибка загрузки часов:",
-      error
+    const { data, error } = await db.rpc(
+      "get_my_work_hours",
+      {
+        p_from: from,
+        p_to: to
+      }
     );
-    throw error;
+
+    if (error) throw error;
+
+    entries = Array.isArray(data) ? data : [];
   }
 
-  entries = Array.isArray(data) ? data : [];
-
-  console.log(
-    "CONSTRUCTION GROUP — часы за месяц:",
-    entries
-  );
-}
-
-
-  function stat(label, value) {
-    const box = el("div", "cgt-stat");
-    box.append(
-      el("small", "", label),
-      el("strong", "", value)
-    );
-    return box;
-  }
+  // ==========================================
+  // STATISTICS
+  // ==========================================
 
   function renderStats() {
-    const all = entries.filter(
+    const active = entries.filter(
       entry =>
-        entry.status !== "rejected" &&
-        entry.work_type === "hourly"
+        entry.work_type === "hourly" &&
+        entry.status !== "rejected"
     );
 
-    const approved = all.filter(
+    const approved = active.filter(
       entry => entry.status === "approved"
     );
 
-    const pending = all.filter(
+    const pending = active.filter(
       entry => entry.status !== "approved"
     );
 
     const wrapper = el("div", "cgt-stats");
 
+    function stat(title, hours) {
+      const box = el("div", "cgt-stat");
+
+      box.append(
+        el("small", "", title),
+        el("strong", "", formatHours(hours) + " ч")
+      );
+
+      return box;
+    }
+
     wrapper.append(
-      stat("За месяц", sumHours(all) + " ч"),
-      stat("Подтверждено", sumHours(approved) + " ч"),
-      stat("Ожидают", sumHours(pending) + " ч")
+      stat("За месяц", sumHours(active)),
+      stat("Подтверждено", sumHours(approved)),
+      stat("Ожидают", sumHours(pending))
     );
 
     root.appendChild(wrapper);
   }
 
-  function moveMonth(step) {
+  // ==========================================
+  // CALENDAR
+  // ==========================================
+
+  async function changeMonth(step) {
+    if (busy) return;
+
     const date = new Date(year, month + step, 1);
+
     year = date.getFullYear();
     month = date.getMonth();
     selectedDate = formatDate(date);
-    refresh();
+    editingId = null;
+    notice = null;
+
+    await refresh();
   }
 
   function renderCalendar() {
     const navigation = el("div", "cgt-month");
 
-    const previous = el("button", "cgt-arrow", "‹");
-    previous.type = "button";
-    previous.onclick = () => moveMonth(-1);
+    const previous = button("‹", () => changeMonth(-1));
+    const next = button("›", () => changeMonth(1));
 
-    const next = el("button", "cgt-arrow", "›");
-    next.type = "button";
-    next.onclick = () => moveMonth(1);
+    previous.className = "cgt-arrow";
+    next.className = "cgt-arrow";
 
     const heading = el(
       "div",
@@ -403,163 +607,329 @@ async function loadEntries() {
 
     const grid = el("div", "cgt-calendar");
 
-    for (const name of [
-      "Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"
+    for (const day of [
+      "Пн", "Вт", "Ср", "Чт",
+      "Пт", "Сб", "Вс"
     ]) {
-      grid.appendChild(el("div", "cgt-weekday", name));
+      grid.appendChild(
+        el("div", "cgt-weekday", day)
+      );
     }
 
-    const firstDay = new Date(year, month, 1);
-    const offset = (firstDay.getDay() + 6) % 7;
-    const days = new Date(year, month + 1, 0).getDate();
+    const offset =
+      (new Date(year, month, 1).getDay() + 6) % 7;
+
+    const days =
+      new Date(year, month + 1, 0).getDate();
 
     for (let i = 0; i < offset; i++) {
       grid.appendChild(el("div"));
     }
 
     for (let day = 1; day <= days; day++) {
-      const date = formatDate(new Date(year, month, day));
-      const dayEntries = dateEntries(date);
+      const date = formatDate(
+        new Date(year, month, day)
+      );
 
-      const button = el("button", "cgt-day");
-      button.type = "button";
-      button.appendChild(el("span", "", String(day)));
+      const records = dateEntries(date);
+
+      const dayButton = el("button", "cgt-day");
+
+      dayButton.type = "button";
+      dayButton.appendChild(
+        el("span", "", String(day))
+      );
 
       if (date === selectedDate) {
-        button.classList.add("active");
+        dayButton.classList.add("active");
       }
 
-      if (date === localToday()) {
-        button.classList.add("today");
+      if (date > today()) {
+        dayButton.classList.add("future");
       }
 
-      if (date > localToday()) {
-        button.classList.add("future");
-      }
+      if (records.length) {
+        const hours = sumHours(
+          records.filter(
+            record => record.status !== "rejected"
+          )
+        );
 
-      if (dayEntries.length) {
-        const total = sumHours(dayEntries);
         const status =
-          dayEntries.some(e => e.status === "rejected")
+          records.some(
+            record => record.status === "rejected"
+          )
             ? "rejected"
-            : dayEntries.every(e => e.status === "approved")
+            : records.every(
+                record => record.status === "approved"
+              )
               ? "approved"
-              : dayEntries.some(e => e.status === "submitted")
+              : records.some(
+                  record => record.status === "submitted"
+                )
                 ? "submitted"
                 : "draft";
 
-        button.appendChild(
-          el("small", "", total + "ч")
+        dayButton.appendChild(
+          el("small", "", formatHours(hours) + "ч")
         );
 
         const dot = el("div", "cgt-dot");
         dot.style.background =
-          statusColors[status] || "#659ff0";
+          statusColors[status];
 
-        button.appendChild(dot);
+        dayButton.appendChild(dot);
       }
 
-      button.onclick = () => {
-        selectedDate = date;
-        render();
-      };
+      dayButton.addEventListener("click", () => {
+        if (busy) return;
 
-      grid.appendChild(button);
+        selectedDate = date;
+        editingId = null;
+        notice = null;
+
+        render();
+      });
+
+      grid.appendChild(dayButton);
     }
 
     root.appendChild(grid);
 
     const legend = el("div", "cgt-legend");
 
-    for (const [status, name] of Object.entries({
-      approved: "Подтверждено",
-      submitted: "На проверке",
-      draft: "Черновик",
-      rejected: "Отклонено"
-    })) {
-      const item = el("span");
+    for (const status of [
+      "approved",
+      "submitted",
+      "draft",
+      "rejected"
+    ]) {
+      const item = el("span", "cgt-legend-item");
       const dot = el("div", "cgt-dot");
-      dot.style.background = statusColors[status];
 
-      item.append(dot, el("span", "", name));
+      dot.style.background =
+        statusColors[status];
+
+      item.append(
+        dot,
+        el("span", "", statusNames[status])
+      );
+
       legend.appendChild(item);
     }
 
     root.appendChild(legend);
   }
 
-  function field(parent, title, control) {
-    const wrapper = el("div", "cgt-field");
-    const label = el("label", "", title);
-    wrapper.append(label, control);
-    parent.appendChild(wrapper);
-    return wrapper;
-  }
+  // ==========================================
+  // EDIT DRAFT
+  // ==========================================
 
-  function renderEditor() {
-    const section = el("section", "cgt-editor");
+  function renderEditForm(section, entry) {
+    const form = el("div", "cgt-entry");
 
-    const dateLabel = selectedDate
-      .split("-")
-      .reverse()
-      .join(".");
-
-    section.append(
-      el("strong", "", "Дата: " + dateLabel)
+    form.appendChild(
+      el("strong", "", "Редактирование черновика")
     );
 
-    const existing = dateEntries(selectedDate);
+    form.appendChild(
+      el(
+        "p",
+        "cgt-note",
+        projectName(entry.project_id)
+      )
+    );
 
-    if (existing.length) {
-      section.append(
+    const hours = el("input");
+    hours.type = "number";
+    hours.min = "0.01";
+    hours.max = "24";
+    hours.step = "0.01";
+    hours.value = String(entry.hours);
+
+    field(form, "Отработанные часы", hours);
+
+    const description = el("textarea");
+    description.maxLength = 500;
+    description.value = entry.description || "";
+
+    field(form, "Примечание", description);
+
+    const message = el("p", "cgt-message");
+
+    const save = button(
+      "✓ Сохранить изменения",
+      async () => {
+        if (busy) return;
+
+        if (!validHours(hours.value)) {
+          message.textContent =
+            "Введите от 0.01 до 24 часов.";
+          message.classList.add("error");
+          return;
+        }
+
+        busy = true;
+        save.disabled = true;
+        cancel.disabled = true;
+
+        message.classList.remove("error");
+        message.textContent =
+          "Сохраняем изменения...";
+
+        try {
+          await requireUser();
+
+          const { error } = await db.rpc(
+            "update_my_work_hours",
+            {
+              p_entry_id: entry.id,
+              p_hours: Number(hours.value),
+              p_description:
+                description.value.trim() || null
+            }
+          );
+
+          if (error) throw error;
+
+          editingId = null;
+
+          notice = {
+            text: "✓ Черновик успешно обновлён!",
+            error: false
+          };
+
+          await refresh();
+
+        } catch (error) {
+          console.error("Update hours:", error);
+
+          message.textContent =
+            error.message ||
+            "Ошибка сохранения изменений.";
+
+          message.classList.add("error");
+
+        } finally {
+          busy = false;
+          save.disabled = false;
+          cancel.disabled = false;
+        }
+      }
+    );
+
+    const cancel = button(
+      "Отмена",
+      () => {
+        editingId = null;
+        render();
+      },
+      true
+    );
+
+    form.append(save, cancel, message);
+    section.appendChild(form);
+  }
+
+  // ==========================================
+  // EXISTING RECORDS
+  // ==========================================
+
+  function renderRecords(section, records) {
+    if (!records.length) return;
+
+    section.appendChild(
+      el("p", "cgt-note", "Записи за выбранный день:")
+    );
+
+    for (const entry of records) {
+      const box = el("div", "cgt-entry");
+
+      const header = el("div", "cgt-entry-header");
+
+      const status = el(
+        "span",
+        "cgt-status",
+        statusNames[entry.status] || entry.status
+      );
+
+      status.style.color =
+        statusColors[entry.status] || "#d7e8fc";
+
+      header.append(
+        el(
+          "strong",
+          "cgt-entry-hours",
+          formatHours(Number(entry.hours)) + " ч"
+        ),
+        status
+      );
+
+      box.appendChild(header);
+
+      box.appendChild(
         el(
           "p",
-          "cgt-note",
-          "Записи за выбранный день:"
+          "cgt-entry-info",
+          projectName(entry.project_id)
         )
       );
 
-      for (const entry of existing) {
-        const project = projects.find(
-          p => p.id === entry.project_id
+      if (entry.description) {
+        box.appendChild(
+          el("p", "cgt-entry-info", entry.description)
+        );
+      }
+
+      if (entry.status === "draft") {
+        const edit = button(
+          "✎ Редактировать",
+          () => {
+            editingId = entry.id;
+            notice = null;
+            render();
+          },
+          true
         );
 
-        const line = el("div", "cgt-stat");
-        line.style.marginTop = "9px";
+        box.appendChild(edit);
+      }
 
-        line.append(
-          el(
-            "strong",
-            "",
-            Number(entry.hours) + " ч"
-          ),
-          el(
-            "p",
-            "cgt-note",
-            (project?.name || "Объект") +
-            " · " +
-            (statusNames[entry.status] || entry.status)
-          )
-        );
+      section.appendChild(box);
 
-        if (entry.description) {
-          line.append(
-            el("p", "cgt-note", entry.description)
-          );
-        }
-
-        section.appendChild(line);
+      if (editingId === entry.id &&
+          entry.status === "draft") {
+        renderEditForm(section, entry);
       }
     }
+  }
+
+  // ==========================================
+  // CREATE DAILY RECORD
+  // ==========================================
+
+  function renderCreateForm(section, existing) {
+    if (editingId) return;
+
+    const form = el("div");
+
+    form.appendChild(
+      el(
+        "p",
+        "cgt-note",
+        "Добавить рабочие часы за выбранный день"
+      )
+    );
 
     const select = el("select");
-    const emptyOption = el(
+
+    const placeholder = el(
       "option",
       "",
       "Выберите объект"
     );
-    emptyOption.value = "";
-    select.appendChild(emptyOption);
+    placeholder.value = "";
+    select.appendChild(placeholder);
 
     for (const project of projects) {
       const option = el(
@@ -572,59 +942,110 @@ async function loadEntries() {
       select.appendChild(option);
     }
 
-    field(section, "Объект", select);
+    field(form, "Объект", select);
 
     const hours = el("input");
     hours.type = "number";
     hours.min = "0.01";
     hours.max = "24";
-    hours.step = "0.25";
+    hours.step = "0.01";
     hours.placeholder = "Например: 10";
-    field(section, "Отработанные часы", hours);
+
+    field(form, "Отработанные часы", hours);
 
     const description = el("textarea");
     description.maxLength = 500;
     description.placeholder =
       "Что делали на объекте?";
-    field(section, "Примечание", description);
 
-    const save = el(
-      "button",
-      "cgt-save",
-      "Сохранить рабочие часы"
-    );
-    save.type = "button";
+    field(form, "Примечание", description);
 
     const message = el("p", "cgt-message");
 
-    section.append(save, message);
-    root.appendChild(section);
+    const save = button(
+      "Сохранить рабочие часы",
+      async () => {
+        if (busy) return;
 
-    function updateFormAvailability() {
+        if (!validHours(hours.value)) {
+          message.textContent =
+            "Введите от 0.01 до 24 часов.";
+          message.classList.add("error");
+          return;
+        }
+
+        busy = true;
+        save.disabled = true;
+
+        message.classList.remove("error");
+        message.textContent =
+          "Сохраняем рабочие часы...";
+
+        try {
+          await requireUser();
+
+          const { error } = await db.rpc(
+            "submit_my_work_hours",
+            {
+              p_project_id: select.value,
+              p_work_date: selectedDate,
+              p_hours: Number(hours.value),
+              p_description:
+                description.value.trim() || null
+            }
+          );
+
+          if (error) throw error;
+
+          notice = {
+            text: "✓ Рабочие часы успешно сохранены!",
+            error: false
+          };
+
+          await refresh();
+
+        } catch (error) {
+          console.error("Create work hours:", error);
+
+          message.textContent =
+            error.message ||
+            "Ошибка сохранения часов.";
+
+          message.classList.add("error");
+
+        } finally {
+          busy = false;
+          save.disabled = false;
+        }
+      }
+    );
+
+    function updateAvailability() {
       const duplicate = existing.some(
         entry =>
           entry.project_id === select.value &&
           entry.status !== "rejected"
       );
 
-      const future = selectedDate > localToday();
+      const future = selectedDate > today();
 
-      hours.disabled = duplicate || future;
-      description.disabled = duplicate || future;
-
-      save.disabled =
-        saving ||
-        duplicate ||
+      const disabled =
+        busy ||
         future ||
+        duplicate ||
         !select.value;
+
+      save.disabled = disabled;
+      hours.disabled = disabled;
+      description.disabled = disabled;
 
       if (future) {
         message.textContent =
           "Будущие дни пока нельзя заполнять.";
       } else if (duplicate) {
         message.textContent =
-          "На этом объекте за выбранную дату уже есть запись. " +
-          "Чтобы исправить часы, понадобится отдельная функция редактирования.";
+          "Запись за этот день уже существует. " +
+          "Используйте кнопку «Редактировать».";
       } else {
         message.textContent = "";
       }
@@ -632,96 +1053,82 @@ async function loadEntries() {
 
     select.addEventListener(
       "change",
-      updateFormAvailability
+      updateAvailability
     );
 
-    updateFormAvailability();
+    form.append(save, message);
+    section.appendChild(form);
 
-    save.addEventListener("click", async () => {
-      if (saving || save.disabled) return;
-
-      const value = Number(hours.value);
-
-      if (
-        !hours.value ||
-        !Number.isFinite(value) ||
-        value <= 0 ||
-        value > 24 ||
-        Math.round(value * 100) !== value * 100
-      ) {
-        message.textContent =
-          "Введите корректное количество часов от 0.01 до 24.";
-        message.style.color = "#ff9696";
-        return;
-      }
-
-      saving = true;
-      save.disabled = true;
-
-      message.style.color = "#9ce2bb";
-      message.textContent = "Сохраняем запись...";
-
-      try {
-        const { data: auth, error: authError } =
-          await db.auth.getUser();
-
-        if (authError || !auth?.user) {
-          throw new Error("Войдите в аккаунт заново.");
-        }
-
-        const { error } = await db.rpc(
-          "submit_my_work_hours",
-          {
-            p_project_id: select.value,
-            p_work_date: selectedDate,
-            p_hours: value,
-            p_description:
-              description.value.trim() || null
-          }
-        );
-
-        if (error) throw error;
-
-        await refresh();
-
-const success = document.createElement("p");
-success.className = "cgt-message";
-success.textContent = "✓ Рабочие часы успешно сохранены!";
-success.style.color = "#9ce2bb";
-root.prepend(success);
-
-      } catch (error) {
-        console.error("Timekeeping error:", error);
-
-        message.style.color = "#ff9696";
-        message.textContent =
-          error.message || "Ошибка сохранения.";
-
-      } finally {
-        saving = false;
-        save.disabled = false;
-        updateFormAvailability();
-      }
-    });
+    updateAvailability();
   }
+
+  // ==========================================
+  // SELECTED DATE
+  // ==========================================
+
+  function renderEditor() {
+    const section = el("section", "cgt-editor");
+
+    const dateLabel = selectedDate
+      .split("-")
+      .reverse()
+      .join(".");
+
+    section.appendChild(
+      el("strong", "", "Дата: " + dateLabel)
+    );
+
+    const records = dateEntries(selectedDate);
+
+    renderRecords(section, records);
+    renderCreateForm(section, records);
+
+    if (!projects.length) {
+      section.appendChild(
+        el(
+          "p",
+          "cgt-note",
+          "Нет доступных объектов. Обратитесь к прорабу."
+        )
+      );
+    }
+
+    root.appendChild(section);
+  }
+
+  // ==========================================
+  // RENDER
+  // ==========================================
 
   function render() {
     root.replaceChildren();
+
+    if (notice) {
+      const msg = el(
+        "div",
+        notice.error
+          ? "cgt-message error"
+          : "cgt-message",
+        notice.text
+      );
+
+      root.appendChild(msg);
+    }
+
     renderStats();
     renderCalendar();
     renderEditor();
   }
 
+  // ==========================================
+  // REFRESH
+  // ==========================================
+
   async function refresh() {
     root.textContent = "Загружаем рабочее время...";
 
     try {
-      const { data: auth, error: authError } =
-        await db.auth.getUser();
-
-      if (authError || !auth?.user) {
-        throw new Error("Войдите в аккаунт.");
-      }
+      await requireUser();
 
       await Promise.all([
         loadProjects(),
@@ -730,37 +1137,23 @@ root.prepend(success);
 
       render();
 
-      if (!projects.length) {
-        root.appendChild(
-          el(
-            "p",
-            "cgt-note",
-            "Нет доступных объектов. Обратитесь к прорабу."
-          )
-        );
-      }
-
     } catch (error) {
-      console.error("Worker calendar:", error);
+      console.error("Worker time calendar:", error);
 
       root.replaceChildren();
 
-      const text = el(
-        "p",
-        "cgt-message",
-        "Ошибка: " + error.message
+      root.appendChild(
+        el(
+          "p",
+          "cgt-message error",
+          "Ошибка загрузки: " +
+          (error.message || "Неизвестная ошибка")
+        )
       );
-      text.style.color = "#ff9696";
 
-      root.appendChild(text);
-
-      const retry = el(
-        "button",
-        "cgt-save",
-        "Повторить загрузку"
+      root.appendChild(
+        button("Повторить", refresh)
       );
-      retry.onclick = refresh;
-      root.appendChild(retry);
     }
   }
 
