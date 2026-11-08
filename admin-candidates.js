@@ -422,6 +422,50 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
+    // Действия доступны только для новых заявок.
+    if (
+      item.status === "pending" ||
+      item.status === "under_review"
+    ) {
+      const actions = document.createElement("div");
+
+      actions.style.cssText = `
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 20px;
+      `;
+
+      const approveButton = document.createElement("button");
+      approveButton.type = "button";
+      approveButton.className = "cg-candidate-btn";
+      approveButton.textContent = "✓ Принять";
+      approveButton.style.background = "#206c4d";
+
+      const rejectButton = document.createElement("button");
+      rejectButton.type = "button";
+      rejectButton.className = "cg-candidate-btn";
+      rejectButton.textContent = "✕ Отклонить";
+      rejectButton.style.background = "#793737";
+
+      if (item.applicant_user_id === user.id) {
+        approveButton.disabled = true;
+        approveButton.title =
+          "Нельзя принять заявку аккаунта OWNER";
+      }
+
+      approveButton.addEventListener("click", () => {
+        reviewCandidate(item, "approved");
+      });
+
+      rejectButton.addEventListener("click", () => {
+        reviewCandidate(item, "rejected");
+      });
+
+      actions.append(approveButton, rejectButton);
+      card.appendChild(actions);
+    }
+
     list.appendChild(card);
   }
 
