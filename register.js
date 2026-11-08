@@ -144,7 +144,9 @@ if (switchAccountButton) {
     } else {
       $("email").readOnly = false;
     }
-
+if (switchAccountButton) {
+  switchAccountButton.hidden = !activeSession;
+}
     setBusy(false);
   }
 
