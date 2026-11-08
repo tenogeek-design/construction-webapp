@@ -70,8 +70,7 @@ body.cg-home-view .app-shell > .footer {
       #071018 0%,
       transparent 28%
     ),
-    url("hero-building.png") 70% center / cover no-repeat,
-    #071018;
+url("./hero-building.png.png") 70% center / cover no-repeat,    #071018;
 }
 
 #cgLanding .lg-container {
