@@ -240,8 +240,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
 const requests = result.requests || [];
       summary.textContent =
-        "Всего заявок: " + (result.total ?? requests.length);
-
+"Всего заявок: " + (result.statistics?.total ?? requests.length);
       if (!requests.length) {
         list.textContent = "Заявок пока нет.";
         return;
