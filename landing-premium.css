@@ -797,3 +797,26 @@ body.cg-home-view .app-shell > .footer {
     transition: none !important;
   }
 }
+/* Скрываем старую главную, оставляем новый лендинг */
+
+body.cg-home-view #homePage > :not(#cgLanding):not(#lgPriceDialog) {
+  display: none !important;
+}
+
+/* Убираем лишние ограничения старого контейнера */
+
+body.cg-home-view #homePage {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+}
+
+/* Изображение и кнопки нового сайта */
+
+#cgLanding .lg-role-icon svg,
+#cgLanding .lg-cta-icon svg {
+  display: block;
+  max-width: 38px;
+  max-height: 38px;
+}
