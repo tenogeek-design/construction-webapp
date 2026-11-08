@@ -255,13 +255,17 @@
 
         content.hidden = false;
 
-      } catch (error) {
-        console.error("Worker cabinet error:", error);
-        status.textContent =
-          error.message || "Ошибка загрузки кабинета.";
-        status.classList.add("error");
-      }
-    });
+    } catch (error) {
+      console.error("Worker cabinet error:", error);
+
+      status.textContent =
+        error.message || "Ошибка загрузки кабинета.";
+
+      status.classList.add("error");
+    }
+  });
+</script>
+
 <script src="worker-projects.js" defer></script>
 <script src="worker-tasks.js" defer></script>
 
