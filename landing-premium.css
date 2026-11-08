@@ -1,0 +1,799 @@
+
+/* CONSTRUCTION GROUP — ARCHITECTURAL PREMIUM */
+
+body.cg-home-view {
+  background: #060c13;
+}
+
+body.cg-home-view .app-shell {
+  max-width: none;
+  width: 100%;
+  padding: 0;
+}
+
+body.cg-home-view .app-shell > .topbar,
+body.cg-home-view .app-shell > .footer {
+  display: none;
+}
+
+#homePage {
+  padding: 0;
+}
+
+#homePage > .hero,
+#homePage > .home-menu {
+  display: none !important;
+}
+
+#cgLanding {
+  color: #eef3f9;
+  background: #071018;
+  font-family: Manrope, Arial, sans-serif;
+}
+
+#cgLanding * {
+  box-sizing: border-box;
+}
+
+#cgLanding button {
+  font: inherit;
+  cursor: pointer;
+}
+
+#cgLanding a {
+  text-decoration: none;
+}
+
+#cgLanding button:focus-visible,
+#cgLanding a:focus-visible {
+  outline: 2px solid #8bd6ff;
+  outline-offset: 4px;
+}
+
+/* АРХИТЕКТУРНЫЙ ФОН */
+
+#cgLanding .lg-stage {
+  position: relative;
+  min-height: 890px;
+  isolation: isolate;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(3,8,13,.94) 0%,
+      rgba(3,8,13,.77) 28%,
+      rgba(3,8,13,.28) 57%,
+      rgba(3,8,13,.08) 90%
+    ),
+    linear-gradient(
+      0deg,
+      #071018 0%,
+      transparent 28%
+    ),
+    url("hero-building.png") 70% center / cover no-repeat,
+    #071018;
+}
+
+#cgLanding .lg-container {
+  max-width: 1560px;
+  margin: auto;
+  padding: 0 clamp(20px, 5vw, 82px);
+}
+
+/* ШАПКА */
+
+#cgLanding .lg-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  min-height: 115px;
+  border-bottom: 1px solid #8bb8d92c;
+}
+
+#cgLanding .lg-brand {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  min-width: 0;
+  flex-shrink: 0;
+}
+
+#cgLanding .lg-logo {
+  width: 83px;
+  height: 83px;
+  filter: drop-shadow(0 0 8px #278fe033);
+}
+
+#cgLanding .lg-brand-name {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  line-height: 1;
+}
+
+#cgLanding .lg-brand-name strong {
+  font-weight: 900;
+  font-size: clamp(16px, 1.65vw, 26px);
+  letter-spacing: 1.5px;
+  background: linear-gradient(
+    180deg,
+    #ffffff,
+    #b2c2d0 65%,
+    #7d95a9
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+#cgLanding .lg-brand-name b {
+  letter-spacing: 7px;
+  color: #4ca6f2;
+  font-size: clamp(14px, 1.3vw, 20px);
+}
+
+#cgLanding .lg-nav {
+  display: flex;
+  gap: clamp(10px, 1.4vw, 26px);
+  align-items: center;
+}
+
+#cgLanding .lg-nav-link {
+  background: none;
+  color: #ced7e2;
+  border: 0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: .5px;
+  padding: 13px 3px;
+  white-space: nowrap;
+}
+
+#cgLanding .lg-nav-link:hover {
+  color: #72c2ff;
+}
+
+#cgLanding .lg-header-right {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#cgLanding .lg-header-login,
+#cgLanding .lg-header-register {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  min-height: 45px;
+  padding: 0 15px;
+  border: 1px solid #7590a8;
+  color: #edf5ff;
+  font-size: 12px;
+  font-weight: 800;
+  white-space: nowrap;
+
+  clip-path: polygon(
+    12px 0,
+    100% 0,
+    calc(100% - 12px) 100%,
+    0 100%
+  );
+}
+
+#cgLanding .lg-header-register {
+  background: linear-gradient(
+    145deg,
+    #14578f,
+    #183855
+  );
+  border-color: #4faef2;
+}
+
+#cgLanding .lg-header-login:hover,
+#cgLanding .lg-header-register:hover {
+  background: #236ba1;
+}
+
+#cgLanding .lg-menu-toggle {
+  display: none;
+  color: white;
+  border: 1px solid #50708a;
+  background: #142636;
+  padding: 9px 12px;
+  font-size: 20px;
+}
+
+/* ПРИВЕТСТВИЕ */
+
+#cgLanding .lg-main {
+  padding: clamp(42px, 6vw, 90px) 0 48px;
+  max-width: 1060px;
+}
+
+#cgLanding .lg-kicker {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  color: #b4c5d5;
+  letter-spacing: 2.4px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+#cgLanding .lg-slash {
+  background: #169afa;
+  width: 6px;
+  height: 25px;
+  transform: skew(-18deg);
+}
+
+#cgLanding .lg-headline {
+  margin: 26px 0 20px;
+  font-size: clamp(42px, 5.1vw, 84px);
+  line-height: 1.035;
+  letter-spacing: -2.6px;
+  font-weight: 900;
+  color: #ecf3fc;
+  text-shadow: 0 3px 22px #000c;
+}
+
+#cgLanding .lg-headline em {
+  font-style: normal;
+  color: #64b9fa;
+}
+
+#cgLanding .lg-rule {
+  width: 86px;
+  height: 3px;
+  background: #349ef2;
+  box-shadow: 0 0 13px #1aa8ff6b;
+}
+
+#cgLanding .lg-intro {
+  max-width: 650px;
+  margin: 28px 0 30px;
+  padding-left: 18px;
+  border-left: 3px solid #2099ed;
+}
+
+#cgLanding .lg-intro h2 {
+  color: #f4f7fc;
+  font-size: 19px;
+  line-height: 1.25;
+  letter-spacing: .35px;
+  font-weight: 800;
+  margin: 0 0 10px;
+}
+
+#cgLanding .lg-intro p {
+  color: #cfdae6;
+  line-height: 1.65;
+  font-size: 15px;
+  max-width: 580px;
+  margin: 0;
+}
+
+/* КАРТОЧКИ РОЛЕЙ */
+
+#cgLanding .lg-role-heading {
+  font-size: 16px;
+  line-height: 1.4;
+  font-weight: 900;
+  letter-spacing: .4px;
+  margin: 0 0 16px;
+  color: #f3f7ff;
+}
+
+#cgLanding .lg-role-heading span {
+  color: #69baf3;
+}
+
+#cgLanding .lg-roles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+  max-width: 1000px;
+}
+
+#cgLanding .lg-role {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-height: 118px;
+  padding: 19px 16px;
+  color: white;
+
+  background: linear-gradient(
+    125deg,
+    #152331e8,
+    #091520c9
+  );
+
+  border: 1px solid #6284a65c;
+  box-shadow: inset 0 1px #ffffff13;
+
+  clip-path: polygon(
+    13px 0,
+    100% 0,
+    calc(100% - 13px) 100%,
+    0 100%
+  );
+}
+
+#cgLanding .lg-role:hover {
+  background: #173c5a;
+  transform: translateY(-2px);
+}
+
+#cgLanding .lg-role-icon {
+  color: #58b3f5;
+  min-width: 35px;
+}
+
+#cgLanding .lg-role-icon svg {
+  width: 34px;
+  height: 34px;
+}
+
+#cgLanding .lg-role strong {
+  display: block;
+  letter-spacing: .4px;
+  font-size: 14px;
+  margin: 0 0 7px;
+}
+
+#cgLanding .lg-role small {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #b7c9d8;
+  line-height: 1.5;
+}
+
+#cgLanding .lg-arrow {
+  margin-left: auto;
+  color: #6bbafa;
+}
+
+/* ВОЗМОЖНОСТИ */
+
+#cgLanding .lg-benefits {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 22px;
+  max-width: 990px;
+  padding: 20px 0 18px;
+  color: #bac9d8;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: .3px;
+}
+
+/* ДВЕ ОСНОВНЫЕ КНОПКИ */
+
+#cgLanding .lg-cta-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 13px;
+  max-width: 1010px;
+  margin: 0 0 13px;
+}
+
+#cgLanding .lg-cta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  text-align: left;
+  color: #fff;
+  border: 1px solid #5787ac;
+  padding: 19px 26px;
+  min-height: 93px;
+
+  clip-path: polygon(
+    18px 0,
+    100% 0,
+    calc(100% - 18px) 100%,
+    0 100%
+  );
+}
+
+#cgLanding .lg-cta-main {
+  background: linear-gradient(
+    135deg,
+    #1765a6,
+    #103250 87%
+  );
+  border-color: #37affc;
+}
+
+#cgLanding .lg-cta-outline {
+  background: linear-gradient(
+    135deg,
+    #1a2938e8,
+    #0a121bcf
+  );
+}
+
+#cgLanding .lg-cta:hover {
+  background: #247db8;
+  box-shadow: 0 0 18px #2daafa60;
+}
+
+#cgLanding .lg-cta-icon {
+  color: #b9e7ff;
+  flex-shrink: 0;
+}
+
+#cgLanding .lg-cta-icon svg {
+  width: 38px;
+  height: 38px;
+}
+
+#cgLanding .lg-cta strong {
+  display: block;
+  font-weight: 900;
+  font-size: clamp(14px, 1.6vw, 22px);
+  letter-spacing: .5px;
+}
+
+#cgLanding .lg-cta small {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: #b9d1e5;
+  margin-top: 5px;
+}
+
+#cgLanding .lg-cta-arrow {
+  margin-left: auto;
+  font-size: 22px;
+}
+
+/* ПОДВАЛ */
+
+#cgLanding .lg-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  align-items: center;
+  border-top: 1px solid #62a7cb71;
+  padding: 20px 0 25px;
+  color: #9fb0c1;
+  font-size: 12px;
+}
+
+#cgLanding .lg-footer a {
+  color: #cde5f8;
+}
+
+/* О КОМПАНИИ */
+
+#cgLanding .lg-about {
+  background: #0c1520;
+  border-top: 1px solid #223f56;
+}
+
+#cgLanding .lg-about-inner {
+  max-width: 1430px;
+  margin: auto;
+  padding: 76px clamp(20px, 5vw, 82px);
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 50px;
+  align-items: center;
+}
+
+#cgLanding .lg-overline {
+  font-size: 11px;
+  letter-spacing: 2px;
+  font-weight: 900;
+  color: #79aed3;
+}
+
+#cgLanding .lg-about h2 {
+  margin: 17px 0 0;
+  color: #f1f6fc;
+  font-size: clamp(27px, 3vw, 43px);
+  line-height: 1.2;
+}
+
+#cgLanding .lg-about h2 span {
+  color: #58aeea;
+}
+
+#cgLanding .lg-about p {
+  color: #becdda;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+#cgLanding .lg-text-action {
+  background: none;
+  border: 0;
+  border-bottom: 1px solid #83bfe6;
+  padding: 9px 0;
+  color: #b3ddff;
+  font-weight: 800;
+}
+
+/* ПРАЙС-ЛИСТ */
+
+.lg-price-dialog {
+  position: fixed;
+  inset: 0;
+  margin: auto;
+  box-sizing: border-box;
+  width: min(800px, calc(100vw - 22px));
+  max-height: 90vh;
+  overflow: auto;
+  padding: 25px;
+  background: #111c29;
+  border: 1px solid #4c7896;
+  color: #eff5fb;
+  box-shadow: 0 25px 100px #000b;
+}
+
+.lg-price-dialog::backdrop {
+  background: #03080cdd;
+  backdrop-filter: blur(7px);
+}
+
+.lg-price-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 15px;
+  border-bottom: 1px solid #304558;
+  padding-bottom: 14px;
+}
+
+.lg-price-head h2 {
+  font-size: 29px;
+  margin: 10px 0;
+  letter-spacing: 1px;
+}
+
+.lg-price-head p {
+  font-size: 12px;
+  line-height: 1.6;
+  color: #aabcce;
+}
+
+.lg-close {
+  background: #24384a;
+  border: 1px solid #507698;
+  color: white;
+  width: 40px;
+  height: 40px;
+  font-size: 27px;
+  cursor: pointer;
+}
+
+.lg-price-content h3 {
+  margin: 25px 0 11px;
+  font-size: 16px;
+  color: #7cc0f5;
+}
+
+.lg-price-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 12px 0;
+  border-bottom: 1px solid #304052;
+  color: #e3eaf3;
+  font-size: 13px;
+}
+
+.lg-price-row strong {
+  white-space: nowrap;
+  color: #b3d9ff;
+}
+
+.lg-price-order {
+  margin-top: 22px;
+  background: #176eac;
+  color: #fff;
+  border: 1px solid #5cbaed;
+  padding: 15px 21px;
+  font-weight: 800;
+  font-size: 14px;
+  cursor: pointer;
+  width: 100%;
+}
+
+/* ПЛАНШЕТ */
+
+@media (max-width: 1200px) {
+  #cgLanding .lg-nav {
+    gap: 8px;
+  }
+
+  #cgLanding .lg-nav-link {
+    font-size: 11px;
+  }
+
+  #cgLanding .lg-brand-name strong {
+    font-size: 17px;
+  }
+
+  #cgLanding .lg-brand-name b {
+    font-size: 13px;
+    letter-spacing: 5px;
+  }
+
+  #cgLanding .lg-logo {
+    width: 66px;
+    height: 66px;
+  }
+
+  #cgLanding .lg-header {
+    gap: 12px;
+  }
+}
+
+@media (max-width: 980px) {
+  #cgLanding .lg-header {
+    position: relative;
+    min-height: 92px;
+  }
+
+  #cgLanding .lg-menu-toggle {
+    display: block;
+  }
+
+  #cgLanding .lg-nav {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    left: 0;
+    z-index: 6;
+    padding: 15px;
+    background: #0a1724;
+    border: 1px solid #3d6481;
+    box-shadow: 0 20px 50px #000a;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  #cgLanding .lg-nav.is-open {
+    display: flex;
+  }
+
+  #cgLanding .lg-nav-link {
+    text-align: left;
+    font-size: 14px;
+    padding: 12px;
+  }
+
+  #cgLanding .lg-roles {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  #cgLanding .lg-main {
+    max-width: 770px;
+  }
+
+  #cgLanding .lg-headline {
+    font-size: clamp(41px, 7vw, 68px);
+  }
+}
+
+/* ТЕЛЕФОН */
+
+@media (max-width: 660px) {
+  #cgLanding .lg-stage {
+    background-position: 68% center;
+  }
+
+  #cgLanding .lg-header {
+    min-height: 85px;
+  }
+
+  #cgLanding .lg-logo {
+    width: 49px;
+    height: 49px;
+  }
+
+  #cgLanding .lg-brand-name strong {
+    font-size: 13px;
+    letter-spacing: .5px;
+  }
+
+  #cgLanding .lg-brand-name b {
+    font-size: 11px;
+    letter-spacing: 4px;
+  }
+
+  #cgLanding .lg-header-login {
+    display: none;
+  }
+
+  #cgLanding .lg-header-register {
+    font-size: 11px;
+    min-height: 39px;
+    padding: 0 12px;
+  }
+
+  #cgLanding .lg-main {
+    padding-top: 55px;
+  }
+
+  #cgLanding .lg-kicker {
+    font-size: 9px;
+    letter-spacing: 1.4px;
+  }
+
+  #cgLanding .lg-headline {
+    font-size: clamp(32px, 8.2vw, 52px);
+    letter-spacing: -1px;
+  }
+
+  #cgLanding .lg-intro h2 {
+    font-size: 15px;
+  }
+
+  #cgLanding .lg-intro p {
+    font-size: 13px;
+  }
+
+  #cgLanding .lg-role-heading {
+    font-size: 13px;
+  }
+
+  #cgLanding .lg-roles {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  #cgLanding .lg-role {
+    min-height: 85px;
+    padding: 13px;
+  }
+
+  #cgLanding .lg-benefits {
+    font-size: 10px;
+  }
+
+  #cgLanding .lg-cta-group {
+    grid-template-columns: 1fr;
+  }
+
+  #cgLanding .lg-cta {
+    min-height: 79px;
+    padding: 14px 19px;
+  }
+
+  #cgLanding .lg-footer {
+    flex-wrap: wrap;
+    font-size: 10px;
+  }
+
+  #cgLanding .lg-about-inner {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    padding-top: 50px;
+    padding-bottom: 50px;
+  }
+
+  .lg-price-row {
+    font-size: 12px;
+  }
+
+  .lg-price-row strong {
+    font-size: 11px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #cgLanding *,
+  #cgLanding *::before,
+  #cgLanding *::after {
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+}
