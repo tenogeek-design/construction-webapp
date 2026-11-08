@@ -1,6 +1,9 @@
 
 "use strict";
 
+// CONSTRUCTION GROUP
+// Задания, прогресс и фотоотчёты работника.
+
 document.addEventListener("DOMContentLoaded", async () => {
   const SUPABASE_URL =
     "https://yepxskcfxyiyqqhmdpve.supabase.co";
@@ -8,7 +11,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const SUPABASE_KEY =
     "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH";
 
-  if (!window.supabase) return;
+  if (!window.supabase) {
+    console.error("Supabase не загружен");
+    return;
+  }
 
   const db = window.supabase.createClient(
     SUPABASE_URL,
@@ -41,6 +47,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const container = document.createElement("div");
   container.id = "workerTasksContainer";
   card.appendChild(container);
+
+  // ==========================================
+  // СТИЛИ
+  // ==========================================
 
   const style = document.createElement("style");
 
@@ -91,6 +101,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       border: 0;
       background: #ff812e;
       color: #111;
+      font-size: 13px;
       font-weight: bold;
       cursor: pointer;
     }
@@ -121,20 +132,34 @@ document.addEventListener("DOMContentLoaded", async () => {
     .worker-task-error {
       color: #ff938a;
     }
+
+    .worker-task-section {
+      margin-top: 20px;
+      border-top: 1px solid #454950;
+      padding-top: 16px;
+    }
+
+    .worker-task-photo-title {
+      font-size: 15px;
+      font-weight: bold;
+      color: white;
+    }
   `;
 
   document.head.appendChild(style);
+
+  // ==========================================
+  // ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
+  // ==========================================
 
   function addText(parent, value, bold = false) {
     const element = document.createElement(
       bold ? "strong" : "p"
     );
 
-    if (!bold) {
-      element.className = "worker-task-text";
-    } else {
-      element.className = "worker-task-name";
-    }
+    element.className = bold
+      ? "worker-task-name"
+      : "worker-task-text";
 
     element.textContent = value;
     parent.appendChild(element);
@@ -156,7 +181,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     button.type = "button";
     button.className = "worker-task-button";
     button.textContent = text;
-
     button.addEventListener("click", callback);
 
     return button;
@@ -174,7 +198,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // ОБНОВЛЕНИЕ СВОЕЙ ЗАДАЧИ
+  // ИЗМЕНЕНИЕ СВОЕЙ ЗАДАЧИ
   // ==========================================
 
   async function updateTask(taskId, action, progress = null) {
@@ -201,6 +225,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
 
     return data;
+  }
+
+  // ==========================================
+  // ФОТООТЧЁТ
+  // ==========================================
+
+  function mountPhotoReport(task, parent) {
+    if (typeof window.CGWorkerPhotos?.mount !== "function") {
+      addText(
+        parent,
+        "Модуль фотографий не подключён."
+      );
+      return;
+    }
+
+    try {
+      window.CGWorkerPhotos.mount({
+        db,
+        task,
+        actions: parent
+      });
+    } catch (error) {
+      console.error("Photo module error:", error);
+
+      addText(
+        parent,
+        "Не удалось открыть фотоотчёт."
+      );
+    }
   }
 
   // ==========================================
@@ -268,6 +321,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     let busy = false;
 
+    // ========================================
+    // УПРАВЛЕНИЕ СТАТУСАМИ
+    // ========================================
+
     function renderActions() {
       actions.replaceChildren();
 
@@ -280,7 +337,10 @@ document.addEventListener("DOMContentLoaded", async () => {
 
       fill.style.width = savedProgress + "%";
 
-      // Новая работа
+      // ======================================
+      // НОВАЯ ЗАДАЧА
+      // ======================================
+
       if (task.status === "new") {
         const startButton = createButton(
           "▶ Начать работу",
@@ -317,8 +377,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             } catch (error) {
               showMessage(
                 message,
-                error.message ||
-                "Ошибка запуска задания.",
+                error.message || "Ошибка запуска задания.",
                 true
               );
 
@@ -332,16 +391,19 @@ document.addEventListener("DOMContentLoaded", async () => {
         actions.appendChild(startButton);
       }
 
-      // Работа выполняется
+      // ======================================
+      // В РАБОТЕ
+      // ======================================
+
       else if (task.status === "in_progress") {
         const slider = document.createElement("input");
 
         slider.type = "range";
         slider.className = "worker-task-slider";
-        slider.min = savedProgress;
+        slider.min = String(savedProgress);
         slider.max = "100";
-        slider.step = "5";
-        slider.value = savedProgress;
+        slider.step = "1";
+        slider.value = String(savedProgress);
 
         const selected = addText(
           actions,
@@ -415,10 +477,17 @@ document.addEventListener("DOMContentLoaded", async () => {
           }
         );
 
-        actions.append(slider, selected, saveButton);
+        actions.append(
+          slider,
+          selected,
+          saveButton
+        );
       }
 
-      // Задание на проверке
+      // ======================================
+      // НА ПРОВЕРКЕ
+      // ======================================
+
       else if (task.status === "review") {
         addText(
           actions,
@@ -426,7 +495,10 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
-      // Завершено
+      // ======================================
+      // ПОДТВЕРЖДЕНО
+      // ======================================
+
       else if (task.status === "completed") {
         addText(
           actions,
@@ -434,13 +506,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         );
       }
 
-      // Отменено
+      // ======================================
+      // ОТМЕНЕНО
+      // ======================================
+
       else if (task.status === "cancelled") {
         addText(
           actions,
           "Задание отменено."
         );
       }
+
+      // ======================================
+      // ФОТООТЧЁТ ЗАДАНИЯ
+      // ======================================
+
+      const photoSection =
+        document.createElement("div");
+
+      photoSection.className =
+        "worker-task-section";
+
+      actions.appendChild(photoSection);
+
+      mountPhotoReport(task, photoSection);
     }
 
     renderActions();
@@ -448,7 +537,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   // ==========================================
-  // ЗАГРУЗКА ЗАДАНИЙ
+  // ЗАГРУЗКА ЗАДАНИЙ ИЗ SUPABASE
   // ==========================================
 
   async function loadTasks() {
@@ -490,7 +579,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       tasks.forEach(renderTask);
 
     } catch (error) {
-      console.error("Worker tasks:", error);
+      console.error("Worker tasks error:", error);
 
       container.textContent =
         "Ошибка загрузки заданий: " +
