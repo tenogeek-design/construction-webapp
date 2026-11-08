@@ -668,6 +668,12 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         await refresh();
 
+const success = document.createElement("p");
+success.className = "cgt-message";
+success.textContent = "✓ Рабочие часы успешно сохранены!";
+success.style.color = "#9ce2bb";
+root.prepend(success);
+
       } catch (error) {
         console.error("Timekeeping error:", error);
 
