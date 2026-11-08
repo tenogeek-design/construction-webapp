@@ -473,6 +473,110 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 8. ЗАГРУЗКА ЗАЯВОК ИЗ API
   // ==========================================
 
+  // ==========================================
+  // РАССМОТРЕНИЕ ЗАЯВКИ OWNER
+  // ==========================================
+
+  let reviewBusy = false;
+
+  async function reviewCandidate(item, decision) {
+    if (reviewBusy) return;
+
+    if (
+      decision === "approved" &&
+      item.applicant_user_id === user.id
+    ) {
+      alert("Нельзя принять заявку своего аккаунта OWNER.");
+      return;
+    }
+
+    let comment = null;
+
+    if (decision === "rejected") {
+      comment = prompt(
+        "Укажите причину отклонения заявки:"
+      );
+
+      if (comment === null) return;
+
+      comment = comment.trim();
+
+      if (!comment) {
+        alert("Причина отклонения обязательна.");
+        return;
+      }
+    } else {
+      const confirmed = confirm(
+        "Принять кандидата " +
+        (item.full_name || "") +
+        "?\nБудет создана карточка сотрудника " +
+        "и назначена рабочая роль."
+      );
+
+      if (!confirmed) return;
+    }
+
+    reviewBusy = true;
+
+    try {
+      const { data, error } =
+        await db.auth.getSession();
+
+      if (error || !data?.session?.access_token) {
+        throw new Error("Войдите в аккаунт OWNER заново.");
+      }
+
+      const response = await fetch(
+        "/api/company-join-review",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization:
+              "Bearer " + data.session.access_token
+          },
+          body: JSON.stringify({
+            requestId: item.id,
+            decision,
+            comment
+          })
+        }
+      );
+
+      const raw = await response.text();
+
+      let result;
+
+      try {
+        result = JSON.parse(raw);
+      } catch {
+        throw new Error(
+          "Сервер API недоступен или вернул неверный ответ."
+        );
+      }
+
+      if (!response.ok || !result.success) {
+        throw new Error(
+          result.error || "Ошибка обработки заявки"
+        );
+      }
+
+      alert(
+        decision === "approved"
+          ? "Кандидат принят!"
+          : "Заявка отклонена."
+      );
+
+      await loadRequests();
+
+    } catch (error) {
+      console.error("Candidate review error:", error);
+      alert("Ошибка: " + error.message);
+    } finally {
+      reviewBusy = false;
+    }
+  }
+
   async function loadRequests() {
     summary.textContent = "Загрузка заявок...";
     list.replaceChildren();
