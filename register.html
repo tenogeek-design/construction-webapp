@@ -9,9 +9,74 @@
   <link rel="stylesheet" href="register.css">
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="register.js" defer></script>
+  <style>
+    .account-types {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+    .account-type {
+      border: 1px solid #66503e;
+      border-radius: 9px;
+      padding: 14px 6px;
+      background: #1a1b1c;
+      color: #e7dcd2;
+      cursor: pointer;
+      text-align: center;
+      font-size: 12px;
+      font-weight: bold;
+    }
+    .account-type.active {
+      border-color: #ef9149;
+      background: #563821;
+      color: white;
+    }
+    .join-fields {
+      border-top: 1px solid #66503e;
+      padding-top: 22px;
+      margin-top: 8px;
+    }
+    .join-fields h3 {
+      font-size: 16px;
+      margin: 0 0 18px;
+    }
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: 13px;
+      border: 1px solid #66503e;
+      border-radius: 9px;
+      background: #1a1b1c;
+      color: white;
+      font: inherit;
+      outline: none;
+    }
+    .field textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+    .field select:focus,
+    .field textarea:focus {
+      border-color: #ef9149;
+    }
+    .register-hint {
+      color: #b3a69b;
+      font-size: 12px;
+      line-height: 1.6;
+      margin-bottom: 18px;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    @media (max-width: 480px) {
+      .account-types {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
 </head>
 <body>
-
 <main class="register-shell">
 
   <header class="register-header">
@@ -28,68 +93,158 @@
   </header>
 
   <section class="register-content">
-
     <div class="register-intro">
       <div class="eyebrow">◆ PERSONAL ACCOUNT</div>
       <h1>Создайте свой<br><span>аккаунт.</span></h1>
       <p>
-        Добро пожаловать в CONSTRUCTION GROUP.
-        Создайте личный кабинет для работы с заявками,
-        объектами и услугами нашей компании.
+        Присоединяйтесь к CONSTRUCTION GROUP.
+        Выберите тип аккаунта и заполните форму.
       </p>
     </div>
 
     <div class="register-card">
-
       <div class="card-heading">
         <div>
           <span class="card-label">НОВЫЙ АККАУНТ</span>
-          <h2>Регистрация заказчика</h2>
+          <h2 id="registrationTitle">
+            Регистрация заказчика
+          </h2>
         </div>
         <div class="card-symbol">C</div>
       </div>
 
-      <form id="registerForm">
+      <div class="account-types">
+        <button type="button" class="account-type active"
+          data-role="client">Заказчик</button>
+        <button type="button" class="account-type"
+          data-role="worker">Работник</button>
+        <button type="button" class="account-type"
+          data-role="foreman">Бригадир</button>
+      </div>
 
+      <form id="registerForm">
         <div class="field-row">
           <label class="field">
             Имя
             <input id="firstName" type="text"
-              placeholder="Ваше имя" required minlength="2">
+              placeholder="Ваше имя"
+              required minlength="2">
           </label>
-
           <label class="field">
             Фамилия
             <input id="lastName" type="text"
-              placeholder="Ваша фамилия" required minlength="2">
+              placeholder="Ваша фамилия"
+              required minlength="2">
           </label>
         </div>
 
         <label class="field">
           Телефон
           <input id="phone" type="tel"
-            placeholder="+48 000 000 000" required>
+            placeholder="+48 000 000 000"
+            required>
         </label>
 
         <label class="field">
           Электронная почта
           <input id="email" type="email"
-            placeholder="example@email.com" required>
+            placeholder="example@email.com"
+            required>
         </label>
 
-        <label class="field">
-          Пароль
-          <input id="password" type="password"
-            placeholder="Минимум 8 символов"
-            required minlength="8">
-        </label>
+        <div id="passwordFields">
+          <label class="field">
+            Пароль
+            <input id="password" type="password"
+              placeholder="Минимум 8 символов"
+              required minlength="8">
+          </label>
 
-        <label class="field">
-          Повторите пароль
-          <input id="passwordConfirm" type="password"
-            placeholder="Повторите пароль"
-            required minlength="8">
-        </label>
+          <label class="field">
+            Повторите пароль
+            <input id="passwordConfirm" type="password"
+              placeholder="Повторите пароль"
+              required minlength="8">
+          </label>
+        </div>
+
+        <div id="joinFields" class="join-fields" hidden>
+          <h3>Анкета кандидата</h3>
+
+          <label class="field">
+            Опыт работы (лет)
+            <input id="experienceYears" type="number"
+              min="0" max="80"
+              placeholder="Например: 5">
+          </label>
+
+          <label class="field">
+            Специализации (через запятую)
+            <input id="specialization" type="text"
+              placeholder="ГК, плитка, демонтаж">
+          </label>
+
+          <div id="brigadeFields" hidden>
+            <h3>Информация о бригаде</h3>
+
+            <label class="field">
+              Название бригады
+              <input id="brigadeName" type="text"
+                placeholder="Название бригады">
+            </label>
+
+            <label class="field">
+              Количество работников
+              <input id="brigadeSize" type="number"
+                min="1" max="200"
+                placeholder="Например: 4">
+            </label>
+
+            <label class="field">
+              Специализации бригады
+              <input id="brigadeSpecializations"
+                type="text"
+                placeholder="ГК, покраска, плитка">
+            </label>
+
+            <label class="field">
+              Есть свои инструменты?
+              <select id="brigadeHasTools">
+                <option value="">Не указано</option>
+                <option value="yes">Да</option>
+                <option value="no">Нет</option>
+              </select>
+            </label>
+
+            <label class="field">
+              Есть транспорт?
+              <select id="brigadeHasTransport">
+                <option value="">Не указано</option>
+                <option value="yes">Да</option>
+                <option value="no">Нет</option>
+              </select>
+            </label>
+
+            <label class="field">
+              Состав бригады
+              <textarea id="brigadeMembers"
+                placeholder="ФИО и специализация каждого работника"></textarea>
+            </label>
+          </div>
+
+          <label class="field">
+            Дополнительная информация
+            <textarea id="additionalInfo"
+              maxlength="3000"
+              placeholder="Расскажите об опыте, инструментах и предпочтениях по оплате"></textarea>
+          </label>
+
+          <p class="register-hint">
+            Анкета направляется владельцу компании.
+            Рабочий доступ предоставляется только
+            после одобрения.
+          </p>
+        </div>
 
         <label class="agreement">
           <input type="checkbox" id="agreement" required>
@@ -106,31 +261,28 @@
 
         <button type="submit" id="registerButton"
           class="submit-button">
-          <span>СОЗДАТЬ АККАУНТ</span>
+          <span id="registerButtonText">
+            СОЗДАТЬ АККАУНТ
+          </span>
           <span class="button-arrow">↗</span>
         </button>
-
       </form>
 
       <div class="card-footer">
         Уже зарегистрированы?
         <a href="/login.html">Войти в систему</a>
       </div>
-
     </div>
 
     <div class="register-note">
       ◆ Безопасная регистрация CONSTRUCTION GROUP
     </div>
-
   </section>
 
   <footer class="register-footer">
     <span>CONSTRUCTION GROUP © 2026</span>
     <span>WARSAW · POLAND</span>
   </footer>
-
 </main>
-
 </body>
 </html>
