@@ -24,8 +24,46 @@ document.addEventListener("DOMContentLoaded", () => {
     SUPABASE_KEY
   );
 
-  form.addEventListener("submit", async (event) => {
+  let busy = false;
+
+  // Основной кабинет выбирается по приоритету.
+  // Пользователь может сохранять несколько ролей.
+  const destinations = [
+    { role: "owner", path: "/admin.html" },
+    { role: "admin", path: "/admin.html" },
+    { role: "foreman", path: "/foreman.html" },
+    { role: "worker", path: "/worker.html" },
+    { role: "client", path: "/client.html" }
+  ];
+
+  function getDestination(roles) {
+    const match = destinations.find(item =>
+      roles.includes(item.role)
+    );
+
+    return match?.path || null;
+  }
+
+  async function getUserRoles(userId) {
+    const { data, error } = await client
+      .from("app_user_roles")
+      .select("role_code")
+      .eq("user_id", userId)
+      .is("revoked_at", null);
+
+    if (error) throw error;
+
+    return [...new Set(
+      (data || [])
+        .map(item => item.role_code)
+        .filter(Boolean)
+    )];
+  }
+
+  form.addEventListener("submit", async event => {
     event.preventDefault();
+
+    if (busy) return;
 
     const email = document
       .getElementById("username")
@@ -35,11 +73,18 @@ document.addEventListener("DOMContentLoaded", () => {
       .getElementById("password")
       .value;
 
-    message.textContent = "Проверяем данные...";
+    if (!email || !password) {
+      message.textContent =
+        "Введите электронную почту и пароль.";
+      return;
+    }
+
+    busy = true;
     button.disabled = true;
+    message.textContent = "Проверяем данные...";
 
     try {
-      // 1. Авторизация
+      // 1. Авторизация Supabase
       const { data, error } =
         await client.auth.signInWithPassword({
           email,
@@ -48,57 +93,28 @@ document.addEventListener("DOMContentLoaded", () => {
 
       if (error) throw error;
 
-      // 2. Получаем активные роли пользователя
-      const { data: roleData, error: roleError } =
-        await client
-          .from("app_user_roles")
-          .select("role_code")
-          .eq("user_id", data.user.id)
-          .is("revoked_at", null);
-
-      if (roleError) throw roleError;
-
-      const roles = (roleData || []).map(
-        role => role.role_code
-      );
-
-      // 3. Определяем кабинет
-      let destination = null;
-
-      // Владелец и администратор
-      if (
-        roles.includes("owner") ||
-        roles.includes("admin")
-      ) {
-        destination = "/admin.html";
+      if (!data?.user) {
+        throw new Error("Не удалось получить пользователя.");
       }
 
-      // Прораб
-      else if (roles.includes("foreman")) {
-        destination = "/foreman.html";
-      }
+      // 2. Получаем действующие роли
+      const roles = await getUserRoles(data.user.id);
 
-      // Заказчик
-      else if (roles.includes("client")) {
-        destination = "/client.html";
-      }
+      console.log("Active user roles:", roles);
 
-      // Работник — кабинет создадим следующим этапом
-      else if (roles.includes("worker")) {
+      // 3. Выбираем основной кабинет
+      const destination = getDestination(roles);
+
+      if (!destination) {
         message.textContent =
-          "Аккаунт работника активен. Кабинет находится в разработке.";
+          "Аккаунт создан, но доступ ещё не назначен. " +
+          "Обратитесь к администратору CONSTRUCTION GROUP.";
         return;
       }
 
-      // Неизвестная роль
-      if (!destination) {
-        throw new Error(
-          "Для вашего аккаунта не назначена активная роль. Обратитесь к администратору."
-        );
-      }
-
-      // 4. Переход в нужный кабинет
-      message.textContent = "Вход выполнен. Открываем кабинет...";
+      // 4. Перенаправление
+      message.textContent =
+        "Авторизация успешна. Открываем кабинет...";
 
       window.location.replace(destination);
 
@@ -106,9 +122,10 @@ document.addEventListener("DOMContentLoaded", () => {
       console.error("Login error:", error);
 
       message.textContent =
-        error.message || "Ошибка авторизации.";
+        error.message || "Ошибка входа.";
 
     } finally {
+      busy = false;
       button.disabled = false;
     }
   });
