@@ -35,7 +35,50 @@ document.addEventListener("DOMContentLoaded", async () => {
     SUPABASE_URL,
     SUPABASE_KEY
   );
+const switchAccountButton =
+  document.getElementById("switchAccountButton");
 
+if (switchAccountButton) {
+  switchAccountButton.hidden = !activeSession;
+
+  switchAccountButton.addEventListener("click", async () => {
+    if (busy) return;
+
+    const confirmed = confirm(
+      "Выйти из текущего аккаунта и зарегистрировать нового работника?"
+    );
+
+    if (!confirmed) return;
+
+    switchAccountButton.disabled = true;
+
+    try {
+      const { error } = await client.auth.signOut();
+      if (error) throw error;
+
+      activeSession = null;
+      form.reset();
+
+      $("email").value = "";
+      $("email").readOnly = false;
+
+      updateRole();
+
+      switchAccountButton.hidden = true;
+
+      showMessage(
+        "Теперь введите новую почту и пароль для регистрации."
+      );
+    } catch (error) {
+      showMessage(
+        error.message || "Не удалось выйти из аккаунта.",
+        true
+      );
+    } finally {
+      switchAccountButton.disabled = false;
+    }
+  });
+}
   const { data: initialAuth } =
     await client.auth.getSession();
 
