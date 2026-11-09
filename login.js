@@ -39,8 +39,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const requestedRole = params.get("role");
   const initialMode = params.get("mode");
 
-  let mode = initialMode === "register" ? "register" : "loginlet mode = "login";
-  let busy = false;
+let mode = "login";  let busy = false;
 
   const heading = document.querySelector(".login-heading h2");
   const description = document.querySelector(".login-heading p");
