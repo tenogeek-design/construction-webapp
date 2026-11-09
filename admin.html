@@ -1,7 +1,6 @@
 
 <!DOCTYPE html>
 <html lang="ru">
-  <script src="/back-button.js" defer></script>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,80 +8,65 @@
   <title>CONSTRUCTION GROUP — Admin</title>
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="admin-mobile.css">
+  <link rel="stylesheet" href="owner-premium.css?v=1">
 </head>
 <body>
 <div class="admin-layout">
 
   <!-- SIDEBAR -->
-  <aside class="sidebar">
-    <a href="admin.html" class="brand">
-      <span class="brand-icon">C</span>
-      <span>
-        <strong>CONSTRUCTION</strong>
-        <small>GROUP ADMIN</small>
-      </span>
+  <aside class="sidebar" id="ownerSidebar">
+    <a href="#dashboard" class="brand" aria-label="Обзор компании">
+      <svg class="owner-logo" viewBox="0 0 64 64" aria-hidden="true">
+        <path d="M32 5 L60 55 H4 Z" fill="none" stroke="#168ff1" stroke-width="4" />
+        <text x="32" y="47" text-anchor="middle" fill="#dce8f4" font-size="40" font-weight="900" font-family="Arial">C</text>
+      </svg>
+      <span><strong>CONSTRUCTION</strong><small>GROUP</small></span>
     </a>
+    <div class="owner-role-label">♛ &nbsp; OWNER PANEL</div>
 
     <div class="sidebar-label">ГЛАВНОЕ</div>
-    <nav class="navigation">
-      <a href="#dashboard" class="nav-item active">
-        <span>▦</span> Dashboard
-      </a>
-      <a href="#requests" class="nav-item">
-        <span>▤</span> Заявки
-        <span class="nav-count">0</span>
-      </a>
-      <a href="#employees" class="nav-item">
-        <span>♙</span> Сотрудники
-      </a>
-      <a href="#projects" class="nav-item">
-        <span>▧</span> Объекты
-      </a>
-      <a href="#tasks" class="nav-item">
-        <span>☑</span> Задачи
-      </a>
-      <a href="#time" class="nav-item">
-        <span>◷</span> Учёт времени
-      </a>
+    <nav class="navigation" aria-label="Главное">
+      <a href="#dashboard" class="nav-item active"><span class="nav-icon">⌂</span>Обзор компании</a>
+      <span class="owner-nav-disabled"><span class="nav-icon">♢</span>Уведомления<em>скоро</em></span>
     </nav>
 
-    <div class="sidebar-label">УПРАВЛЕНИЕ</div>
-    <nav class="navigation">
-      <a href="#payroll" class="nav-item">
-        <span>₴</span> Зарплаты
-      </a>
-      <a href="#finance" class="nav-item">
-        <span>▣</span> Финансы
-      </a>
-      <a href="#services" class="nav-item">
-        <span>◇</span> Услуги и цены
-      </a>
-      <a href="#clients" class="nav-item">
-        <span>♧</span> Клиенты
-      </a>
-      <a href="#documents" class="nav-item">
-        <span>▤</span> Документы
-      </a>
+    <div class="sidebar-label">ЗАКАЗЫ И ОБЪЕКТЫ</div>
+    <nav class="navigation" aria-label="Заказы и объекты">
+      <a href="#requests" class="nav-item"><span class="nav-icon">▤</span>Заявки клиентов<span class="nav-count">0</span></a>
+      <span class="owner-nav-disabled"><span class="nav-icon">♧</span>Клиенты<em>скоро</em></span>
+      <a href="#projects" class="nav-item"><span class="nav-icon">▥</span>Объекты</a>
+      <a href="#tasks" class="nav-item"><span class="nav-icon">☑</span>Задачи</a>
     </nav>
 
-    <div class="sidebar-label">СИСТЕМА</div>
-    <nav class="navigation">
-      <a href="#notifications" class="nav-item">
-        <span>♢</span> Уведомления
-      </a>
-      <a href="#analytics" class="nav-item">
-        <span>▥</span> Аналитика
-      </a>
-      <a href="#settings" class="nav-item">
-        <span>⚙</span> Настройки
-      </a>
+    <div class="sidebar-label">КОМАНДА</div>
+    <nav class="navigation" aria-label="Команда">
+      <a href="#employees" class="nav-item"><span class="nav-icon">♙</span>Сотрудники</a>
+      <a href="#employees" class="nav-item" data-focus="brigadesTable"><span class="nav-icon">♧</span>Бригады</a>
+      <a href="#time" class="nav-item"><span class="nav-icon">◷</span>Учёт времени</a>
+      <a href="#payroll" class="nav-item"><span class="nav-icon">▣</span>Зарплаты</a>
+    </nav>
+
+    <div class="sidebar-label">ФИНАНСЫ</div>
+    <nav class="navigation" aria-label="Финансы">
+      <a href="#finance" class="nav-item"><span class="nav-icon">◈</span>Финансы компании</a>
+    </nav>
+
+    <div class="sidebar-label">РЕСУРСЫ</div>
+    <nav class="navigation" aria-label="Ресурсы">
+      <span class="owner-nav-disabled"><span class="nav-icon">◇</span>Услуги и цены<em>скоро</em></span>
+      <span class="owner-nav-disabled"><span class="nav-icon">▧</span>Инструменты и склад<em>скоро</em></span>
+      <span class="owner-nav-disabled"><span class="nav-icon">▤</span>Документы<em>скоро</em></span>
+    </nav>
+
+    <div class="sidebar-label">КОНТРОЛЬ И СИСТЕМА</div>
+    <nav class="navigation" aria-label="Контроль и система">
+      <span class="owner-nav-disabled"><span class="nav-icon">▥</span>Аналитика<em>скоро</em></span>
+      <span class="owner-nav-disabled"><span class="nav-icon">♢</span>Роли и доступы<em>скоро</em></span>
+      <span class="owner-nav-disabled"><span class="nav-icon">⚙</span>Настройки<em>скоро</em></span>
     </nav>
 
     <div class="sidebar-bottom">
-      <div class="system-status">
-        <span class="status-dot"></span>
-        <span>Система готова</span>
-      </div>
+      <div class="system-status"><span class="status-dot"></span><span>Система управления</span></div>
       <small>CONSTRUCTION GROUP © 2026</small>
     </div>
   </aside>
@@ -91,21 +75,18 @@
   <main class="main-content">
 
     <header class="topbar">
-      <div>
-        <div class="breadcrumb">CONSTRUCTION / ADMIN</div>
-        <h1 id="pageTitle">Панель управления</h1>
+      <div class="owner-topbar-title">
+        <button type="button" class="owner-back" id="ownerBackBtn" aria-label="Назад">←</button>
+        <div>
+          <div class="breadcrumb">CONSTRUCTION GROUP / OWNER PANEL</div>
+          <h1 id="pageTitle">Обзор компании</h1>
+        </div>
       </div>
-
       <div class="topbar-actions">
-        <button class="icon-button" aria-label="Уведомления">
-          ♢
-        </button>
+        <a class="owner-top-link owner-quick" href="#requests">▤ Заявки</a>
         <div class="profile">
-          <div class="avatar">A</div>
-          <div>
-            <strong>Администратор</strong>
-            <small>Administrator</small>
-          </div>
+          <div class="avatar">C</div>
+          <div><strong>Владелец</strong><small>OWNER</small></div>
         </div>
       </div>
     </header>
@@ -123,6 +104,14 @@
           <p>Управление компанией в одном месте.</p>
         </div>
         <div class="date-label" id="currentDate"></div>
+      </div>
+
+      <div class="owner-quick-actions" aria-label="Быстрые действия">
+        <a class="owner-quick primary" href="#requests">▤ &nbsp; Заявки клиентов</a>
+        <a class="owner-quick" href="#projects">▥ &nbsp; Объекты</a>
+        <a class="owner-quick" href="#employees">♙ &nbsp; Сотрудники</a>
+        <a class="owner-quick" href="#finance">◈ &nbsp; Финансы</a>
+        <a class="owner-quick" href="#time">◷ &nbsp; Учёт времени</a>
       </div>
 
       <div class="stats-grid">
@@ -1445,6 +1434,7 @@
 </script>
 
 <script src="admin-candidates.js" defer></script>
+<script src="owner-ui.js" defer></script>
 
 </body>
 </html>
