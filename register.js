@@ -16,8 +16,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   const SUPABASE_KEY =
     "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH";
 
-  let selectedRole = "client";
-  let activeSession = null;
+const allowedRoles = ["client", "worker", "foreman"];
+
+const roleFromUrl = new URLSearchParams(
+  window.location.search
+).get("role");
+
+let selectedRole = allowedRoles.includes(roleFromUrl)
+  ? roleFromUrl
+  : "client";  let activeSession = null;
   let busy = false;
 
   function showMessage(text, error = false) {
