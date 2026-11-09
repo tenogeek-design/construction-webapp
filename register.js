@@ -437,3 +437,6 @@ if (switchAccountButton) {
 
   updateRole();
 });
+.account-type[hidden] {
+  display: none !important;
+}
