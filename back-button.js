@@ -1,70 +1,81 @@
 
+"use strict";
+
 document.addEventListener("DOMContentLoaded", () => {
-  // На главной странице кнопка не нужна
   const path = window.location.pathname;
 
-  if (path === "/" || path.endsWith("/index.html")) {
-    return;
-  }
+  // На главной странице кнопка не нужна
+  if (path === "/" || path.endsWith("/index.html")) return;
 
-  if (document.querySelector(".cg-back-button")) {
-    return;
-  }
+  // Не создаём дубликаты
+  if (document.querySelector(".cg-back-button")) return;
 
   const style = document.createElement("style");
 
   style.textContent = `
     .cg-back-button {
-      position: fixed;
-      bottom: 20px;
-      left: 20px;
-      z-index: 99999;
+      position: fixed !important;
+      inset: auto auto 18px 18px !important;
+      z-index: 99999 !important;
 
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 9px;
+      box-sizing: border-box !important;
+      display: inline-flex !important;
+      flex: 0 0 auto !important;
+      align-items: center !important;
+      justify-content: center !important;
+      gap: 8px !important;
 
-      padding: 10px 15px;
-      border: 1px solid rgba(160, 175, 195, 0.3);
-      border-radius: 10px;
+      width: fit-content !important;
+      min-width: 0 !important;
+      max-width: 150px !important;
+      height: auto !important;
+      min-height: 0 !important;
 
-      background: rgba(24, 29, 38, 0.78);
-      color: #e8edf4;
+      margin: 0 !important;
+      padding: 10px 14px !important;
 
-      font-family: inherit;
-      font-size: 13px;
-      font-weight: 500;
+      border: 1px solid rgba(165,180,200,.35) !important;
+      border-radius: 10px !important;
 
-      backdrop-filter: blur(14px);
-      -webkit-backdrop-filter: blur(14px);
+      background: rgba(22,27,35,.92) !important;
+      color: #edf1f6 !important;
 
-      cursor: pointer;
-      transition: background 0.2s, border-color 0.2s;
-    }
+      font: 500 13px/1.2 Arial, sans-serif !important;
+      letter-spacing: 0 !important;
+      text-transform: none !important;
+      white-space: nowrap !important;
 
-    .cg-back-button svg {
-      width: 16px;
-      height: 16px;
-      stroke: #eea16c;
+      box-shadow: 0 8px 24px rgba(0,0,0,.28) !important;
+
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+
+      cursor: pointer !important;
+      transform: none !important;
     }
 
     .cg-back-button:hover {
-      background: rgba(43, 51, 63, 0.96);
-      border-color: rgba(238, 161, 108, 0.6);
+      border-color: rgba(238,161,108,.75) !important;
+      background: rgba(37,45,56,.98) !important;
     }
 
     .cg-back-button:focus-visible {
-      outline: 2px solid #eea16c;
+      outline: 2px solid #eea16c !important;
       outline-offset: 3px;
+    }
+
+    .cg-back-button svg {
+      display: block !important;
+      flex: 0 0 16px !important;
+      width: 16px !important;
+      height: 16px !important;
+      stroke: #eea16c;
     }
 
     @media (max-width: 600px) {
       .cg-back-button {
-        bottom: 14px;
-        left: 14px;
-        padding: 9px 13px;
-        font-size: 12px;
+        inset: auto auto 14px 14px !important;
+        padding: 9px 12px !important;
       }
     }
   `;
@@ -75,7 +86,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   button.type = "button";
   button.className = "cg-back-button";
-  button.setAttribute("aria-label", "Назад");
+
+  button.setAttribute(
+    "aria-label",
+    "Вернуться на предыдущую страницу"
+  );
 
   button.innerHTML = `
     <svg viewBox="0 0 24 24"
@@ -91,10 +106,20 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 
   button.addEventListener("click", () => {
-    if (window.history.length > 1) {
+    let fromThisSite = false;
+
+    try {
+      fromThisSite =
+        new URL(document.referrer).origin ===
+        window.location.origin;
+    } catch (_) {
+      fromThisSite = false;
+    }
+
+    if (fromThisSite && window.history.length > 1) {
       window.history.back();
     } else {
-      window.location.href = "/";
+      window.location.assign("/");
     }
   });
 
