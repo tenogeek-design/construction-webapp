@@ -78,8 +78,7 @@ window.addEventListener("DOMContentLoaded", () => {
             <div class="lg-hero-layout">
               <section class="lg-intro" aria-labelledby="lgIntroTitle">
                 <span class="lg-eyebrow"><span class="lg-dot"></span> ЦИФРОВАЯ СТРОИТЕЛЬНАЯ ПЛАТФОРМА · WARSZAWA</span>
-                <h1 id="lgIntroTitle">Строительные проекты.<br><em>Под контролем.</em></h1>
-                <p class="lg-lead">CONSTRUCTION GROUP объединяет заказчиков, бригадиров и работников в одной системе.</p>
+<h1 id="lgIntroTitle">CONSTRUCTION GROUP<br><em>Строим будущее вместе.</em></h1>                <p class="lg-lead">CONSTRUCTION GROUP объединяет заказчиков, бригадиров и работников в одной системе.</p>
                 <p>Заказчику помогаем найти исполнителей, оформить заявку и следить за ходом работ.</p>
                 <p>Бригадиру — управлять командой и объектами, вести учёт времени, расходов и выплат.</p>
                 <p>Работнику — присоединиться к бригаде, получать задания, сдавать отчёты и видеть свой заработок.</p>
