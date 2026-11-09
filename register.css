@@ -332,3 +332,26 @@ body {
     font-size: 19px;
   }
 }
+/* CONSTRUCTION GROUP — PREMIUM BACKGROUND */
+
+body {
+  background:
+    linear-gradient(
+      90deg,
+      rgba(8, 11, 17, 0.88),
+      rgba(8, 11, 17, 0.48)
+    ),
+    url("/auth-background.jpg") center / cover fixed no-repeat !important;
+}
+
+.register-shell {
+  background: transparent !important;
+}
+
+.register-card {
+  background: rgba(19, 23, 30, 0.88) !important;
+  backdrop-filter: blur(22px);
+  border: 1px solid rgba(160, 177, 198, 0.22) !important;
+  border-radius: 20px !important;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.45);
+}
