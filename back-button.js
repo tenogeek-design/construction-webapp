@@ -7,46 +7,64 @@ document.addEventListener("DOMContentLoaded", () => {
     return;
   }
 
+  if (document.querySelector(".cg-back-button")) {
+    return;
+  }
+
   const style = document.createElement("style");
 
   style.textContent = `
     .cg-back-button {
       position: fixed;
-      bottom: 24px;
-      left: 24px;
+      bottom: 20px;
+      left: 20px;
       z-index: 99999;
+
       display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 13px 22px;
-      border: 1px solid rgba(238, 153, 84, 0.65);
-      border-radius: 12px;
-      background: rgba(22, 27, 35, 0.92);
-      color: #f5f5f5;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
+      justify-content: center;
+      gap: 9px;
+
+      padding: 10px 15px;
+      border: 1px solid rgba(160, 175, 195, 0.3);
+      border-radius: 10px;
+
+      background: rgba(24, 29, 38, 0.78);
+      color: #e8edf4;
+
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 500;
+
       backdrop-filter: blur(14px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-      transition: 0.2s;
+      -webkit-backdrop-filter: blur(14px);
+
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+
+    .cg-back-button svg {
+      width: 16px;
+      height: 16px;
+      stroke: #eea16c;
     }
 
     .cg-back-button:hover {
-      background: rgba(55, 65, 80, 0.96);
-      border-color: #f4a15f;
-      transform: translateX(-3px);
+      background: rgba(43, 51, 63, 0.96);
+      border-color: rgba(238, 161, 108, 0.6);
     }
 
-    .cg-back-button span {
-      color: #f4a15f;
-      font-size: 20px;
+    .cg-back-button:focus-visible {
+      outline: 2px solid #eea16c;
+      outline-offset: 3px;
     }
 
     @media (max-width: 600px) {
       .cg-back-button {
-        bottom: 16px;
-        left: 16px;
-        padding: 11px 17px;
+        bottom: 14px;
+        left: 14px;
+        padding: 9px 13px;
+        font-size: 12px;
       }
     }
   `;
@@ -57,20 +75,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   button.type = "button";
   button.className = "cg-back-button";
-  button.innerHTML = "<span>←</span> Назад";
+  button.setAttribute("aria-label", "Назад");
+
+  button.innerHTML = `
+    <svg viewBox="0 0 24 24"
+         fill="none"
+         stroke-width="2"
+         stroke-linecap="round"
+         stroke-linejoin="round"
+         aria-hidden="true">
+      <path d="M19 12H5"></path>
+      <path d="m12 19-7-7 7-7"></path>
+    </svg>
+    <span>Назад</span>
+  `;
 
   button.addEventListener("click", () => {
-    let sameSite = false;
-
-    try {
-      sameSite =
-        new URL(document.referrer).origin ===
-        window.location.origin;
-    } catch (error) {
-      sameSite = false;
-    }
-
-    if (sameSite && window.history.length > 1) {
+    if (window.history.length > 1) {
       window.history.back();
     } else {
       window.location.href = "/";
