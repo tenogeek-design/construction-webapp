@@ -138,20 +138,14 @@ document.addEventListener("DOMContentLoaded", async () => {
     setMessage("");
   }
 
-  switchButton.addEventListener("click", () => {
-    if (busy) return;
+switchButton.addEventListener("click", () => {
+  if (busy) return;
 
-    mode = mode === "login" ? "register" : "login";
+  const allowedRoles = ["client", "worker", "foreman"];
 
-    const url = new URL(window.location.href);
+  const role = allowedRoles.includes(requestedRole)
+    ? requestedRole
+    : "client";
 
-    if (mode === "register") {
-      url.searchParams.set("mode", "register");
-    } else {
-      url.searchParams.delete("mode");
-    }
-
-    window.history.replaceState({}, "", url);
-     // Показываем форму входа без автоматического перехода
-  renderMode();
+  window.location.href = "/register.html?role=" + role;
 });
