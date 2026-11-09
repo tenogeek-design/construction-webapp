@@ -23,6 +23,14 @@ const roleFromUrl = new URLSearchParams(
 ).get("role");
 
 let selectedRole = allowedRoles.includes(roleFromUrl)
+  // Роль уже выбрана на главной странице
+const roleAlreadySelected = allowedRoles.includes(roleFromUrl);
+
+if (roleAlreadySelected) {
+  document.querySelectorAll(".account-type").forEach(button => {
+    button.hidden = true;
+  });
+}
   ? roleFromUrl
   : "client";  let activeSession = null;
   let busy = false;
