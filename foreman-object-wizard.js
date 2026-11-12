@@ -6,6 +6,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const key = "cg_object_draft_v1";
   const fresh = () => ({name:"",address:"",start:"",finish:"",note:"",stages:[]});
   let state=fresh(),step=0,visible=false,lang="pl",message="";
+  let proposals=[];
+  const apiClient=window.supabase?.createClient("https://yepxskcfxyiyqqhmdpve.supabase.co","sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH");
   try { const saved=JSON.parse(localStorage.getItem(key)); if(saved&&typeof saved.name==="string"&&Array.isArray(saved.stages))state=saved; }catch(e){}
   const tr={
     pl:{title:"Rejestracja obiektu",subtitle:"Obiekt · etapy · pozycje robót",open:"Utwórz obiekt",close:"Zamknij",name:"Nazwa obiektu",address:"Adres obiektu",start:"Data rozpoczęcia",finish:"Planowany koniec",note:"Opis",stages:"Etapy i pozycje",summary:"Podsumowanie",addstage:"Dodaj etap",stage:"Nazwa etapu",position:"Pozycja robót",qty:"Ilość",unit:"Jedn.",rate:"Stawka zł",addposition:"Dodaj pozycję",remove:"Usuń",save:"Zapisz szkic",next:"Dalej",back:"Wstecz",total:"Wartość szacunkowa",approval:"Oczekuje na zatwierdzenie OWNER",blocked:"Wysłanie do OWNER zostanie włączone po podłączeniu bezpiecznej operacji w bazie.",noteDraft:"Szkic przechowywany wyłącznie w tej przeglądarce. Obiekt nie został jeszcze utworzony w bazie.",required:"Podaj nazwę i adres obiektu.",wrong:"Wpisz poprawną nazwę, ilość i stawkę.",saved:"Szkic zapisano.",empty:"Brak etapów / pozycji."},
@@ -15,6 +17,42 @@ document.addEventListener("DOMContentLoaded", () => {
   const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const money=n=>new Intl.NumberFormat(lang==="pl"?"pl-PL":"uk-UA",{maximumFractionDigits:2}).format(n)+" zł";
   const sum=()=>state.stages.reduce((x,s)=>x+s.items.reduce((v,p)=>v+p.qty*p.rate,0),0);
+
+  async function api(method,payload){
+    if(!apiClient)throw Error("Supabase unavailable");
+    const {data:{session}}=await apiClient.auth.getSession();
+    if(!session?.access_token)throw Error(lang==="pl"?"Zaloguj się.":"Увійдіть у кабінет.");
+    const response=await fetch("/api/foreman-objects",{
+      method,
+      headers:{"Authorization":"Bearer "+session.access_token,...(method==="POST"?{"Content-Type":"application/json"}:{})},
+      ...(method==="POST"?{body:JSON.stringify(payload)}:{})
+    });
+    const result=await response.json().catch(()=>({}));
+    if(!response.ok)throw Error(result.error||"Server unavailable");
+    return result;
+  }
+  async function loadProposals(){
+    try{const result=await api("GET");proposals=result.items||[];render()}catch(e){/* Supabase migration might be pending */ }
+  }
+  async function submitObject(){
+    sync();
+    if(!state.name.trim()||!state.address.trim()||!state.stages.some(x=>x.items.length)){
+      message=lang==="pl"?"Dodaj nazwę, adres i pozycję pracy.":"Вкажіть назву, адресу та позицію роботи.";render();return;
+    }
+    const button=section.querySelector("#ow-next");if(button)button.disabled=true;
+    try{
+      const result=await api("POST",{action:"submit",object:state});
+      message=(lang==="pl"?"Wysłano projekt OWNER: ":"Надіслано OWNER: ")+result.proposal.id.slice(0,8);
+      state=fresh();step=0;visible=false;
+      try{localStorage.removeItem(key)}catch(e){}
+      render();await loadProposals();
+    }catch(e){message=e.message;render();}
+  }
+  function proposalList(){
+    if(!proposals.length)return "";
+    return '<div class="ow-panel"><h3>'+(lang==="pl"?"Moje wnioski":"Мої заявки на об’єкти")+'</h3>'+
+      proposals.map(p=>'<div class="ow-stage"><b>'+esc(p.name)+'</b><div class="ow-notice">'+esc(p.status)+' · '+esc(p.address)+' · '+money(p.estimated_total)+'</div>'+(p.owner_comment?'<p class="ow-notice">'+esc(p.owner_comment)+'</p>':"")+'</div>').join("")+'</div>';
+  }
   const section=document.createElement("div");
   section.id="cg-object-wizard";
   const css=document.createElement("style");
@@ -177,13 +215,13 @@ function updatePreview(i){
     return '<div class="ow-summary"><h3>'+esc(state.name)+'</h3><p>'+esc(state.address)+'</p><p>'+esc(state.start)+' — '+esc(state.finish)+'</p><p>'+esc(state.note)+'</p></div>'+state.stages.map(s=>'<div class="ow-stage"><b>'+esc(s.name)+'</b><div class="ow-notice">'+s.items.length+' · '+money(s.items.reduce((v,p)=>v+p.qty*p.rate,0))+'</div></div>').join("")+'<div class="ow-summary"><p>'+t("total")+'</p><strong>'+money(sum())+'</strong></div><div class="ow-notice"><b>'+t("approval")+'</b><p>'+t("blocked")+'</p></div>';
   }
   function render(){
-    section.innerHTML='<div class="ow-head"><div><div class="ow-tag">CONSTRUCTION GROUP · FOREMAN</div><h3>'+t("title")+'</h3><p>'+t("subtitle")+'</p><div class="ow-language"><button class="'+(lang==="pl"?"selected":"")+'" data-lang="pl">PL</button><button class="'+(lang==="ua"?"selected":"")+'" data-lang="ua">UA</button></div></div><button id="ow-toggle" class="ow-primary">'+(visible?t("close"):t("open"))+'</button></div>'+(visible?'<div class="ow-panel"><div class="ow-steps">'+["name","stages","summary"].map((x,i)=>'<div class="ow-step '+(i===step?"active":"")+'">'+(i+1)+'. '+t(x)+'</div>').join("")+'</div>'+page()+'<div class="ow-actions"><div style="display:flex;gap:8px"><button id="ow-back">'+(step===0?t("close"):t("back"))+'</button><button id="ow-save">'+t("save")+'</button></div><button class="ow-primary" id="ow-next" '+(step===2?"disabled":"")+'>'+(step===2?t("approval"):t("next"))+'</button></div><div class="ow-notice">'+t("noteDraft")+'</div><p class="ow-notice" role="status">'+esc(message)+'</p></div>':"");
+    section.innerHTML='<div class="ow-head"><div><div class="ow-tag">CONSTRUCTION GROUP · FOREMAN</div><h3>'+t("title")+'</h3><p>'+t("subtitle")+'</p><div class="ow-language"><button class="'+(lang==="pl"?"selected":"")+'" data-lang="pl">PL</button><button class="'+(lang==="ua"?"selected":"")+'" data-lang="ua">UA</button></div></div><button id="ow-toggle" class="ow-primary">'+(visible?t("close"):t("open"))+'</button></div>'+(visible?'<div class="ow-panel"><div class="ow-steps">'+["name","stages","summary"].map((x,i)=>'<div class="ow-step '+(i===step?"active":"")+'">'+(i+1)+'. '+t(x)+'</div>').join("")+'</div>'+page()+'<div class="ow-actions"><div style="display:flex;gap:8px"><button id="ow-back">'+(step===0?t("close"):t("back"))+'</button><button id="ow-save">'+t("save")+'</button></div><button class="ow-primary" id="ow-next">'+(step===2?(lang==="pl"?"Wyślij do OWNER":"Надіслати OWNER"):t("next"))+'</button></div><div class="ow-notice">'+t("noteDraft")+'</div><p class="ow-notice" role="status">'+esc(message)+'</p></div>':"")+proposalList();
     section.querySelectorAll("[data-lang]").forEach(b=>b.onclick=()=>{sync();lang=b.dataset.lang;render()});
     section.querySelector("#ow-toggle").onclick=()=>{sync();visible=!visible;render()};
     if(!visible)return;
     section.querySelector("#ow-save").onclick=()=>{sync();store();render()};
     section.querySelector("#ow-back").onclick=()=>{sync();if(step===0)visible=false;else step--;render()};
-    section.querySelector("#ow-next").onclick=()=>{sync();if(step===0&&(!state.name.trim()||!state.address.trim())){message=t("required");render();return}if(step<2){step++;message="";render()}};
+    section.querySelector("#ow-next").onclick=()=>{if(step===2){submitObject();return}sync();if(step===0&&(!state.name.trim()||!state.address.trim())){message=t("required");render();return}if(step<2){step++;message="";render()}};
     if(step===1){
 
       section.querySelectorAll("[data-stage]").forEach(row=>{
@@ -218,5 +256,6 @@ function updatePreview(i){
     }
   }
   render();root.prepend(section);
+  loadProposals();
   new MutationObserver(()=>{if(!root.contains(section))root.prepend(section)}).observe(root,{childList:true});
 });
