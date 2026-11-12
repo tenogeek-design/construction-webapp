@@ -232,6 +232,12 @@ document.addEventListener("DOMContentLoaded",()=>{
    holder.querySelectorAll("[data-work-action]").forEach(b=>b.onclick=()=>reviewWork(b.dataset.report,b.dataset.workAction));
    holder.querySelectorAll("[data-cash-action]").forEach(b=>b.onclick=()=>reviewCash(b.dataset.report,b.dataset.cashAction));
  }
+ document.addEventListener("cg:daily-report-position",event=>{
+   const positionId=event.detail?.positionId;
+   if(!positionId||!findPosition(positionId))return;
+   openEditor({id:null,work_date:localToday(),description:"",lines:[{position_id:positionId}],
+     extras:[],cash_requested:false,cash_requested_amount:"",cash_purpose:"",photos:[]});
+ });
  function openEditor(r){
    editing=r?{...r}:{id:null,work_date:localToday(),description:"",lines:[{}],cash_requested:false,cash_requested_amount:"",cash_purpose:"",photos:[]};
    renderEditor();
