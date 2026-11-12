@@ -56,6 +56,10 @@ document.addEventListener("DOMContentLoaded", () => {
   #cg-object-wizard .ow-progress input{width:108px}
   #cg-object-wizard .ow-meter{height:6px;border-radius:8px;background:#4d5e70;margin-top:9px;max-width:350px;overflow:hidden}
   #cg-object-wizard .ow-meter>div{height:100%;background:#f0a570}
+  #cg-object-wizard .ow-calc{display:flex;align-items:center;justify-content:space-between;gap:14px;background:#152b40;border:1px solid #5d7891;border-radius:12px;padding:13px 16px;margin:13px 0}
+  #cg-object-wizard .ow-calc span{font-size:13px;color:#d2e0ed}
+  #cg-object-wizard .ow-calc strong{font-size:24px;color:#f1ac78}
+  #cg-object-wizard .ow-grand{position:sticky;bottom:8px;background:linear-gradient(120deg,#132f48,#25425b);z-index:2;box-shadow:0 10px 25px #0007}
   #cg-object-wizard .ow-actions{display:flex;justify-content:space-between;flex-wrap:wrap;gap:9px;border-top:1px solid #41576e;margin-top:16px;padding-top:17px}
   #cg-object-wizard .ow-notice{font-size:12px;color:#b9c9d9;line-height:1.6;margin:15px 0}
   #cg-object-wizard .ow-summary{background:#20364c;border:1px solid #4d6b87;border-radius:13px;padding:18px;margin:14px 0}
@@ -147,16 +151,29 @@ document.addEventListener("DOMContentLoaded", () => {
       output.innerHTML='<div class="ow-picked">'+
         (lang==="pl"?"Wybrano: ":"Обрано: ")+esc(job[lang])+
         ' · '+(lang==="pl"?"wpisz ilość i dodaj pozycję":"вкажіть кількість та додайте позицію")+'</div>';
+      updatePreview(i);
       row.querySelector("[data-pqty]").focus();
     });
   }
+
+function stageSummary(st){return '<div class="ow-calc"><span>'+(lang==="pl"?"Razem etap":"Разом етап")+'</span><strong>'+money(st.items.reduce((a,p)=>a+p.qty*p.rate,0))+'</strong></div>';}
+function wholeSummary(){return '<div class="ow-calc ow-grand"><span>'+(lang==="pl"?"Razem cały obiekt":"Всього по об’єкту")+'</span><strong>'+money(sum())+'</strong></div>';}
+function livePreview(i){return '<div class="ow-calc" data-preview="'+i+'"><span>'+(lang==="pl"?"Koszt nowej pozycji":"Вартість нової позиції")+'</span><strong>—</strong></div>';}
+function updatePreview(i){
+  const row=section.querySelector('[data-stage="'+i+'"]'),box=section.querySelector('[data-preview="'+i+'"]');
+  if(!row||!box)return;
+  const q=row.querySelector("[data-pqty]"),r=row.querySelector("[data-prate]");
+  const quantity=Number(q.value),rate=Number(r.value);
+  box.querySelector("strong").textContent=q.value!==""&&r.value!==""&&quantity>0&&rate>=0&&Number.isFinite(quantity)&&Number.isFinite(rate)?money(quantity*rate):"—";
+}
+
   function page(){
     if(step===0)return '<div class="ow-grid">'+field("name")+field("address")+field("start","date")+field("finish","date")+'</div><div class="ow-field"><label for="ow-note">'+t("note")+'</label><textarea id="ow-note">'+esc(state.note)+'</textarea></div>';
     if(step===1)return state.stages.map((s,i)=>'<div class="ow-stage"><div class="ow-stage-title"><b>'+(i+1)+'. '+esc(s.name)+'</b><button data-remove-stage="'+i+'">'+t("remove")+'</button></div>'+s.items.map((p,j)=>{
       const done=Number(p.done||0),planned=Number(p.qty);
       const percent=planned>0?Math.max(0,Math.min(100,done/planned*100)):0;
       return '<div class="ow-position"><div style="flex:1"><b>'+esc(p.name)+'</b><small>'+esc(p.qty)+' '+esc(p.unit)+' × '+money(p.rate)+'</small><small>'+(lang==="pl"?"Wykonano":"Виконано")+': '+done+' / '+planned+' '+esc(p.unit)+'</small><div class="ow-meter"><div style="width:'+percent+'%"></div></div><div class="ow-progress"><input data-progress-qty="'+i+':'+j+'" type="number" min=".01" step=".01" placeholder="+ '+esc(p.unit)+'"><button type="button" data-progress-add="'+i+':'+j+'">'+(lang==="pl"?"Dodaj wykonanie":"Додати виконання")+'</button></div><small>'+(p.logs||[]).slice(-3).map(x=>esc(x.date)+': +'+esc(x.qty)).join(" · ")+'</small></div><button data-remove-position="'+i+':'+j+'">'+t("remove")+'</button></div>';
-    }).join("")+catalogSearch(i)+'<div class="ow-pos-form" data-stage="'+i+'"><input data-pname placeholder="'+t("position")+'"><input data-pqty type="number" min=".01" step=".01" placeholder="'+t("qty")+'"><select data-punit><option>m²</option><option>mb</option><option>szt.</option><option>m³</option><option>kpl.</option><option>godz.</option><option>pkt.</option></select><input data-prate type="number" min="0" step=".01" placeholder="'+t("rate")+'"></div><button style="margin-top:10px" data-add-position="'+i+'">'+t("addposition")+'</button></div>').join("")+'<div class="ow-stage"><label for="ow-new-stage">'+t("stage")+'</label><input id="ow-new-stage" maxlength="120"><button style="margin-top:10px" id="ow-add-stage">'+t("addstage")+'</button></div>';
+    }).join("")+stageSummary(s)+catalogSearch(i)+'<div class="ow-pos-form" data-stage="'+i+'"><input data-pname placeholder="'+t("position")+'"><input data-pqty type="number" min=".01" step=".01" placeholder="'+t("qty")+'"><select data-punit><option>m²</option><option>mb</option><option>szt.</option><option>m³</option><option>kpl.</option><option>godz.</option><option>pkt.</option></select><input data-prate type="number" min="0" step=".01" placeholder="'+t("rate")+'"></div>'+livePreview(i)+'<button style="margin-top:10px" data-add-position="'+i+'">'+t("addposition")+'</button></div>').join("")+'<div class="ow-stage"><label for="ow-new-stage">'+t("stage")+'</label><input id="ow-new-stage" maxlength="120"><button style="margin-top:10px" id="ow-add-stage">'+t("addstage")+'</button></div>'+wholeSummary();
     return '<div class="ow-summary"><h3>'+esc(state.name)+'</h3><p>'+esc(state.address)+'</p><p>'+esc(state.start)+' — '+esc(state.finish)+'</p><p>'+esc(state.note)+'</p></div>'+state.stages.map(s=>'<div class="ow-stage"><b>'+esc(s.name)+'</b><div class="ow-notice">'+s.items.length+' · '+money(s.items.reduce((v,p)=>v+p.qty*p.rate,0))+'</div></div>').join("")+'<div class="ow-summary"><p>'+t("total")+'</p><strong>'+money(sum())+'</strong></div><div class="ow-notice"><b>'+t("approval")+'</b><p>'+t("blocked")+'</p></div>';
   }
   function render(){
@@ -169,6 +186,11 @@ document.addEventListener("DOMContentLoaded", () => {
     section.querySelector("#ow-next").onclick=()=>{sync();if(step===0&&(!state.name.trim()||!state.address.trim())){message=t("required");render();return}if(step<2){step++;message="";render()}};
     if(step===1){
 
+      section.querySelectorAll("[data-stage]").forEach(row=>{
+        const i=Number(row.dataset.stage);
+        for(const input of row.querySelectorAll("[data-pqty],[data-prate]"))input.addEventListener("input",()=>updatePreview(i));
+        updatePreview(i);
+      });
       section.querySelectorAll("[data-catalog]").forEach(el=>{
         const i=Number(el.dataset.catalog);
         el.querySelector("[data-work-search]").addEventListener("input",()=>drawCatalog(i));
