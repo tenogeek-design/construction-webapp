@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   const num=n=>new Intl.NumberFormat("pl-PL",{maximumFractionDigits:2}).format(Number(n||0));
   const html=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
   const status=(name)=>names[name]||name;
-  let project=null,stages=[],isOwner=false,employees=[],brigades=[],activeTab="overview",query="",busy=false;
+  let project=null,stages=[],isOwner=false,employees=[],brigades=[],activeTab=(["overview","stages","team","reports"].includes(location.hash.slice(1))?location.hash.slice(1):"overview"),query="",busy=false;
   const setMessage=(text,error=false)=>{const el=$("message");el.textContent=text;el.style.color=error?"#ffc3bd":"#c3d6e6";el.hidden=false;};
   const onError=e=>setMessage(e?.message||"Ошибка загрузки",true);
   if(!db){setMessage("Не удалось загрузить систему авторизации.",true);return;}
