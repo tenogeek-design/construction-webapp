@@ -16,12 +16,22 @@ export default async function handler(req,res){
   const [ps,ss,rs]=await Promise.all([
    db.from("projects").select("id").limit(150),
    db.from("project_work_stages").select("id,project_id").limit(5000),
-   db.from("daily_work_reports").select("id,project_id,status,work_date,cash_requested,cash_status,created_at").order("created_at",{ascending:false}).limit(5000)
+   db.from("daily_work_reports").select("id,project_id,status,work_date,cash_requested,cash_requested_amount,cash_status,created_at").order("created_at",{ascending:false}).limit(5000)
   ]);
   if(ps.error||ss.error||rs.error)throw ps.error||ss.error||rs.error;
   const stageIds=(ss.data||[]).map(x=>x.id);
   const wr=stageIds.length?await db.from("project_work_positions").select("id,stage_id,quantity,rate,completed_quantity").in("stage_id",stageIds).limit(10000):{data:[],error:null};
   if(wr.error)throw wr.error;
+  const pendingIds=(rs.data||[]).filter(r=>r.status==="submitted").map(r=>r.id);
+  const [reportLines,reportExtras]=pendingIds.length?await Promise.all([
+   db.from("daily_work_report_items").select("report_id,position_id,quantity").in("report_id",pendingIds).limit(10000),
+   db.from("daily_work_report_extras").select("report_id,quantity,unit_price").in("report_id",pendingIds).limit(10000)
+  ]):[{data:[],error:null},{data:[],error:null}];
+  if(reportLines.error||reportExtras.error)throw reportLines.error||reportExtras.error;
+  const rates=new Map((wr.data||[]).map(x=>[x.id,Number(x.rate)||0]));
+  const pendingValues=new Map();
+  for(const x of reportLines.data||[])pendingValues.set(x.report_id,(pendingValues.get(x.report_id)||0)+(Number(x.quantity)||0)*(rates.get(x.position_id)||0));
+  for(const x of reportExtras.data||[])pendingValues.set(x.report_id,(pendingValues.get(x.report_id)||0)+(Number(x.quantity)||0)*(Number(x.unit_price)||0));
   const byStage=new Map((ss.data||[]).map(s=>[s.id,s.project_id]));
   const result=(ps.data||[]).map(p=>{
    let estimate=0,completed=0,positions=0;
@@ -33,7 +43,7 @@ export default async function handler(req,res){
    const latest=reports.find(r=>r.status!=="draft");
    return {id:p.id,estimate:Math.round(estimate*100)/100,completed:Math.round(completed*100)/100,
     progress:estimate>0?Math.min(100,Math.max(0,Math.round(completed/estimate*100))):null,
-    positions,pending:reports.filter(r=>r.status==="submitted").length,
+    positions,pending:awaiting.length,pendingValue:Math.round(pendingValue*100)/100,cashRequested:Math.round(cashRequested*100)/100,
     cashPending:reports.filter(r=>r.cash_requested&&r.cash_status==="pending").length,
     lastReport:latest?.work_date||null,reportCount:reports.filter(r=>r.status!=="draft").length};
   });
