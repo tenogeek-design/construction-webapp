@@ -4,14 +4,14 @@ document.addEventListener("DOMContentLoaded", () => {
   const root = document.getElementById("cgForemanProjects");
   if (!root || document.getElementById("cg-object-wizard")) return;
   const key = "cg_object_draft_v1";
-  const fresh = () => ({name:"",address:"",start:"",finish:"",note:"",stages:[]});
+  const fresh = () => ({name:"",city:"Warszawa",address:"",start:"",finish:"",note:"",stages:[]});
   let state=fresh(),step=0,visible=false,lang="pl",message="";
   let proposals=[];
   const apiClient=window.supabase?.createClient("https://yepxskcfxyiyqqhmdpve.supabase.co","sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH");
   try { const saved=JSON.parse(localStorage.getItem(key)); if(saved&&typeof saved.name==="string"&&Array.isArray(saved.stages))state=saved; }catch(e){}
   const tr={
-    pl:{title:"Rejestracja obiektu",subtitle:"Obiekt · etapy · pozycje robót",open:"Utwórz obiekt",close:"Zamknij",name:"Nazwa obiektu",address:"Adres obiektu",start:"Data rozpoczęcia",finish:"Planowany koniec",note:"Opis",stages:"Etapy i pozycje",summary:"Podsumowanie",addstage:"Dodaj etap",stage:"Nazwa etapu",position:"Pozycja robót",qty:"Ilość",unit:"Jedn.",rate:"Stawka zł",addposition:"Dodaj pozycję",remove:"Usuń",save:"Zapisz szkic",next:"Dalej",back:"Wstecz",total:"Wartość szacunkowa",approval:"Oczekuje na zatwierdzenie OWNER",blocked:"Wysłanie do OWNER zostanie włączone po podłączeniu bezpiecznej operacji w bazie.",noteDraft:"Szkic przechowywany wyłącznie w tej przeglądarce. Obiekt nie został jeszcze utworzony w bazie.",required:"Podaj nazwę i adres obiektu.",wrong:"Wpisz poprawną nazwę, ilość i stawkę.",saved:"Szkic zapisano.",empty:"Brak etapów / pozycji."},
-    ua:{title:"Реєстрація об’єкта",subtitle:"Об’єкт · етапи · позиції робіт",open:"Створити об’єкт",close:"Закрити",name:"Назва об’єкта",address:"Адреса об’єкта",start:"Дата початку",finish:"Планове завершення",note:"Опис",stages:"Етапи та позиції",summary:"Підсумок",addstage:"Додати етап",stage:"Назва етапу",position:"Позиція робіт",qty:"Кількість",unit:"Од.",rate:"Ставка zł",addposition:"Додати позицію",remove:"Видалити",save:"Зберегти чернетку",next:"Далі",back:"Назад",total:"Попередня вартість",approval:"Очікує підтвердження OWNER",blocked:"Надсилання OWNER запрацює після підключення захищеної операції в базі.",noteDraft:"Чернетка зберігається лише в цьому браузері. Об’єкт ще не створено в базі.",required:"Вкажіть назву й адресу об’єкта.",wrong:"Вкажіть правильну назву, кількість і ставку.",saved:"Чернетку збережено.",empty:"Етапів / позицій немає."}
+    pl:{title:"Rejestracja obiektu",subtitle:"Obiekt · etapy · pozycje robót",open:"Utwórz obiekt",close:"Zamknij",name:"Nazwa obiektu",city:"Miasto",address:"Adres obiektu",start:"Data rozpoczęcia",finish:"Planowany koniec",note:"Opis",stages:"Etapy i pozycje",summary:"Podsumowanie",addstage:"Dodaj etap",stage:"Nazwa etapu",position:"Pozycja robót",qty:"Ilość",unit:"Jedn.",rate:"Stawka zł",addposition:"Dodaj pozycję",remove:"Usuń",save:"Zapisz szkic",next:"Dalej",back:"Wstecz",total:"Wartość szacunkowa",approval:"Oczekuje na zatwierdzenie OWNER",blocked:"Wysłanie do OWNER zostanie włączone po podłączeniu bezpiecznej operacji w bazie.",noteDraft:"Szkic przechowywany wyłącznie w tej przeglądarce. Obiekt nie został jeszcze utworzony w bazie.",required:"Podaj nazwę i adres obiektu.",wrong:"Wpisz poprawną nazwę, ilość i stawkę.",saved:"Szkic zapisano.",empty:"Brak etapów / pozycji."},
+    ua:{title:"Реєстрація об’єкта",subtitle:"Об’єкт · етапи · позиції робіт",open:"Створити об’єкт",close:"Закрити",name:"Назва об’єкта",city:"Місто",address:"Адреса об’єкта",start:"Дата початку",finish:"Планове завершення",note:"Опис",stages:"Етапи та позиції",summary:"Підсумок",addstage:"Додати етап",stage:"Назва етапу",position:"Позиція робіт",qty:"Кількість",unit:"Од.",rate:"Ставка zł",addposition:"Додати позицію",remove:"Видалити",save:"Зберегти чернетку",next:"Далі",back:"Назад",total:"Попередня вартість",approval:"Очікує підтвердження OWNER",blocked:"Надсилання OWNER запрацює після підключення захищеної операції в базі.",noteDraft:"Чернетка зберігається лише в цьому браузері. Об’єкт ще не створено в базі.",required:"Вкажіть назву й адресу об’єкта.",wrong:"Вкажіть правильну назву, кількість і ставку.",saved:"Чернетку збережено.",empty:"Етапів / позицій немає."}
   };
   const t=k=>tr[lang][k];
   const esc=x=>String(x??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -36,7 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   async function submitObject(){
     sync();
-    if(!state.name.trim()||!state.address.trim()||!state.stages.some(x=>x.items.length)){
+    if(!state.name.trim()||!state.city.trim()||!state.address.trim()||!state.stages.some(x=>x.items.length)){
       message=lang==="pl"?"Dodaj nazwę, adres i pozycję pracy.":"Вкажіть назву, адресу та позицію роботи.";render();return;
     }
     const button=section.querySelector("#ow-next");if(button)button.disabled=true;
@@ -109,7 +109,7 @@ document.addEventListener("DOMContentLoaded", () => {
   document.head.append(css);
   function store(){try{localStorage.setItem(key,JSON.stringify(state));message=t("saved")}catch(e){message="Local storage unavailable"}}
   function field(id,type="text"){return '<div class="ow-field"><label for="ow-'+id+'">'+t(id)+'</label><input id="ow-'+id+'" type="'+type+'" value="'+esc(state[id])+'"></div>'}
-  function sync(){if(!visible||step!==0)return;for(const id of ["name","address","start","finish"]){const el=section.querySelector("#ow-"+id);if(el)state[id]=el.value}const n=section.querySelector("#ow-note");if(n)state.note=n.value}
+  function sync(){if(!visible||step!==0)return;for(const id of ["name","city","address","start","finish"]){const el=section.querySelector("#ow-"+id);if(el)state[id]=el.value}const n=section.querySelector("#ow-note");if(n)state.note=n.value}
 
   const catalog = window.CG_WORK_CATALOG || {};
   const categories = {
@@ -206,7 +206,7 @@ function updatePreview(i){
 }
 
   function page(){
-    if(step===0)return '<div class="ow-grid">'+field("name")+field("address")+field("start","date")+field("finish","date")+'</div><div class="ow-field"><label for="ow-note">'+t("note")+'</label><textarea id="ow-note">'+esc(state.note)+'</textarea></div>';
+    if(step===0)return '<div class="ow-grid">'+field("name")+field("city")+field("address")+field("start","date")+field("finish","date")+'</div><div class="ow-field"><label for="ow-note">'+t("note")+'</label><textarea id="ow-note">'+esc(state.note)+'</textarea></div>';
     if(step===1)return state.stages.map((s,i)=>'<div class="ow-stage"><div class="ow-stage-title"><b>'+(i+1)+'. '+esc(s.name)+'</b><button data-remove-stage="'+i+'">'+t("remove")+'</button></div>'+s.items.map((p,j)=>{
       const done=Number(p.done||0),planned=Number(p.qty);
       const percent=planned>0?Math.max(0,Math.min(100,done/planned*100)):0;
@@ -221,7 +221,7 @@ function updatePreview(i){
     if(!visible)return;
     section.querySelector("#ow-save").onclick=()=>{sync();store();render()};
     section.querySelector("#ow-back").onclick=()=>{sync();if(step===0)visible=false;else step--;render()};
-    section.querySelector("#ow-next").onclick=()=>{if(step===2){submitObject();return}sync();if(step===0&&(!state.name.trim()||!state.address.trim())){message=t("required");render();return}if(step<2){step++;message="";render()}};
+    section.querySelector("#ow-next").onclick=()=>{if(step===2){submitObject();return}sync();if(step===0&&(!state.name.trim()||!state.city.trim()||!state.address.trim())){message=t("required");render();return}if(step<2){step++;message="";render()}};
     if(step===1){
 
       section.querySelectorAll("[data-stage]").forEach(row=>{
