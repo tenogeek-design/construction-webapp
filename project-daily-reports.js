@@ -165,6 +165,23 @@ document.addEventListener("DOMContentLoaded",()=>{
        const p=findPosition(l.position_id);
        return '<div class="dailyEntry"><strong>'+esc(p?.name||"Позиция")+'</strong><span>+'+num(l.quantity)+' '+esc(p?.unit||"")+'</span></div>';
       }).join("");
+      const extras=(r.extras||[]).map(x=>
+       '<div class="dailyEntry"><strong>'+esc(x.work_name)+
+       '<small class="note"> · '+(x.source==="catalog"?"Из прайса":"Своя работа")+'</small></strong>'+
+       '<span>+'+num(x.quantity)+' '+esc(x.unit)+
+       (x.unit_price!==null?' · '+money(Number(x.quantity)*Number(x.unit_price)):' · цена не указана')+
+       '</span></div>').join("");
+      const pricedPlan=(r.lines||[]).reduce((sum,x)=>{
+        const p=findPosition(x.position_id);return sum+(p?Number(x.quantity)*Number(p.rate):0);
+      },0);
+      const pricedExtra=(r.extras||[]).reduce((sum,x)=>
+        sum+(x.unit_price===null?0:Number(x.quantity)*Number(x.unit_price)),0);
+      const hasAnyRate=(r.lines||[]).some(x=>findPosition(x.position_id))||
+        (r.extras||[]).some(x=>x.unit_price!==null);
+      const lineEstimate=hasAnyRate?
+        '<div class="dailyEstimate">Ориентировочная стоимость указанных работ: <strong>'+
+        money(pricedPlan+pricedExtra)+'</strong><div class="note">Не выплата, не утверждённое изменение сметы.'+
+        ' Цены из прайса — ориентир; позиции вне объекта требуют отдельного согласования.</div></div>':"";
       const photos=(r.photos||[]).map(photo=>photo.url?
        '<a href="'+esc(photo.url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(photo.original_name)+'"><img loading="lazy" src="'+esc(photo.url)+'" alt="Фото выполненной работы"></a>':"").join("");
       const canEdit=!workspace.isOwner&&["draft","rejected","changes_requested"].includes(r.status)&&["active","paused"].includes(workspace.project.status);
@@ -175,7 +192,7 @@ document.addEventListener("DOMContentLoaded",()=>{
        (canEdit?'<button type="button" data-edit="'+esc(r.id)+'">Продолжить черновик</button>':
        '<span class="chip '+(r.status==="approved"?"":"planned")+'">'+esc(workStatus[r.status]||r.status)+'</span>')+'</div>'+
        (r.description?'<p class="note" style="margin:8px 0">'+esc(r.description)+'</p>':"")+
-       lines+'<div class="dailyPhotoStrip">'+photos+'</div>'+
+       lines+extras+lineEstimate+'<div class="dailyPhotoStrip">'+photos+'</div>'+
        (r.cash_requested?'<div class="dailyCash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b>'+
         '<div class="note">'+esc(r.cash_purpose||"")+' · '+esc(cashStatus[r.cash_status]||r.cash_status)+
          (r.cash_approved_amount!==null?' · Решение OWNER: '+money(r.cash_approved_amount):"")+
