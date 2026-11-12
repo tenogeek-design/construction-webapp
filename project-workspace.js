@@ -36,33 +36,40 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   function renderHeader(){
     const t=totals(),p=project;
-    return '<div class="hero"><div><div class="kicker">CONSTRUCTION GROUP · OBIEKT</div><h1>'+html(p.name)+'</h1><p>'+html([p.city,p.street,p.building_number].filter(Boolean).join(", "))+'</p></div><span class="chip '+html(p.status)+'">'+html(status(p.status))+'</span></div>'+
-     '<div class="metrics">'+
-     '<div class="metric"><small>Смета по позициям</small><strong class="orange">'+fmt(t.plan)+'</strong></div>'+
-     '<div class="metric"><small>Объём выполненных работ</small><strong>'+fmt(t.done)+'</strong></div>'+
-     '<div class="metric"><small>Выполнено по стоимости</small><strong>'+t.perc+'%</strong></div>'+
-     '<div class="metric"><small>Этапов / позиций</small><strong>'+stages.length+' / '+t.pieces+'</strong></div></div>';
+    const address=[p.city,p.street,p.building_number,p.apartment_number].filter(Boolean).join(", ");
+    return '<div class="hero"><div class="hero-text"><div class="kicker">CONSTRUCTION GROUP <span class="kicker-dot">/</span> ОБЪЕКТ</div>'+
+      '<h1>'+html(p.name)+'</h1><p class="hero-address">'+html(address||"Адрес не указан")+'</p></div>'+
+      '<span class="chip '+html(p.status)+'">'+html(status(p.status))+'</span></div>'+
+      '<div class="metrics">'+
+      '<div class="metric metric-primary"><small>Смета по позициям</small><strong class="orange">'+fmt(t.plan)+'</strong><span>Плановая стоимость работ</span></div>'+
+      '<div class="metric"><small>Подтверждено работ</small><strong>'+fmt(t.done)+'</strong><span>По учтённым объёмам</span></div>'+
+      '<div class="metric"><small>Выполнение сметы</small><strong>'+t.perc+'%</strong><span>По стоимости работ</span></div>'+
+      '<div class="metric"><small>Этапы / позиции</small><strong>'+stages.length+' / '+t.pieces+'</strong><span>В смете объекта</span></div></div>';
   }
-  function renderOverview(){
-    return '<div class="panel"><div class="section-header"><h2>Обзор объекта</h2><span class="chip '+html(project.status)+'">'+html(status(project.status))+'</span></div>'+
-     '<p class="note">Этот объект сохраняется в общей базе. Этапы и цены можно смотреть из кабинетов OWNER и назначенного бригадира.</p>'+
-     '<div class="grid2">'+
-     '<div class="data"><small>Адрес</small><b>'+html([project.city,project.street,project.building_number,project.apartment_number].filter(Boolean).join(", ")||"—")+'</b></div>'+
-     '<div class="data"><small>Сроки</small><b>'+html([project.start_date||"Не указаны",project.end_date||""].filter(Boolean).join(" — "))+'</b></div>'+
-     '<div class="data"><small>Ответственный</small><b id="overviewForeman">—</b></div>'+
-     '<div class="data"><small>Бригада</small><b id="overviewBrigade">—</b></div>'+
-     '<div class="data"><small>Сумма договора</small><b>'+(project.contract_amount==null?"Не согласована / не указана":fmt(project.contract_amount))+'</b><small>Не путать с предварительной сметой по позициям: '+fmt(totals().plan)+'</small></div>'+
-     '<div class="data"><small>Описание</small><b>'+html(project.description||"—")+'</b></div>'+
-     '</div>'+
-     (!project.foreman_id||!project.brigade_id?'<p class="warning" style="margin-top:15px">'+
-      (project.status==="active"?"ВНИМАНИЕ: объект уже отмечен как «В работе», но назначение команды неполное. Так получилось через прежний редактор. ":"")+
-      'Необходимо назначить и бригаду, и ответственного. OWNER: открой вкладку «Бригада и статус» и сохрани полную команду.</p>':"")+
-     '<div class="actions" style="margin-top:18px"><button type="button" data-tab-switch="stages">Открыть этапы и позиции</button>'+
-       (isOwner?'<button type="button" class="main" data-tab-switch="team">'+
-       ((!project.brigade_id||!project.foreman_id)?"Завершить назначение команды":"Управление командой и статусом")+'</button>':"")+'</div>'+
-     '<p class="note" style="margin-top:17px">Открой «Рабочий день» для отчётов по позициям, фотографий и заявок на деньги из кассы. Выдача средств и зарплата учитываются отдельно.</p></div>';
+    function renderOverview(){
+    const p=project,hasTeam=Boolean(p.foreman_id&&p.brigade_id);
+    const address=[p.city,p.street,p.building_number,p.apartment_number].filter(Boolean).join(", ");
+    return '<div class="overview-layout">'+
+      '<div class="panel overview-start"><div class="section-header"><div><span class="panel-eyebrow">СЕГОДНЯ НА ОБЪЕКТЕ</span><h2>С чего начать</h2></div></div>'+
+      '<p class="note">Выбери действие — всё остальное откроется в нужном разделе.</p>'+
+      '<div class="overview-actions">'+
+      '<button type="button" class="overview-action primary" data-tab-switch="reports"><span class="action-icon">▤</span><span><b>+ Вечерний отчёт</b><small>Объёмы, фотографии и запрос денег OWNER</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action" data-tab-switch="stages"><span class="action-icon">▣</span><span><b>Этапы и позиции</b><small>План работ, количество, расценки и выполнение</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action" data-tab-switch="team"><span class="action-icon">♙</span><span><b>Бригада и статус</b><small>Ответственный, назначение и состояние объекта</small></span><span class="action-arrow">→</span></button>'+
+      '</div></div>'+
+      '<div class="panel overview-details"><div class="section-header"><div><span class="panel-eyebrow">ИНФОРМАЦИЯ</span><h2>Данные объекта</h2></div></div>'+
+      '<div class="grid2">'+
+      '<div class="data"><small>Адрес</small><b>'+html(address||"Не указан")+'</b></div>'+
+      '<div class="data"><small>Сроки</small><b>'+html([p.start_date||"Не указаны",p.end_date||""].filter(Boolean).join(" — "))+'</b></div>'+
+      '<div class="data"><small>Бригадир</small><b id="overviewForeman">—</b></div>'+
+      '<div class="data"><small>Бригада</small><b id="overviewBrigade">—</b></div>'+
+      '<div class="data"><small>Договор</small><b>'+(p.contract_amount==null?"Сумма не указана":fmt(p.contract_amount))+'</b></div>'+
+      '<div class="data"><small>Описание</small><b>'+html(p.description||"Нет описания")+'</b></div></div>'+
+      (!hasTeam?'<div class="warning overview-warning">Команда назначена не полностью. OWNER должен указать бригаду и ответственного'+
+        (isOwner?'. <button type="button" data-tab-switch="team">Настроить →</button>':'.')+'</div>':"")+
+      '<p class="note overview-footnote">Смета и договор — разные суммы. Запрос денег из кассы не является выплатой, пока он не обработан отдельно.</p></div></div>';
   }
-  function renderStages(){
+    function renderStages(){
     const picked=query.toLocaleLowerCase().trim();
     const results=stages.map((s,idx)=>{
       const items=(s.items||[]).filter(p=>!picked||s.name.toLocaleLowerCase().includes(picked)||p.name.toLocaleLowerCase().includes(picked));
@@ -114,6 +121,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   function showTab(tab){
     activeTab=tab;
+    if(["overview","stages","team","reports"].includes(tab)&&location.hash!=="#"+tab){
+      window.history.replaceState(null,"",location.pathname+location.search+"#"+tab);
+    }
     document.querySelectorAll("[data-tab]").forEach(btn=>{
       const selected=btn.dataset.tab===tab;
       btn.classList.toggle("active",selected);
@@ -179,6 +189,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("page").hidden=false;
     const section=$("page");
     section.innerHTML=renderHeader()+
+      '<div class="workspace-label">УПРАВЛЕНИЕ ОБЪЕКТОМ</div>'+
       '<div class="nav" role="tablist" aria-label="Раздел объекта">'+
         '<button data-tab="overview" type="button" role="tab">Обзор</button>'+
         '<button data-tab="stages" type="button" role="tab">Этапы и позиции</button>'+
