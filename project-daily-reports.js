@@ -173,6 +173,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       '<div class="actions">'+(foreman&&["active","paused"].includes(workspace.project.status)?
         '<button class="main" id="dailyNew" type="button">+ Вечерний отчёт</button>':"")+
       '<button id="dailyRefresh" type="button">↻ Обновить</button></div></div>'+
+      (workspace.isOwner?'<p class="note">Вы вошли как OWNER. Здесь можно проверять и подтверждать отчёты. Создание вечерних отчётов доступно только назначенному бригадиру в его кабинете.</p>':'')+
       '<div id="dailyMessage" class="status" aria-live="polite"></div>'+
       '<div id="dailyEditor"></div><div id="dailyList"></div></div>';
    root().querySelector("#dailyRefresh").onclick=()=>refresh();
@@ -235,11 +236,12 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
  document.addEventListener("cg:daily-report-position",event=>{
    const positionId=event.detail?.positionId;
-   if(!positionId||!findPosition(positionId))return;
+   if(!positionId||!findPosition(positionId)||workspace?.isOwner)return;
    openEditor({id:null,work_date:localToday(),description:"",lines:[{position_id:positionId}],
      extras:[],cash_requested:false,cash_requested_amount:"",cash_purpose:"",photos:[]});
  });
  function openEditor(r){
+   if(workspace?.isOwner){msg("OWNER проверяет отчёты. Для отправки войдите под назначенным бригадиром.",true);return;}
    editing=r?{...r}:{id:null,work_date:localToday(),description:"",lines:[{}],cash_requested:false,cash_requested_amount:"",cash_purpose:"",photos:[]};
    renderEditor();
    root()?.querySelector("#dailyEditor")?.scrollIntoView({behavior:"smooth",block:"start"});
@@ -408,6 +410,7 @@ document.addEventListener("DOMContentLoaded",()=>{
      cashPurpose:need?host.querySelector("#dailyCashPurpose").value.trim():null,files};
  }
  async function save(submit){
+   if(workspace?.isOwner){msg("OWNER не отправляет отчёты от имени бригадира.",true);return;}
    if(busy)return;
    busy=true;
    const status=root()?.querySelector("#dailyEditorMessage"),buttons=root()?.querySelectorAll("#dailyEditor button");
