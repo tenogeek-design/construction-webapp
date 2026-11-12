@@ -217,6 +217,11 @@ body{background:linear-gradient(105deg,rgba(10,20,31,.97),rgba(13,26,40,.93) 62%
 .work-actions .note{flex:1 1 220px;font-size:10px;line-height:1.55}
 @media(max-width:650px){.stage-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.stage-summary>div{padding:9px 7px}.stage-summary small,.work-numbers small{font-size:9px}.stage-summary strong,.work-numbers strong{font-size:11px}.stage .body{padding:10px}.stage>button.stage-open{padding:14px 12px}.stage-open strong{font-size:13px}.stage-open small{font-size:10px}.work-heading{align-items:flex-start}.work-badge{font-size:9px}.work-numbers{gap:5px}.work-pricing{display:grid;gap:5px}}
 
+
+.dailyProgressEntry{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
+.dailyProgressEntry .dailyPercentHint{display:block;margin-top:4px;color:#a9c8dd;font-size:10px;line-height:1.5;font-weight:500}
+@media(max-width:600px){.dailyProgressEntry{grid-template-columns:1fr;gap:10px}}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="/project-workspace.js"></script>
