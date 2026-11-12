@@ -281,3 +281,40 @@ body {
  #projectsTable{border-radius:10px}
 }
 @media(max-width:390px){.welcome h2{font-size:22px}.owner-quick{font-size:10px}.stat-card>strong{font-size:22px}}
+
+/* Native OWNER approvals, directly inside Projects */
+.owner-review[hidden]{display:none!important}
+.owner-review{margin:20px 16px 24px;padding:20px;border:1px solid #54738d;border-radius:16px;background:linear-gradient(145deg,#20354a,#152637);color:#eef6fc;scroll-margin-top:105px}
+.owner-review-head{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:18px}
+.owner-review-head small{font-size:10px;letter-spacing:.14em;color:#f1a36d;font-weight:800}
+.owner-review-head h3{font-size:23px;margin:7px 0 5px;line-height:1.3}
+.owner-review-head p,.owner-review-muted{color:#aec4d7;font-size:12px;line-height:1.65}
+.owner-review-head button{background:#314e66;color:#fff;border:1px solid #6888a4;border-radius:10px;padding:10px 12px;font-size:11px;font-weight:750}
+#ownerReviewMessage{padding:10px 0;font-size:12px}
+.owner-review-summary{display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin:8px 0 16px}
+.owner-review-summary strong{background:#a35430;border-radius:9px;padding:10px 13px;color:#fff;font-size:12px}
+.owner-review-summary span{color:#bed0e0;font-size:12px}
+.owner-review-card{background:#1b2d40;border:1px solid #48657f;border-radius:13px;padding:17px;margin:0 0 14px;overflow-wrap:anywhere}
+.owner-review-title{display:flex;justify-content:space-between;gap:12px;margin-bottom:13px;align-items:center}
+.owner-review-title b{font-size:15px}
+.owner-review-title span{display:block;margin-top:5px;font-size:11px;color:#f1b587}
+.owner-review-title>strong{font-size:18px;color:#f4b27f;text-align:right}
+.owner-review-line{display:flex;justify-content:space-between;gap:14px;padding:12px 0;border-top:1px solid #36526c;line-height:1.5;font-size:12px}
+.owner-review-line b{font-weight:750}
+.owner-review-line small{display:block;color:#aac3d6;font-weight:500;font-size:10px}
+.owner-review-line span{color:#f4b27f;text-align:right;white-space:nowrap}
+.owner-review-photos{display:flex;gap:9px;flex-wrap:wrap;margin:12px 0}
+.owner-review-photos img{width:95px;height:95px;object-fit:cover;border:1px solid #61819d;border-radius:10px}
+.owner-review-cash{padding:13px;background:#263e52;border:1px solid #536e86;border-radius:10px;margin:13px 0;font-size:12px}
+.owner-review-cash p{margin:5px 0;color:#d1e0ed}
+.owner-review-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+.owner-review-actions button,.owner-review-cash-actions button{padding:12px 14px;border:1px solid #6685a1;border-radius:10px;background:#2c4a63;color:white;font-size:12px;font-weight:800;cursor:pointer}
+.owner-review-actions button.approve,.owner-review-cash-actions button:first-of-type{background:#2e765d;border-color:#5ba486}
+.owner-review-actions button.reject,.owner-review-cash-actions button:nth-of-type(2){background:#773e42;border-color:#ae676a}
+.owner-review-cash-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px}
+.owner-review-cash-actions label{font-size:11px;color:#c5d7e5}
+.owner-review-cash-actions input{display:block;width:100%;margin-top:6px;padding:12px;background:#13283a;color:white;border:1px solid #58758f;border-radius:9px}
+.owner-review-cash-actions small{grid-column:1/-1;color:#b6c9da}
+.owner-review-empty{padding:25px;border:1px dashed #526e87;border-radius:12px;text-align:center;color:#c2d3e0}
+#projectsTable .owner-report-link{cursor:pointer;display:inline-flex;align-items:center;margin:5px 0 5px 7px;padding:10px 12px!important}
+@media(max-width:650px){.owner-review{margin:15px 0;padding:13px;scroll-margin-top:95px}.owner-review-head h3{font-size:18px}.owner-review-head button{white-space:nowrap}.owner-review-title>strong{font-size:15px}.owner-review-line{display:block}.owner-review-line span{display:block;text-align:left;margin-top:5px}.owner-review-actions button{flex:1 1 100%;min-height:46px}.owner-review-cash-actions{grid-template-columns:1fr}.owner-review-photos img{width:80px;height:80px}}
