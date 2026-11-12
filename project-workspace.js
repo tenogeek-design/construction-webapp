@@ -51,12 +51,15 @@ document.addEventListener("DOMContentLoaded", async () => {
      '<div class="data"><small>Сроки</small><b>'+html([project.start_date||"Не указаны",project.end_date||""].filter(Boolean).join(" — "))+'</b></div>'+
      '<div class="data"><small>Ответственный</small><b id="overviewForeman">—</b></div>'+
      '<div class="data"><small>Бригада</small><b id="overviewBrigade">—</b></div>'+
-     '<div class="data"><small>Сумма договора</small><b>'+(project.contract_amount==null?"Не указана":fmt(project.contract_amount))+'</b></div>'+
+     '<div class="data"><small>Сумма договора</small><b>'+(project.contract_amount==null?"Не согласована / не указана":fmt(project.contract_amount))+'</b><small>Не путать с предварительной сметой по позициям: '+fmt(totals().plan)+'</small></div>'+
      '<div class="data"><small>Описание</small><b>'+html(project.description||"—")+'</b></div>'+
      '</div>'+
-     (project.status==="planned"&&!project.foreman_id?'<p class="warning" style="margin-top:15px">Объект подтверждён, но ответственный бригадир ещё не назначен. Для начала работ OWNER должен назначить бригаду.</p>':"")+
+     (!project.foreman_id||!project.brigade_id?'<p class="warning" style="margin-top:15px">'+
+      (project.status==="active"?"ВНИМАНИЕ: объект уже отмечен как «В работе», но назначение команды неполное. Так получилось через прежний редактор. ":"")+
+      'Необходимо назначить и бригаду, и ответственного. OWNER: открой вкладку «Бригада и статус» и сохрани полную команду.</p>':"")+
      '<div class="actions" style="margin-top:18px"><button type="button" data-tab-switch="stages">Открыть этапы и позиции</button>'+
-       (isOwner&&project.status==="planned"?'<button type="button" class="main" data-tab-switch="team">Назначить бригаду / начать работу</button>':"")+'</div>'+
+       (isOwner?'<button type="button" class="main" data-tab-switch="team">'+
+       ((!project.brigade_id||!project.foreman_id)?"Завершить назначение команды":"Управление командой и статусом")+'</button>':"")+'</div>'+
      '<p class="note" style="margin-top:17px">Следующий модуль: рабочий день, фотографии, отчёты по конкретным позициям и заявки на дополнительные работы. Здесь пока не создаются финансовые начисления.</p></div>';
   }
   function renderStages(){
@@ -89,12 +92,16 @@ document.addEventListener("DOMContentLoaded", async () => {
       '<p class="note">Назначение бригад и изменение статуса контролирует OWNER. Табели, зарплаты и расходы остаются в существующих разделах.</p></div>';
     const canEdit=!["completed","cancelled"].includes(project.status);
     return '<div class="panel"><h2>Управление объектом · OWNER</h2>'+
-     '<p class="note">1. Назначь ответственного и бригаду. 2. Сохрани назначение. 3. Начни работу. Бюджеты зарплат и расходы этим действием не меняются.</p>'+
+     '<p class="note">1. Выбери бригаду — её руководитель подставится автоматически. 2. Сохрани назначение. 3. Нажми «Начать работу» (для запланированного объекта). Зарплаты и расходы этим действием не меняются.</p>'+
      '<form id="assignmentForm"><div class="grid2">'+
        '<label>Бригада<select id="brigadeId" '+(!canEdit?'disabled':'')+'>'+option("","Не назначена",project.brigade_id)+brigades.map(x=>option(x.id,x.name,project.brigade_id)).join("")+'</select></label>'+
        '<label>Ответственный бригадир<select id="foremanId" '+(!canEdit?'disabled':'')+'>'+option("","Не назначен",project.foreman_id)+employees.map(x=>option(x.id,x.full_name,project.foreman_id)).join("")+'</select></label>'+
      '</div><div class="actions"><button type="submit" class="main" '+(!canEdit?'disabled':'')+'>Сохранить назначение</button></div></form>'+
-     '<div class="warning" style="margin-top:17px">Статус «Запланирован» не означает начало работ. Для запуска необходимо назначить бригаду и ответственного.</div>'+
+     '<div class="warning" style="margin-top:17px">'+
+     ((!project.brigade_id||!project.foreman_id)
+      ?'Не завершено назначение: '+(!project.brigade_id?'бригада ':'')+(!project.foreman_id?'ответственный':'')+'. Сначала выбери команду и сохрани.'
+      :'Команда назначена. Статус «Запланирован» не означает начало работ. Запуск происходит отдельно.')+
+     '</div>'+
      '<div class="actions">'+
      (project.status==="planned"?'<button class="main" data-action="start" '+(!project.foreman_id||!project.brigade_id?'disabled':'')+'>Начать работу</button>':"")+
      (project.status==="active"?'<button data-action="pause">Приостановить</button><button class="danger" data-action="complete">Завершить объект</button>':"")+
@@ -155,6 +162,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     $("brigadeId")?.addEventListener("change",ev=>{
       const br=brigades.find(x=>x.id===ev.target.value);
       if(br?.foreman_id && $("foremanId"))$("foremanId").value=br.foreman_id;
+    });
+    $("foremanId")?.addEventListener("change",ev=>{
+      // Suggest a unique brigade led by this foreman; never guess among several.
+      const matches=brigades.filter(b=>b.foreman_id===ev.target.value);
+      if(matches.length===1 && !$("brigadeId").value)$("brigadeId").value=matches[0].id;
     });
     document.querySelectorAll("[data-action]").forEach(b=>b.addEventListener("click",()=>changeState(b.dataset.action)));
   }
