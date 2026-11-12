@@ -7,7 +7,7 @@
   const db = window.supabase.createClient(URL, KEY);
   const statuses = {planned:'Запланирован',active:'В работе',paused:'Приостановлен',completed:'Завершён',cancelled:'Отменён'};
   const ids = {id:'projectId',name:'projectName',city:'projectCity',street:'projectStreet',building_number:'projectBuilding',apartment_number:'projectApartment',status:'projectStatus',start_date:'projectStartDate',end_date:'projectEndDate',contract_amount:'projectAmount',brigade_id:'projectBrigade',foreman_id:'projectForeman',description:'projectDescription',private_notes:'projectNotes'};
-  let projects = [], brigades = [], employees = [], canWrite = false, initialized = false;
+  let projects = [], brigades = [], employees = [], dynamics = new Map(), canWrite = false, initialized = false;
   const msg = (s, error=false) => { $('projectsMessage').textContent=s; $('projectsMessage').style.color=error?'#ff8585':'#a4a7ad'; };
   const formMsg = (s,error=false) => { $('projectFormMessage').textContent=s; $('projectFormMessage').style.color=error?'#ff8585':'#a4a7ad'; };
   const errorText = e => e?.message || String(e);
@@ -41,6 +41,13 @@
       projects=p.data||[];
       if(b.error) { brigades=[]; msg('Объекты загружены, но бригады недоступны: '+errorText(b.error),true); } else brigades=b.data||[];
       if(e.error) { employees=[]; msg('Объекты загружены, но сотрудники недоступны: '+errorText(e.error),true); } else employees=e.data||[];
+      try{
+        const {data:{session}}=await db.auth.getSession();
+        const response=await fetch('/api/owner-project-dynamics',{headers:{Authorization:'Bearer '+session.access_token}});
+        const json=await response.json();
+        if(!response.ok)throw Error(json.error||'Нет данных');
+        dynamics=new Map((json.items||[]).map(x=>[x.id,x]));
+      }catch(err){dynamics=new Map();msg('Объекты загружены. Динамика временно недоступна: '+errorText(err),true);}
       setOptions('projectBrigade',brigades,'Не назначена',x=>x.name);
       setOptions('projectForeman',employees,'Не назначен',displayName);
       render();
@@ -55,32 +62,47 @@
     const filtered=projects.filter(p=>(!filter||p.status===filter)&&[p.name,p.city,p.street].some(v=>String(v||'').toLocaleLowerCase().includes(search)));
     const host=$('projectsTable'); host.replaceChildren();
     if(!filtered.length) { const p=document.createElement('p'); p.textContent='Объекты не найдены.'; p.style.padding='16px'; host.append(p); return; }
-    const table=document.createElement('table'); table.style.cssText='width:100%;border-collapse:collapse;text-align:left;';
-    const head=document.createElement('thead'); const hr=document.createElement('tr');
-    ['Название','Адрес','Статус','Бригада','Сумма','Действие'].forEach(s=>{const th=document.createElement('th');th.textContent=s;th.style.padding='12px';hr.append(th);});head.append(hr);table.append(head);
-    const body=document.createElement('tbody');
+    const grid=document.createElement('div');grid.className='owner-project-grid';
+    const el=(tag,cls,txt)=>{const x=document.createElement(tag);if(cls)x.className=cls;if(txt!==undefined)x.textContent=txt;return x;};
     filtered.forEach(p=>{
-      const tr=document.createElement('tr');tr.style.borderTop='1px solid #3b3f46';
-      const brigade=brigades.find(b=>b.id===p.brigade_id);
-      const fields=[p.name,[p.city,p.street,p.building_number].filter(Boolean).join(', '),statuses[p.status]||p.status,brigade?.name||'—',money(p.contract_amount)];
-      fields.forEach(s=>{const td=document.createElement('td');td.textContent=s||'—';td.style.padding='12px';tr.append(td);});
-      const td=document.createElement('td');td.style.padding='12px';const btn=document.createElement('button');btn.type='button';btn.textContent=access.update?'Редактировать':'Просмотр';btn.addEventListener('click',()=>edit(p));td.append(btn);
-      const workspace=document.createElement('a');
-      workspace.href='/project-workspace.html?id='+encodeURIComponent(p.id);
-      workspace.textContent='Объект';
-      workspace.style.cssText='display:inline-block;margin-left:9px;padding:9px 12px;border:1px solid #668bb1;background:#24455e;border-radius:9px;color:#f6f9fc;text-decoration:none;font-weight:700;font-size:12px';
-      td.append(workspace);
-      const reports=document.createElement('button');
-      reports.type='button';
-      reports.textContent='Проверить отчёты';
-      reports.className='owner-report-link';
-      reports.addEventListener('click',()=>{
-        if(!window.ownerReportReview){msg('Модуль отчётов загружается. Обнови страницу.',true);return;}
+      const d=dynamics.get(p.id),brigade=brigades.find(b=>b.id===p.brigade_id);
+      const card=el('article','owner-project-card');
+      const head=el('div','owner-project-head');
+      const heading=el('div','owner-project-heading');
+      heading.append(el('h3','',p.name||'Без названия'));
+      heading.append(el('p','', [p.city,p.street,p.building_number].filter(Boolean).join(', ')||'Адрес не указан'));
+      head.append(heading,el('span','owner-project-status status-'+p.status,statuses[p.status]||p.status));
+      card.append(head);
+      const meta=el('div','owner-project-meta');
+      meta.append(el('span','',brigade?.name||'Бригада не назначена'));
+      if(p.start_date||p.end_date)meta.append(el('span','',[p.start_date||'—',p.end_date||'—'].join(' → ')));
+      card.append(meta);
+      const numbers=el('div','owner-project-numbers');
+      const metric=(title,value)=>{const wrap=el('div','owner-project-metric');wrap.append(el('small','',title),el('strong','',value));return wrap};
+      numbers.append(metric('Смета работ',d?.positions?money(d.estimate):'—'),
+       metric('Подтверждено',d?.positions?money(d.completed):'—'),
+       metric('Выполнено',d?.progress==null?'—':d.progress+'%'));
+      card.append(numbers);
+      const progress=el('div','owner-project-progress');
+      const fill=el('div','owner-project-progress-fill');fill.style.width=(d?.progress||0)+'%';progress.append(fill);card.append(progress);
+      const activity=el('div','owner-project-activity');
+      activity.append(el('span','',d?'Позиций: '+d.positions+' · Отчётов: '+d.reportCount:'Динамика загружается'));
+      activity.append(el('span','',d?.lastReport?'Последний отчёт: '+d.lastReport:'Нет отправленных отчётов'));
+      card.append(activity);
+      if(d?.pending){card.append(el('div','owner-project-alert','● '+d.pending+' отчёт(ов) ждут подтверждения'))}
+      if(d?.cashPending){card.append(el('div','owner-project-alert cash','● '+d.cashPending+' запрос(ов) из кассы'))}
+      const actions=el('div','owner-project-actions');
+      const review=el('button','owner-project-review','Проверить отчёты'+(d?.pending?' ('+d.pending+')':''));
+      review.type='button';
+      review.addEventListener('click',()=>{
+        if(!window.ownerReportReview){msg('Модуль проверки ещё загружается. Обнови страницу.',true);return}
         window.ownerReportReview.open(p);
       });
-      td.append(reports);
-      tr.append(td);body.append(tr);
-    });table.append(body);host.append(table);
+      const workspace=el('a','owner-project-open','Открыть объект');workspace.href='/project-workspace.html?id='+encodeURIComponent(p.id);
+      const editBtn=el('button','owner-project-edit',access.update?'Редактировать':'Просмотр');editBtn.type='button';editBtn.addEventListener('click',()=>edit(p));
+      actions.append(review,workspace,editBtn);card.append(actions);grid.append(card);
+    });
+    host.append(grid);
   }
   function edit(p=null) {
     $('projectForm').reset();
