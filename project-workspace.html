@@ -80,7 +80,7 @@ select,input{background:#142639;color:#f3f7fb;border:1px solid #597793;border-ra
 #dailyPanel h3{font-size:17px}
 #dailyPanel h4{font-size:14px}
 .dailyForm,.dailyReport{background:#1b2d40;border:1px solid #4a6681;border-radius:14px;padding:17px;margin:15px 0}
-.dailyLine{display:grid;grid-template-columns:minmax(160px,2fr) minmax(120px,1fr) auto;gap:9px;align-items:end;margin:9px 0}
+.dailyLine{display:grid;grid-template-columns:minmax(135px,1.1fr) minmax(170px,2fr) minmax(115px,1fr) auto;gap:9px;align-items:end;margin:9px 0}
 .dailyLine button{padding:11px 15px}
 .dailyCashDecision,.dailyPhotoBox,.dailyCash{padding:14px;border:1px solid #526a82;background:#25394e;border-radius:12px;margin:14px 0}
 .dailyCheck{display:flex;flex-direction:row;align-items:center;gap:10px}
@@ -92,7 +92,7 @@ select,input{background:#142639;color:#f3f7fb;border:1px solid #597793;border-ra
 .dailyPhotoWrap{position:relative}
 .dailyPhotoWrap button{position:absolute;top:0;right:0;padding:2px 7px;background:#563b48}
 #dailyEditorMessage{min-height:20px}
-@media(max-width:640px){.dailyLine{grid-template-columns:1fr auto}.dailyLine label:first-child{grid-column:1/-1}.dailyReport{padding:12px}.dailyEntry{flex-wrap:wrap}}
+@media(max-width:640px){.dailyLine{grid-template-columns:minmax(0,1fr) auto}.dailyLine label{grid-column:1/-1}.dailyLine button{grid-column:2;justify-self:end}.dailyReport{padding:12px}.dailyEntry{flex-wrap:wrap}}
 
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
