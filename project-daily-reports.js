@@ -78,7 +78,7 @@ document.addEventListener("DOMContentLoaded",()=>{
         '<div class="note">'+esc(r.cash_purpose||"")+' · '+esc(cashStatus[r.cash_status]||r.cash_status)+
          (r.cash_approved_amount!==null?' · Решение OWNER: '+money(r.cash_approved_amount):"")+
          (r.cash_note?' · '+esc(r.cash_note):"")+'</div></div>':"")+
-       (canReview?'<div class="actions"><button class="main" data-work-action="approve" data-report="'+esc(r.id)+'">Подтвердить объём</button>'+
+       (canReview?'<div class="actions"><button class="main" data-work-action="approve" data-report="'+esc(r.id)+'">Утвердить отчёт</button>'+
          '<button data-work-action="return" data-report="'+esc(r.id)+'">Вернуть на исправление</button><button data-work-action="reject" data-report="'+esc(r.id)+'" class="danger">Отклонить</button></div>':"")+
        (canCash?'<div class="dailyCashDecision"><label>Сколько согласовать, zł<input type="number" data-cash-amount="'+esc(r.id)+'" min="0.01" max="1000000" step="0.01" value="'+esc(r.cash_requested_amount)+'"></label>'+
          '<label>Комментарий при изменении суммы или отказе<input data-cash-note="'+esc(r.id)+'" placeholder="Причина изменения или отказа"></label>'+
@@ -191,9 +191,9 @@ document.addEventListener("DOMContentLoaded",()=>{
    if(busy)return;
    const note=decision==="return"||decision==="reject"?prompt(decision==="return"?"Что исправить бригадиру?":"Причина окончательного отказа:"):prompt("Комментарий к подтверждению (необязательно):","");
    if(note===null||["return","reject"].includes(decision)&&!note.trim())return;
-   if(decision==="approve"&&!confirm("Подтвердить выполненные объёмы? Они прибавятся к прогрессу объекта."))return;
+   if(decision==="approve"&&!confirm("Утвердить отчёт? Учётный объём и деньги этим действием не изменятся."))return;
    busy=true;
-   try{await call("review-work",{reportId:id,decision,note});if(decision==="approve"){location.reload();return;}await refresh();msg("Решение по выполненным работам сохранено.");}
+   try{await call("review-work",{reportId:id,decision,note});await refresh();msg("Решение по выполненным работам сохранено.");}
    catch(e){msg(e.message,true)}finally{busy=false}
  }
  async function reviewCash(id,decision){
