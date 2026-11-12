@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  const money=v=>new Intl.NumberFormat("pl-PL",{style:"currency",currency:"PLN"}).format(Number(v||0));
  const num=v=>new Intl.NumberFormat("pl-PL",{maximumFractionDigits:2}).format(Number(v||0));
  const localToday=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
- const workStatus={draft:"Черновик",submitted:"На проверке",approved:"Подтверждено",rejected:"Вернули на исправление"};
+ const workStatus={draft:"Черновик",submitted:"На проверке",approved:"Подтверждено",rejected:"Отклонён",changes_requested:"Вернули на исправление"};
  const cashStatus={none:"Не запрошены",pending:"Ожидает OWNER",approved:"Согласованы к выдаче · не выплачены",rejected:"Отказано"};
  let workspace=null,reports=[],active=false,editing=null,busy=false;
  const root=()=>document.getElementById(ROOT_ID);
@@ -65,7 +65,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       }).join("");
       const photos=(r.photos||[]).map(photo=>photo.url?
        '<a href="'+esc(photo.url)+'" target="_blank" rel="noopener noreferrer" title="'+esc(photo.original_name)+'"><img loading="lazy" src="'+esc(photo.url)+'" alt="Фото выполненной работы"></a>':"").join("");
-      const canEdit=!workspace.isOwner&&["draft","rejected"].includes(r.status)&&["active","paused"].includes(workspace.project.status);
+      const canEdit=!workspace.isOwner&&["draft","rejected","changes_requested"].includes(r.status)&&["active","paused"].includes(workspace.project.status);
       const canReview=workspace.isOwner&&r.status==="submitted";
       const canCash=workspace.isOwner&&r.status==="approved"&&r.cash_status==="pending";
       return '<article class="dailyReport"><div class="section-header"><div><b>'+esc(r.work_date)+'</b>'+
@@ -79,7 +79,7 @@ document.addEventListener("DOMContentLoaded",()=>{
          (r.cash_approved_amount!==null?' · Решение OWNER: '+money(r.cash_approved_amount):"")+
          (r.cash_note?' · '+esc(r.cash_note):"")+'</div></div>':"")+
        (canReview?'<div class="actions"><button class="main" data-work-action="approve" data-report="'+esc(r.id)+'">Подтвердить объём</button>'+
-         '<button data-work-action="reject" data-report="'+esc(r.id)+'" class="danger">Вернуть на исправление</button></div>':"")+
+         '<button data-work-action="return" data-report="'+esc(r.id)+'">Вернуть на исправление</button><button data-work-action="reject" data-report="'+esc(r.id)+'" class="danger">Отклонить</button></div>':"")+
        (canCash?'<div class="dailyCashDecision"><label>Сколько согласовать, zł<input type="number" data-cash-amount="'+esc(r.id)+'" min="0.01" max="1000000" step="0.01" value="'+esc(r.cash_requested_amount)+'"></label>'+
          '<label>Комментарий при изменении суммы или отказе<input data-cash-note="'+esc(r.id)+'" placeholder="Причина изменения или отказа"></label>'+
          '<div class="actions"><button data-cash-action="approve" data-report="'+esc(r.id)+'" class="main">Согласовать сумму</button>'+
@@ -189,11 +189,11 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
  async function reviewWork(id,decision){
    if(busy)return;
-   const note=decision==="reject"?prompt("Почему вернуть отчёт бригадиру на исправление?"):prompt("Комментарий к подтверждению (необязательно):","");
-   if(note===null||decision==="reject"&&!note.trim())return;
+   const note=decision==="return"||decision==="reject"?prompt(decision==="return"?"Что исправить бригадиру?":"Причина окончательного отказа:"):prompt("Комментарий к подтверждению (необязательно):","");
+   if(note===null||["return","reject"].includes(decision)&&!note.trim())return;
    if(decision==="approve"&&!confirm("Подтвердить выполненные объёмы? Они прибавятся к прогрессу объекта."))return;
    busy=true;
-   try{await call("review-work",{reportId:id,decision,note});await refresh();msg("Решение по выполненным работам сохранено.");}
+   try{await call("review-work",{reportId:id,decision,note});if(decision==="approve"){location.reload();return;}await refresh();msg("Решение по выполненным работам сохранено.");}
    catch(e){msg(e.message,true)}finally{busy=false}
  }
  async function reviewCash(id,decision){
