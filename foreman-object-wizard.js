@@ -46,6 +46,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   #cg-object-wizard .ow-catalog{margin:12px 0;padding:13px;background:#152839;border:1px solid #54718c;border-radius:12px}
   #cg-object-wizard .ow-catalog-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  #cg-object-wizard .ow-picked{color:#f5c49c;font-size:12px;padding:10px;background:#253c50;border-radius:8px}
+  #cg-object-wizard .ow-result-count{color:#a9c6de;font-size:12px;padding:7px 2px}
   #cg-object-wizard .ow-results{max-height:215px;overflow-y:auto;margin:8px 0;display:grid;gap:5px}
   #cg-object-wizard button.ow-result{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#293f56;text-align:left}
   #cg-object-wizard .ow-result small{font-size:11px;color:#a6c7df}
@@ -77,18 +79,74 @@ document.addEventListener("DOMContentLoaded", () => {
   function catalogSearch(i) {
     return '<div class="ow-catalog" data-catalog="'+i+'"><label>'+(lang==="pl"?"Dodaj pracę z cennika":"Додати роботу з прайсу")+'</label><div class="ow-catalog-grid"><input type="search" data-work-search placeholder="'+(lang==="pl"?"Szukaj pracy...":"Пошук роботи...")+'"><select data-work-cat><option value="">'+(lang==="pl"?"Wszystkie":"Усі")+'</option>'+Object.entries(categories).map(([k,v])=>'<option value="'+k+'">'+esc(v[lang==="pl"?0:1])+'</option>').join("")+'</select></div><div data-work-results class="ow-results"></div></div>';
   }
+
+  const searchAliases = {
+    demoTile:"skuwanie kafelki plytki плитка кафель отбивка сбить",
+    demoFloor:"rozbiorka posadzki пола покрытие",
+    demoScreed:"wylewka beton jastrych стяжка бетон",
+    demoWalls:"scianki sciany partition перегородки стены",
+    demoPlaster:"tynk штукатурка",
+    demoCeiling:"sufit потолок стеля",
+    demoDoors:"drzwi двери дверей",
+    demoGK:"karton gips plyta гипсокартон",
+    gkFrame:"gk kg rigips drywall plyty karton gips stelaż profil profile каркас профиль гкл гипсокартон",
+    gkCeiling:"sufit podsufitka потолок гк",
+    gkPartition:"ścianki działowe перегородка каркас",
+    gkGlue:"klejenie gk klej клей поклейка",
+    primer:"grunt грунтовка грунт",
+    plaster:"tynk штукатурка",
+    screed:"beton wylewka стяжка",
+    level:"wyrównanie poziom samopoziom poziomujaca выравнивание наливной",
+    tile:"glazura gres kafelki plytki укладка плитка кафель",
+    laminate:"panele podloga ламинат",
+    vinyl:"winyl podloga винил",
+    paint:"malowanie farba покраска краска",
+    skim:"szpachlowanie gładź шпаклевка шпаклювання",
+    electric:"elektryka przewody провода электрика",
+    plumbing:"hydraulika wod kan сантехника водопровод",
+    rubble:"gruz wywoz мусор вынос",
+    cleanup:"sprzatanie уборка"
+  };
+  function normalizeSearch(value) {
+    return String(value||"").toLocaleLowerCase().normalize("NFD")
+      .replace(/[\u0300-\u036f]/g,"").replace(/ł/g,"l")
+      .replace(/[’'_-]/g," ").replace(/\s+/g," ").trim();
+  }
   function drawCatalog(i) {
-    const box=section.querySelector('[data-catalog="'+i+'"]');if(!box)return;
-    const query=box.querySelector("[data-work-search]").value.trim().toLocaleLowerCase();
+    const box=section.querySelector('[data-catalog="'+i+'"]');
+    if(!box)return;
+    const raw=box.querySelector("[data-work-search]").value;
+    const query=normalizeSearch(raw),parts=query.split(" ").filter(Boolean);
     const cat=box.querySelector("[data-work-cat]").value;
-    const matches=Object.entries(catalog).filter(([id,x])=>(!cat||x.cat===cat)&&(!query||x.pl.toLocaleLowerCase().includes(query)||x.ua.toLocaleLowerCase().includes(query))).slice(0,12);
-    box.querySelector("[data-work-results]").innerHTML=matches.map(([id,x])=>'<button class="ow-result" type="button" data-select-work="'+esc(id)+'"><span>'+esc(x[lang])+'</span><small>'+esc(x.unit)+' · '+(x.price===null?"—":money(x.price))+'</small></button>').join("");
-    box.querySelectorAll("[data-select-work]").forEach(b=>b.onclick=()=>{
-      const job=catalog[b.dataset.selectWork],row=section.querySelector('[data-stage="'+i+'"]');
+    const all=Object.entries(catalog).filter(([id,job])=>{
+      if(cat&&job.cat!==cat)return false;
+      if(!parts.length)return true;
+      const stack=normalizeSearch([id,job.pl,job.ua,searchAliases[id]||""].join(" "));
+      return parts.every(part=>stack.includes(part));
+    });
+    const output=box.querySelector("[data-work-results]");
+    const label=lang==="pl"?"Znaleziono":"Знайдено";
+    const nothing=lang==="pl"
+      ?"Nie ma tej pracy w cenniku. Możesz wpisać własną pozycję poniżej."
+      :"Цієї роботи немає в прайсі. Можна вписати власну позицію нижче.";
+    output.innerHTML='<div class="ow-result-count" role="status">'+label+": "+all.length+"</div>"+
+      (all.length?all.map(([id,job])=>
+        '<button class="ow-result" type="button" data-select-work="'+esc(id)+'">'+
+        '<span>'+esc(job[lang])+'</span><small>'+esc(job.unit)+' · '+
+        (job.price===null?(lang==="pl"?"Do wyceny":"За домовленістю"):money(job.price))+
+        '</small></button>').join(""):'<div class="ow-notice">'+nothing+'</div>');
+    output.querySelectorAll("[data-select-work]").forEach(button=>button.onclick=()=>{
+      const job=catalog[button.dataset.selectWork];
+      const row=section.querySelector('[data-stage="'+i+'"]');
+      if(!job||!row)return;
       row.querySelector("[data-pname]").value=job[lang];
       const unit=row.querySelector("[data-punit]");
       if([...unit.options].some(x=>x.value===job.unit))unit.value=job.unit;
       row.querySelector("[data-prate]").value=job.price===null?"":job.price;
+      box.querySelector("[data-work-search]").value=job[lang];
+      output.innerHTML='<div class="ow-picked">'+
+        (lang==="pl"?"Wybrano: ":"Обрано: ")+esc(job[lang])+
+        ' · '+(lang==="pl"?"wpisz ilość i dodaj pozycję":"вкажіть кількість та додайте позицію")+'</div>';
       row.querySelector("[data-pqty]").focus();
     });
   }
