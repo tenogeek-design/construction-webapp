@@ -215,3 +215,69 @@ body {
   .stats-grid { grid-template-columns: 1fr 1fr; }
   .owner-quick { flex: 1 1 44%; }
 }
+
+
+/* OWNER workspace · coherent navigation and project workflow */
+:root{--owner-bg:#101923;--owner-surface:#1b2b3a;--owner-line:#38516a;--owner-orange:#f09a5c;--owner-blue:#5d96c9}
+.admin-layout{background:#101923}
+.sidebar{background:linear-gradient(180deg,#172638,#111c29);border-right:1px solid #34516b}
+.sidebar-label{color:#f0a56e}
+.sidebar .nav-item{min-height:45px;border-radius:11px;font-size:12px;font-weight:750}
+.sidebar .nav-item.active{background:linear-gradient(100deg,#304f6c,#253d56);border-color:#5c82a5;box-shadow:inset 3px 0 #f0a26b;color:#fff}
+.sidebar .nav-item:hover{background:#2b465e}
+.main-content{background:radial-gradient(ellipse at 90% 0%,#203a5360,transparent 43%),#101923}
+.topbar{background:#132231ed;backdrop-filter:blur(14px);border-bottom:1px solid #38536b}
+.welcome{background:linear-gradient(90deg,#10202eea,#12283bd6 53%,#12253875),url('/owner-facade.jpg') center 48%/cover no-repeat;border:1px solid #52708b;border-radius:18px;min-height:230px;display:flex;align-items:center}
+.welcome h2{font-size:clamp(24px,3vw,38px);line-height:1.2;letter-spacing:-.035em;max-width:540px}
+.welcome p{max-width:420px;line-height:1.7;color:#c6d4e1}
+.owner-quick-actions{display:flex;flex-wrap:wrap;gap:9px;margin:0 0 22px}
+.owner-quick{min-height:43px;display:inline-flex;align-items:center;justify-content:center;padding:11px 16px;border:1px solid #55738f;background:#263e53;color:#f1f7fc;border-radius:11px;font-size:12px;font-weight:800;text-decoration:none}
+.owner-quick:hover{background:#365c7d;border-color:#f1aa73}
+.owner-quick.primary{background:#c16c32;color:#fff;border-color:#f1ad7c}
+.stat-card{border:1px solid #3c546a;border-radius:14px;background:linear-gradient(155deg,#203348,#192938);box-shadow:none}
+.stat-card>strong{color:#f5f9fd}
+.panel,.card,.table-card{border-color:#3a536a;border-radius:15px}
+#projectsTable{overflow-x:auto;max-width:100%;-webkit-overflow-scrolling:touch}
+#projectsTable table{min-width:730px}
+#projectsTable td:last-child{min-width:260px}
+#projectsTable td:last-child button{border:1px solid #5d809f;border-radius:9px;background:#2b4d6a;color:#fff;padding:10px 12px;font-weight:750;font-size:11px}
+#projectsTable td:last-child a{margin:5px 0 5px 7px!important;padding:10px 12px!important;white-space:nowrap}
+#projectsTable .owner-report-link{display:inline-flex;align-items:center;background:#9e512c;border:1px solid #e5a274;border-radius:9px;color:#fff;text-decoration:none;font-weight:800;font-size:11px}
+#projectsTable .owner-report-link:hover{background:#bc6639}
+.main-content button,.main-content a{touch-action:manipulation}
+.main-content button:focus-visible,.main-content a:focus-visible,.sidebar a:focus-visible{outline:3px solid #f2a46d;outline-offset:2px}
+@media(max-width:760px){
+ html{scroll-padding-top:110px}
+ .admin-layout{display:block}
+ .sidebar{position:sticky;top:0;z-index:40;height:auto;max-height:none;overflow:visible;padding:8px 10px 6px;background:#152436;border-bottom:1px solid #49617a}
+ .sidebar .brand{padding:3px 5px 7px;border:0}
+ .sidebar .owner-logo{width:30px;height:30px}
+ .sidebar .brand strong{font-size:11px}
+ .sidebar .brand small{font-size:9px}
+ .sidebar .owner-role-label,.sidebar-label,.sidebar-bottom{display:none}
+ .sidebar .navigation{display:contents}
+ .sidebar{display:flex;flex-direction:column}
+ .sidebar:has(.navigation) .navigation{display:flex;flex-direction:row;overflow:visible;width:auto;padding:0;gap:6px}
+ .sidebar .navigation .nav-item{min-height:43px;min-width:max-content;padding:9px 12px;background:#233b50;border:1px solid #385c79;white-space:nowrap;font-size:11px}
+ .sidebar .navigation .nav-item.active{background:#365d7e;border-color:#f1a36b}
+ .sidebar .navigation .nav-icon{font-size:15px;width:auto}
+ .sidebar .navigation .nav-count{margin-left:0}
+ .sidebar{display:block}
+ .sidebar .navigation{display:contents!important}
+ .sidebar .brand{display:none}
+ .sidebar{white-space:nowrap;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .sidebar .nav-item{display:inline-flex!important;vertical-align:middle;margin-right:5px}
+ .sidebar .nav-item:last-child{margin-right:9px}
+ .main-content{padding:0 12px 32px}
+ .topbar{position:relative;margin:0 -12px 13px;padding:12px;min-height:64px}
+ .welcome{min-height:205px;padding:22px 18px;background-position:center}
+ .welcome h2{font-size:25px}
+ .welcome p{font-size:12px}
+ .owner-quick-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ .owner-quick{font-size:11px;padding:11px 7px;min-height:47px;white-space:normal;text-align:center}
+ .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ .stat-card{padding:14px}
+ .stat-card>strong{font-size:25px}
+ #projectsTable{border-radius:10px}
+}
+@media(max-width:390px){.welcome h2{font-size:22px}.owner-quick{font-size:10px}.stat-card>strong{font-size:22px}}
