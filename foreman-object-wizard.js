@@ -49,6 +49,11 @@ document.addEventListener("DOMContentLoaded", () => {
   #cg-object-wizard .ow-results{max-height:215px;overflow-y:auto;margin:8px 0;display:grid;gap:5px}
   #cg-object-wizard button.ow-result{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#293f56;text-align:left}
   #cg-object-wizard .ow-result small{font-size:11px;color:#a6c7df}
+
+  #cg-object-wizard .ow-progress{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:9px}
+  #cg-object-wizard .ow-progress input{width:108px}
+  #cg-object-wizard .ow-meter{height:6px;border-radius:8px;background:#4d5e70;margin-top:9px;max-width:350px;overflow:hidden}
+  #cg-object-wizard .ow-meter>div{height:100%;background:#f0a570}
   #cg-object-wizard .ow-actions{display:flex;justify-content:space-between;flex-wrap:wrap;gap:9px;border-top:1px solid #41576e;margin-top:16px;padding-top:17px}
   #cg-object-wizard .ow-notice{font-size:12px;color:#b9c9d9;line-height:1.6;margin:15px 0}
   #cg-object-wizard .ow-summary{background:#20364c;border:1px solid #4d6b87;border-radius:13px;padding:18px;margin:14px 0}
@@ -89,7 +94,11 @@ document.addEventListener("DOMContentLoaded", () => {
   }
   function page(){
     if(step===0)return '<div class="ow-grid">'+field("name")+field("address")+field("start","date")+field("finish","date")+'</div><div class="ow-field"><label for="ow-note">'+t("note")+'</label><textarea id="ow-note">'+esc(state.note)+'</textarea></div>';
-    if(step===1)return state.stages.map((s,i)=>'<div class="ow-stage"><div class="ow-stage-title"><b>'+(i+1)+'. '+esc(s.name)+'</b><button data-remove-stage="'+i+'">'+t("remove")+'</button></div>'+s.items.map((p,j)=>'<div class="ow-position"><div><b>'+esc(p.name)+'</b><small>'+esc(p.qty)+' '+esc(p.unit)+' × '+money(p.rate)+'</small></div><button data-remove-position="'+i+':'+j+'">'+t("remove")+'</button></div>').join("")+catalogSearch(i)+'<div class="ow-pos-form" data-stage="'+i+'"><input data-pname placeholder="'+t("position")+'"><input data-pqty type="number" min=".01" step=".01" placeholder="'+t("qty")+'"><select data-punit><option>m²</option><option>mb</option><option>szt.</option><option>m³</option><option>kpl.</option></select><input data-prate type="number" min="0" step=".01" placeholder="'+t("rate")+'"></div><button style="margin-top:10px" data-add-position="'+i+'">'+t("addposition")+'</button></div>').join("")+'<div class="ow-stage"><label for="ow-new-stage">'+t("stage")+'</label><input id="ow-new-stage" maxlength="120"><button style="margin-top:10px" id="ow-add-stage">'+t("addstage")+'</button></div>';
+    if(step===1)return state.stages.map((s,i)=>'<div class="ow-stage"><div class="ow-stage-title"><b>'+(i+1)+'. '+esc(s.name)+'</b><button data-remove-stage="'+i+'">'+t("remove")+'</button></div>'+s.items.map((p,j)=>{
+      const done=Number(p.done||0),planned=Number(p.qty);
+      const percent=planned>0?Math.max(0,Math.min(100,done/planned*100)):0;
+      return '<div class="ow-position"><div style="flex:1"><b>'+esc(p.name)+'</b><small>'+esc(p.qty)+' '+esc(p.unit)+' × '+money(p.rate)+'</small><small>'+(lang==="pl"?"Wykonano":"Виконано")+': '+done+' / '+planned+' '+esc(p.unit)+'</small><div class="ow-meter"><div style="width:'+percent+'%"></div></div><div class="ow-progress"><input data-progress-qty="'+i+':'+j+'" type="number" min=".01" step=".01" placeholder="+ '+esc(p.unit)+'"><button type="button" data-progress-add="'+i+':'+j+'">'+(lang==="pl"?"Dodaj wykonanie":"Додати виконання")+'</button></div><small>'+(p.logs||[]).slice(-3).map(x=>esc(x.date)+': +'+esc(x.qty)).join(" · ")+'</small></div><button data-remove-position="'+i+':'+j+'">'+t("remove")+'</button></div>';
+    }).join("")+catalogSearch(i)+'<div class="ow-pos-form" data-stage="'+i+'"><input data-pname placeholder="'+t("position")+'"><input data-pqty type="number" min=".01" step=".01" placeholder="'+t("qty")+'"><select data-punit><option>m²</option><option>mb</option><option>szt.</option><option>m³</option><option>kpl.</option></select><input data-prate type="number" min="0" step=".01" placeholder="'+t("rate")+'"></div><button style="margin-top:10px" data-add-position="'+i+'">'+t("addposition")+'</button></div>').join("")+'<div class="ow-stage"><label for="ow-new-stage">'+t("stage")+'</label><input id="ow-new-stage" maxlength="120"><button style="margin-top:10px" id="ow-add-stage">'+t("addstage")+'</button></div>';
     return '<div class="ow-summary"><h3>'+esc(state.name)+'</h3><p>'+esc(state.address)+'</p><p>'+esc(state.start)+' — '+esc(state.finish)+'</p><p>'+esc(state.note)+'</p></div>'+state.stages.map(s=>'<div class="ow-stage"><b>'+esc(s.name)+'</b><div class="ow-notice">'+s.items.length+' · '+money(s.items.reduce((v,p)=>v+p.qty*p.rate,0))+'</div></div>').join("")+'<div class="ow-summary"><p>'+t("total")+'</p><strong>'+money(sum())+'</strong></div><div class="ow-notice"><b>'+t("approval")+'</b><p>'+t("blocked")+'</p></div>';
   }
   function render(){
@@ -107,6 +116,20 @@ document.addEventListener("DOMContentLoaded", () => {
         el.querySelector("[data-work-search]").addEventListener("input",()=>drawCatalog(i));
         el.querySelector("[data-work-cat]").addEventListener("change",()=>drawCatalog(i));
         drawCatalog(i);
+      });
+
+      section.querySelectorAll("[data-progress-add]").forEach(b=>b.onclick=()=>{
+        const [i,j]=b.dataset.progressAdd.split(":").map(Number),p=state.stages[i].items[j];
+        const field=section.querySelector('[data-progress-qty="'+i+':'+j+'"]');
+        const increment=Number(field.value),prev=Number(p.done||0);
+        if(!field.value||!Number.isFinite(increment)||increment<=0||prev+increment>Number(p.qty)+0.00001){
+          message=lang==="pl"?"Wpisz ilość dodatnią, nie większą niż pozostały zakres.":"Вкажіть додатну кількість, що не перевищує залишок.";
+          render();return;
+        }
+        p.done=Math.round((prev+increment)*100)/100;
+        if(!Array.isArray(p.logs))p.logs=[];
+        p.logs.push({date:new Date().toLocaleDateString("sv-SE"),qty:increment});
+        store();render();
       });
       section.querySelector("#ow-add-stage").onclick=()=>{const name=section.querySelector("#ow-new-stage").value.trim();if(!name){message=t("wrong");render();return}state.stages.push({name,items:[]});store();render()};
       section.querySelectorAll("[data-remove-stage]").forEach(b=>b.onclick=()=>{state.stages.splice(Number(b.dataset.removeStage),1);store();render()});
