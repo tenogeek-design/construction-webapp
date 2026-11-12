@@ -1,0 +1,795 @@
+
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CONSTRUCTION GROUP — Kalkulator</title>
+<style>
+:root {
+  color-scheme: dark;
+  --bg:#151c25;
+  --panel:#222e3b;
+  --panel2:#2b3949;
+  --line:#435367;
+  --text:#f3f6fa;
+  --muted:#afbecd;
+  --orange:#ee9855;
+  --blue:#77b6eb;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:
+    radial-gradient(ellipse at top right,#2b4259,transparent 55%),
+    linear-gradient(140deg,#111820,#242f3d);
+  color:var(--text);
+  font:15px/1.5 system-ui,Arial,sans-serif;
+  min-height:100vh;
+}
+button,input,select,textarea{font:inherit}
+button{
+  cursor:pointer;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:#344457;
+  color:var(--text);
+  padding:10px 14px;
+}
+button:hover{border-color:var(--orange)}
+button:focus-visible,input:focus-visible,
+select:focus-visible,textarea:focus-visible{
+  outline:2px solid var(--orange);
+  outline-offset:2px;
+}
+.primary{
+  background:var(--orange);
+  border-color:var(--orange);
+  color:#181c23;
+  font-weight:800;
+}
+.shell{max-width:1200px;margin:auto;padding:25px 18px 60px}
+.top,.row{display:flex;justify-content:space-between;align-items:center;gap:12px}
+.logo{font-size:19px;font-weight:900;letter-spacing:.04em}
+.logo span{color:var(--blue)}
+.tag{font-size:11px;letter-spacing:.15em;color:var(--muted)}
+.lang{display:flex;gap:6px}
+.lang button.active{border-color:var(--blue);background:#35516b}
+.hero{max-width:850px;padding:55px 0 28px}
+.eyebrow{font-size:12px;letter-spacing:.15em;color:var(--orange);font-weight:800}
+h1{font-size:clamp(28px,4vw,48px);line-height:1.15;margin:10px 0 14px}
+h2{font-size:20px;margin:0 0 15px}
+p{color:var(--muted)}
+.choices{display:grid;grid-template-columns:repeat(2,1fr);gap:18px}
+.choice{
+  text-align:left;
+  min-height:205px;
+  border-radius:20px;
+  padding:26px;
+  background:linear-gradient(145deg,#304356,#222e3b);
+}
+.choice .symbol{font-size:30px;color:var(--orange)}
+.choice h2{font-size:24px;margin:14px 0 8px}
+.choice p{font-size:13px;margin:0}
+.notice{
+  margin-top:18px;
+  padding:16px;
+  border:1px solid var(--line);
+  border-radius:14px;
+  background:#293440;
+}
+.notice strong{color:var(--orange)}
+.screen{display:none}
+.screen.show{display:block}
+.back{margin:20px 0;background:transparent}
+.workspace{
+  display:grid;
+  grid-template-columns:minmax(0,1.6fr) minmax(300px,1fr);
+  align-items:start;
+  gap:20px;
+}
+.panel{
+  border:1px solid var(--line);
+  background:var(--panel);
+  border-radius:18px;
+  padding:20px;
+}
+.tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:15px}
+.tabs .active{border-color:var(--orange);background:#514034}
+.job{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  border-bottom:1px solid var(--line);
+  padding:13px 0;
+}
+.job button{color:var(--orange);font-size:20px;padding:4px 13px}
+.editor{
+  margin-top:20px;
+  padding:17px;
+  border:1px solid #ad825e;
+  border-radius:14px;
+  background:var(--panel2);
+}
+.field{margin-bottom:13px}
+.field label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+input,select,textarea{
+  width:100%;
+  background:#141e29;
+  border:1px solid #53687d;
+  border-radius:9px;
+  padding:11px;
+  color:var(--text);
+}
+input[type=checkbox]{width:auto;accent-color:var(--orange)}
+.check{display:flex;align-items:center;gap:8px;margin:12px 0}
+.check label{font-size:13px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.item{border-bottom:1px solid var(--line);padding:13px 0}
+.item small{display:block;color:var(--muted)}
+.item button{font-size:12px;padding:6px 10px}
+.amount{font-size:26px;font-weight:800;color:var(--orange)}
+.divider{border-top:1px solid var(--line);margin:18px 0}
+.hint{font-size:12px;color:var(--muted)}
+.empty{color:var(--muted);padding:20px 0}
+.wide{width:100%;margin-top:15px}
+footer{margin-top:35px;font-size:12px;color:var(--muted)}
+@media(max-width:800px){
+  .choices,.workspace{grid-template-columns:1fr}
+  .choice{min-height:150px}
+  .shell{padding:16px 12px 45px}
+  .hero{padding-top:28px}
+  .two{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+
+<main class="shell">
+
+<header class="top">
+  <div>
+    <div class="logo">CONSTRUCTION <span>GROUP</span></div>
+    <div class="tag">WARSZAWA · ESTIMATE STUDIO</div>
+  </div>
+  <div class="lang">
+    <button id="langPL" class="active">PL</button>
+    <button id="langUA">UA</button>
+  </div>
+</header>
+
+<section id="start" class="screen show">
+  <div class="hero">
+    <div class="eyebrow" data-t="welcome"></div>
+    <h1 data-t="headline"></h1>
+    <p data-t="intro"></p>
+  </div>
+
+  <div class="choices">
+    <button class="choice" id="serviceButton">
+      <div class="symbol">▤</div>
+      <h2 data-t="service"></h2>
+      <p data-t="serviceDesc"></p>
+    </button>
+
+    <button class="choice" id="partnerButton">
+      <div class="symbol">▦</div>
+      <h2 data-t="partner"></h2>
+      <p data-t="partnerDesc"></p>
+    </button>
+  </div>
+
+  <div class="notice">
+    <strong data-t="noticeTitle"></strong>
+    <span data-t="notice"></span>
+  </div>
+</section>
+
+<section id="work" class="screen">
+  <button class="back" id="back" data-t="back"></button>
+
+  <div class="hero" style="padding:5px 0 20px">
+    <div class="eyebrow" id="modeLabel"></div>
+    <h1 id="modeTitle"></h1>
+    <p id="modeDescription"></p>
+  </div>
+
+  <div class="workspace">
+    <section class="panel">
+      <h2 data-t="catalog"></h2>
+      <div id="tabs" class="tabs"></div>
+      <div id="jobs"></div>
+      <div id="editor"></div>
+      <div id="custom"></div>
+    </section>
+
+    <aside class="panel">
+      <h2 data-t="estimate"></h2>
+      <div id="estimateItems"></div>
+      <div class="divider"></div>
+      <div class="row">
+        <strong data-t="total"></strong>
+        <strong class="amount" id="totalAmount">0 zł</strong>
+      </div>
+      <p class="hint" data-t="priceNote"></p>
+      <button id="copy" class="primary wide" data-t="copy"></button>
+      <p class="hint" data-t="testNote"></p>
+      <div id="status" role="status"></div>
+    </aside>
+  </div>
+</section>
+
+<footer>CONSTRUCTION GROUP · Warszawa</footer>
+</main>
+
+<script>
+"use strict";
+
+const translations = {
+  pl: {
+    welcome:"WITAMY W CONSTRUCTION GROUP",
+    headline:"Zamów wykonanie prac lub przygotuj kosztorys współpracy.",
+    intro:"Wybierz rodzaj zgłoszenia. Oblicz koszt robót lub przygotuj profesjonalny kosztorys.",
+    service:"Zamów usługę",
+    serviceDesc:"Demontaże i zabudowy GK na stelażu. Wybierz pracę, podaj ilość i oblicz koszt.",
+    partner:"Współpraca",
+    partnerDesc:"Duże zlecenia, projekty i kompleksowe zakresy robót. Własne stawki i kosztorys.",
+    noticeTitle:"Aktualny zakres:",
+    notice:"Obecnie wykonujemy demontaże oraz zabudowy GK na stelażu.",
+    back:"← Wróć",
+    catalog:"Katalog prac",
+    estimate:"Twój kosztorys",
+    total:"Razem",
+    priceNote:"Ceny orientacyjne za robociznę, bez materiałów. Ostateczna wycena po weryfikacji zakresu.",
+    copy:"Kopiuj kosztorys",
+    testNote:"Wersja testowa — zgłoszenia nie są wysyłane do bazy.",
+    empty:"Nie dodano jeszcze prac.",
+    add:"Dodaj",
+    remove:"Usuń",
+    qty:"Ilość",
+    rate:"Stawka (zł / jednostka)",
+    unit:"Jednostka",
+    place:"Miejsce",
+    wall:"Ściana",
+    ceiling:"Sufit",
+    floor:"Podłoga",
+    layers:"Liczba warstw płyt",
+    insulation:"Izolacja (+20 zł/m²)",
+    quality:"Standard wykończenia",
+    standard:"Standardowe wykonanie",
+    premium:"Podwyższone wymagania estetyczne (+20%)",
+    tileSize:"Rozmiar płytek",
+    thickness:"Grubość (cm)",
+    note:"Uwagi",
+    addEstimate:"Dodaj do kosztorysu",
+    cancel:"Anuluj",
+    indiv:"Wycena indywidualna",
+    invalid:"Podaj prawidłowe dane.",
+    own:"Dodaj własną pozycję",
+    name:"Nazwa pracy",
+    demo:"Rozbiórki",
+    gk:"Zabudowy GK",
+    prep:"Prace przygotowawcze",
+    floors:"Posadzki i płytki",
+    finish:"Wykończenie",
+    install:"Instalacje",
+    other:"Pozostałe",
+    serviceHead:"Zamów usługę",
+    partnerHead:"Kosztorys współpracy",
+    serviceInfo:"Demontaże i zabudowy GK dostępne w naszej ofercie.",
+    partnerInfo:"Dodawaj duże ilości robót i zmieniaj stawki. Bez napraw miejscowych.",
+    copied:"Kosztorys skopiowany."
+  },
+  ua: {
+    welcome:"ВІТАЄМО В CONSTRUCTION GROUP",
+    headline:"Замовте виконання робіт або підготуйте кошторис співпраці.",
+    intro:"Оберіть тип звернення. Розрахуйте вартість робіт або створіть професійний кошторис.",
+    service:"Замовити послугу",
+    serviceDesc:"Демонтаж і гіпсокартон на каркасі. Оберіть роботу, вкажіть кількість і розрахуйте вартість.",
+    partner:"Співпраця",
+    partnerDesc:"Великі замовлення, проєкти та комплексні роботи. Власні ставки й кошторис.",
+    noticeTitle:"Поточні послуги:",
+    notice:"Наразі виконуємо демонтажні роботи та монтаж гіпсокартону на каркасі.",
+    back:"← Назад",
+    catalog:"Каталог робіт",
+    estimate:"Ваш кошторис",
+    total:"Разом",
+    priceNote:"Орієнтовні ціни за роботу без матеріалів. Остаточна вартість після уточнення обсягів.",
+    copy:"Копіювати кошторис",
+    testNote:"Тестова версія — заявки не надсилаються до бази.",
+    empty:"Робіт поки не додано.",
+    add:"Додати",
+    remove:"Видалити",
+    qty:"Кількість",
+    rate:"Ставка (zł / одиниця)",
+    unit:"Одиниця",
+    place:"Місце",
+    wall:"Стіна",
+    ceiling:"Стеля",
+    floor:"Підлога",
+    layers:"Кількість шарів плит",
+    insulation:"Ізоляція (+20 zł/м²)",
+    quality:"Якість оздоблення",
+    standard:"Стандартне виконання",
+    premium:"Підвищені вимоги до оздоблення (+20%)",
+    tileSize:"Розмір плитки",
+    thickness:"Товщина (см)",
+    note:"Примітки",
+    addEstimate:"Додати до кошторису",
+    cancel:"Скасувати",
+    indiv:"Індивідуальний розрахунок",
+    invalid:"Вкажіть правильні дані.",
+    own:"Додати власну позицію",
+    name:"Назва роботи",
+    demo:"Демонтаж",
+    gk:"Гіпсокартон на каркасі",
+    prep:"Підготовчі роботи",
+    floors:"Підлоги та плитка",
+    finish:"Оздоблення",
+    install:"Інженерні роботи",
+    other:"Інші роботи",
+    serviceHead:"Замовити послугу",
+    partnerHead:"Кошторис співпраці",
+    serviceInfo:"Демонтаж і монтаж ГК, які зараз є в нашій пропозиції.",
+    partnerInfo:"Додавайте великі обсяги робіт і змінюйте ставки. Без локальних ремонтів.",
+    copied:"Кошторис скопійовано."
+  }
+};
+
+const catalog = {
+  demoTile:{pl:"Skucie płytek",ua:"Демонтаж плитки",unit:"m²",price:45,cat:"demo"},
+  demoFloor:{pl:"Demontaż podłogi",ua:"Демонтаж підлоги",unit:"m²",price:20,cat:"demo"},
+  demoScreed:{pl:"Skucie wylewki",ua:"Демонтаж стяжки",unit:"m²",price:null,cat:"demo",thick:true},
+  demoWalls:{pl:"Rozbiórka ścian działowych",ua:"Демонтаж перегородок",unit:"m²",price:null,cat:"demo"},
+  demoPlaster:{pl:"Skucie tynku",ua:"Демонтаж штукатурки",unit:"m²",price:null,cat:"demo"},
+  demoCeiling:{pl:"Demontaż sufitów",ua:"Демонтаж стель",unit:"m²",price:null,cat:"demo"},
+  demoDoors:{pl:"Demontaż drzwi",ua:"Демонтаж дверей",unit:"szt.",price:null,cat:"demo"},
+  demoGK:{pl:"Demontaż płyt GK",ua:"Демонтаж гіпсокартону",unit:"m²",price:null,cat:"demo"},
+  gkFrame:{pl:"Zabudowa GK na stelażu",ua:"ГК на каркасі",unit:"m²",price:100,cat:"gk",gk:true,quality:true},
+  gkCeiling:{pl:"Sufit GK na stelażu",ua:"Стеля ГК на каркасі",unit:"m²",price:100,cat:"gk",gk:true,quality:true},
+  gkPartition:{pl:"Ścianki działowe GK",ua:"Перегородки з ГК",unit:"m²",price:null,cat:"gk",gk:true,quality:true},
+  gkGlue:{pl:"Płyty GK na klej",ua:"ГК на клей",unit:"m²",price:50,cat:"gk",quality:true},
+  primer:{pl:"Gruntowanie",ua:"Ґрунтування",unit:"m²",price:5,cat:"prep"},
+  plaster:{pl:"Tynkowanie ścian",ua:"Штукатурка стін",unit:"m²",price:null,cat:"prep",quality:true},
+  screed:{pl:"Wylewka cementowa",ua:"Цементна стяжка",unit:"m²",price:null,cat:"prep",thick:true},
+  level:{pl:"Masa samopoziomująca",ua:"Самовирівнювальна суміш",unit:"m²",price:35,cat:"prep"},
+  tile:{pl:"Układanie płytek",ua:"Укладання плитки",unit:"m²",price:140,cat:"floors",tile:true,quality:true},
+  laminate:{pl:"Układanie paneli",ua:"Укладання ламінату",unit:"m²",price:55,cat:"floors",quality:true},
+  vinyl:{pl:"Układanie winylu",ua:"Укладання вінілової підлоги",unit:"m²",price:65,cat:"floors",quality:true},
+  paint:{pl:"Malowanie",ua:"Фарбування",unit:"m²",price:30,cat:"finish",quality:true},
+  skim:{pl:"Szpachlowanie",ua:"Шпаклювання",unit:"m²",price:40,cat:"finish",quality:true},
+  electric:{pl:"Instalacja elektryczna",ua:"Електромонтаж",unit:"pkt.",price:null,cat:"install"},
+  plumbing:{pl:"Instalacja wod.-kan.",ua:"Водопровід і каналізація",unit:"pkt.",price:null,cat:"install"},
+  rubble:{pl:"Wynoszenie gruzu",ua:"Винесення будівельного сміття",unit:"m³",price:null,cat:"other"},
+  cleanup:{pl:"Sprzątanie po remoncie",ua:"Прибирання після ремонту",unit:"m²",price:null,cat:"other"}
+};
+
+const tileRates = {
+  "30x30":[130,140],
+  "30x60":[135,145],
+  "60x60":[140,150],
+  "60x120":[190,210],
+  "120x120":[260,280]
+};
+
+const state = {
+  lang:"pl",
+  mode:"start",
+  category:"demo",
+  editing:null,
+  items:[]
+};
+
+const $ = id => document.getElementById(id);
+const T = key => translations[state.lang][key] || key;
+const money = n => new Intl.NumberFormat(
+  state.lang==="pl"?"pl-PL":"uk-UA",
+  {maximumFractionDigits:2}
+).format(n)+" zł";
+
+function escapeHTML(text){
+  return String(text).replace(/[&<>"']/g,ch=>({
+    "&":"&amp;",
+    "<":"&lt;",
+    ">":"&gt;",
+    '"':"&quot;",
+    "'":"&#39;"
+  }[ch]));
+}
+
+function translate(){
+  document.documentElement.lang=state.lang;
+  document.querySelectorAll("[data-t]").forEach(el=>{
+    el.textContent=T(el.dataset.t);
+  });
+  $("langPL").classList.toggle("active",state.lang==="pl");
+  $("langUA").classList.toggle("active",state.lang==="ua");
+  render();
+}
+
+function enter(mode){
+  state.mode=mode;
+  state.category="demo";
+  state.editing=null;
+  $("start").classList.toggle("show",mode==="start");
+  $("work").classList.toggle("show",mode!=="start");
+  render();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function render(){
+  if(state.mode==="start")return;
+
+  const partner=state.mode==="partner";
+  $("modeLabel").textContent=T(partner?"partner":"service");
+  $("modeTitle").textContent=T(partner?"partnerHead":"serviceHead");
+  $("modeDescription").textContent=T(partner?"partnerInfo":"serviceInfo");
+
+  const categories=partner
+    ?["demo","gk","prep","floors","finish","install","other"]
+    :["demo","gk"];
+
+  $("tabs").innerHTML=categories.map(cat=>`
+    <button class="${state.category===cat?"active":""}"
+      data-cat="${cat}">${T(cat)}</button>
+  `).join("");
+
+  $("tabs").querySelectorAll("button").forEach(btn=>{
+    btn.onclick=()=>{
+      state.category=btn.dataset.cat;
+      state.editing=null;
+      render();
+    };
+  });
+
+  const available=Object.entries(catalog)
+    .filter(([,job])=>job.cat===state.category)
+    .filter(([id])=>partner||id!=="gkGlue");
+
+  $("jobs").innerHTML=available.map(([id,job])=>`
+    <div class="job">
+      <span>${escapeHTML(job[state.lang])}</span>
+      <button data-job="${id}" aria-label="${T("add")}">+</button>
+    </div>
+  `).join("");
+
+  $("jobs").querySelectorAll("[data-job]").forEach(btn=>{
+    btn.onclick=()=>{
+      state.editing=btn.dataset.job;
+      renderEditor();
+      $("editor").scrollIntoView({behavior:"smooth",block:"nearest"});
+    };
+  });
+
+  renderEditor();
+  renderCustom();
+  renderEstimate();
+}
+
+function field(label,control){
+  return `<div class="field"><label>${label}</label>${control}</div>`;
+}
+
+function renderEditor(){
+  const id=state.editing;
+  if(!id){
+    $("editor").innerHTML="";
+    return;
+  }
+
+  const job=catalog[id];
+  const partner=state.mode==="partner";
+
+  let html=`<div class="editor">
+    <h2>${escapeHTML(job[state.lang])}</h2>`;
+
+  if(job.gk){
+    html+=field(T("place"),`
+      <select id="eplace">
+        <option value="wall">${T("wall")}</option>
+        <option value="ceiling">${T("ceiling")}</option>
+      </select>
+    `);
+
+    html+=field(T("layers"),`
+      <select id="elayers">
+        <option value="1">1</option>
+        <option value="2">2</option>
+      </select>
+    `);
+
+    html+=`<div class="check">
+      <input type="checkbox" id="einsulation">
+      <label for="einsulation">${T("insulation")}</label>
+    </div>`;
+  }
+
+  if(job.tile){
+    html+=field(T("place"),`
+      <select id="eplace">
+        <option value="floor">${T("floor")}</option>
+        <option value="wall">${T("wall")}</option>
+      </select>
+    `);
+    html+=field(T("tileSize"),`
+      <select id="etile">
+        ${Object.keys(tileRates).map(size=>`
+          <option value="${size}">${size.replace("x"," × ")} cm</option>
+        `).join("")}
+      </select>
+    `);
+  }
+
+  if(job.thick){
+    html+=field(T("thickness"),`
+      <input id="ethick" type="number" min="0" step="0.5" value="5">
+    `);
+  }
+
+  html+=field(`${T("qty")} (${job.unit})`,`
+    <input id="eqty" type="number" min="0.01" step="0.01" value="1">
+  `);
+
+  if(job.quality){
+    html+=field(T("quality"),`
+      <select id="equality">
+        <option value="standard">${T("standard")}</option>
+        <option value="premium">${T("premium")}</option>
+      </select>
+    `);
+  }
+
+  html+=field(T("rate"),`
+    <input id="erate" type="number" min="0" step="0.01"
+      value="${job.price??""}"
+      ${partner?"":job.price!==null?"readonly":""}>
+  `);
+
+  html+=field(T("note"),`
+    <textarea id="enote" rows="2" maxlength="500"></textarea>
+  `);
+
+  html+=`
+    <p id="preview" class="amount">—</p>
+    <div class="row">
+      <button id="cancel">${T("cancel")}</button>
+      <button id="save" class="primary">+ ${T("addEstimate")}</button>
+    </div>
+  </div>`;
+
+  $("editor").innerHTML=html;
+
+  function update(){
+    if(job.tile){
+      const size=$("etile").value;
+      const place=$("eplace").value;
+      const rate=tileRates[size][place==="floor"?0:1];
+      if(!partner)$("erate").value=rate;
+    }
+
+    const qty=Number($("eqty").value);
+    const value=$("erate").value;
+    const rate=value===""?null:Number(value);
+
+    if(!(qty>0)||!Number.isFinite(qty)){
+      $("preview").textContent="—";
+      return;
+    }
+
+    if(rate===null){
+      $("preview").textContent=T("indiv");
+      return;
+    }
+
+    const premium=$("equality")?.value==="premium";
+    const extra=job.gk
+      ?($("elayers").value==="2"?35:0)+($("einsulation").checked?20:0)
+      :0;
+
+    const sum=(rate*(premium?1.2:1)+extra)*qty;
+    $("preview").textContent=money(sum);
+  }
+
+  $("editor").querySelectorAll("input,select").forEach(el=>{
+    el.addEventListener("input",update);
+    el.addEventListener("change",update);
+  });
+
+  $("cancel").onclick=()=>{
+    state.editing=null;
+    renderEditor();
+  };
+
+  $("save").onclick=()=>{
+    const qty=Number($("eqty").value);
+    const value=$("erate").value;
+    const rate=value===""?null:Number(value);
+
+    if(!(qty>0)||!Number.isFinite(qty)||
+       rate!==null&&(!Number.isFinite(rate)||rate<0)){
+      alert(T("invalid"));
+      return;
+    }
+
+    const quality=$("equality")?.value||"standard";
+    const premium=quality==="premium";
+
+    const extra=job.gk
+      ?($("elayers").value==="2"?35:0)+($("einsulation").checked?20:0)
+      :0;
+
+    const price=rate===null
+      ?null
+      :Math.round((rate*(premium?1.2:1)+extra)*qty*100)/100;
+
+    const details=[];
+
+    if(job.gk){
+      details.push(T($("eplace").value));
+      details.push(T("layers")+": "+$("elayers").value);
+      if($("einsulation").checked)details.push(T("insulation"));
+    }
+
+    if(job.tile){
+      details.push(T($("eplace").value));
+      details.push($("etile").value+" cm");
+    }
+
+    if(job.thick)details.push(T("thickness")+": "+$("ethick").value+" cm");
+    if(job.quality)details.push(T(quality));
+    if($("enote").value.trim())details.push($("enote").value.trim());
+
+    state.items.push({
+      id,
+      label:null,
+      qty,
+      unit:job.unit,
+      rate,
+      price,
+      details:details.join(" · ")
+    });
+
+    state.editing=null;
+    renderEditor();
+    renderEstimate();
+  };
+
+  update();
+}
+
+function renderCustom(){
+  if(state.mode!=="partner"){
+    $("custom").innerHTML="";
+    return;
+  }
+
+  $("custom").innerHTML=`
+    <div class="editor">
+      <h2>${T("own")}</h2>
+      ${field(T("name"),'<input id="customName" maxlength="120">')}
+      <div class="two">
+        ${field(T("qty"),'<input id="customQty" type="number" min="0.01" step="0.01" value="1">')}
+        ${field(T("unit"),`
+          <select id="customUnit">
+            <option>m²</option>
+            <option>mb</option>
+            <option>szt.</option>
+            <option>m³</option>
+            <option>godz.</option>
+            <option>kpl.</option>
+          </select>
+        `)}
+      </div>
+      ${field(T("rate"),'<input id="customRate" type="number" min="0" step="0.01" value="0">')}
+      <button class="primary" id="addCustom">+ ${T("add")}</button>
+    </div>
+  `;
+
+  $("addCustom").onclick=()=>{
+    const label=$("customName").value.trim();
+    const qty=Number($("customQty").value);
+    const rate=Number($("customRate").value);
+
+    if(!label||!(qty>0)||!Number.isFinite(qty)||
+       !(rate>=0)||!Number.isFinite(rate)){
+      alert(T("invalid"));
+      return;
+    }
+
+    state.items.push({
+      id:null,
+      label,
+      qty,
+      unit:$("customUnit").value,
+      rate,
+      price:Math.round(qty*rate*100)/100,
+      details:""
+    });
+
+    renderCustom();
+    renderEstimate();
+  };
+}
+
+function renderEstimate(){
+  const container=$("estimateItems");
+
+  if(!state.items.length){
+    container.innerHTML=`<div class="empty">${T("empty")}</div>`;
+    $("totalAmount").textContent="0 zł";
+    return;
+  }
+
+  container.innerHTML=state.items.map((item,index)=>{
+    const title=item.id?catalog[item.id][state.lang]:item.label;
+    return `<div class="item">
+      <strong>${escapeHTML(title)}</strong>
+      <small>${item.qty} ${escapeHTML(item.unit)}</small>
+      <small>${escapeHTML(item.details)}</small>
+      <div class="row">
+        <span>${item.price===null?T("indiv"):money(item.price)}</span>
+        <button data-remove="${index}">${T("remove")}</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  container.querySelectorAll("[data-remove]").forEach(btn=>{
+    btn.onclick=()=>{
+      state.items.splice(Number(btn.dataset.remove),1);
+      renderEstimate();
+    };
+  });
+
+  const total=state.items.reduce((sum,item)=>sum+(item.price||0),0);
+  const individual=state.items.some(item=>item.price===null);
+
+  $("totalAmount").textContent=
+    money(total)+(individual?" + "+T("indiv"):"");
+}
+
+$("langPL").onclick=()=>{
+  state.lang="pl";
+  translate();
+};
+
+$("langUA").onclick=()=>{
+  state.lang="ua";
+  translate();
+};
+
+$("serviceButton").onclick=()=>enter("service");
+$("partnerButton").onclick=()=>enter("partner");
+$("back").onclick=()=>enter("start");
+
+$("copy").onclick=async()=>{
+  const lines=[
+    "CONSTRUCTION GROUP — "+T("estimate"),
+    ...state.items.map(item=>{
+      const title=item.id?catalog[item.id][state.lang]:item.label;
+      return `${title} | ${item.qty} ${item.unit} | ${item.details} | ${
+        item.price===null?T("indiv"):money(item.price)
+      }`;
+    }),
+    T("total")+": "+$("totalAmount").textContent,
+    T("priceNote")
+  ];
+
+  const result=lines.join("\n");
+
+  try{
+    await navigator.clipboard.writeText(result);
+    $("status").textContent=T("copied");
+  }catch(error){
+    const box=document.createElement("textarea");
+    box.value=result;
+    box.rows=7;
+    $("status").replaceChildren(box);
+    box.select();
+  }
+};
+
+translate();
+</script>
+</body>
+</html>
