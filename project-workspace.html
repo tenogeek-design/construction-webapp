@@ -75,9 +75,29 @@ select,input{background:#142639;color:#f3f7fb;border:1px solid #597793;border-ra
 .listCard h3{margin:0 0 7px;font-size:16px}
 .listCard p{margin:0;color:#bed0de;font-size:12px}
 @media(max-width:760px){.wrap{padding:16px 13px 44px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric,.panel{padding:15px}.metric strong{font-size:19px}.top{flex-wrap:wrap}.work{grid-template-columns:1fr 1fr}.work>div:first-child{grid-column:1/-1}.hero{flex-wrap:wrap}.listCard{flex-wrap:wrap}.grid2{grid-template-columns:1fr}}
+
+/* Вечерний отчёт */
+#dailyPanel h3{font-size:17px}
+#dailyPanel h4{font-size:14px}
+.dailyForm,.dailyReport{background:#1b2d40;border:1px solid #4a6681;border-radius:14px;padding:17px;margin:15px 0}
+.dailyLine{display:grid;grid-template-columns:minmax(160px,2fr) minmax(120px,1fr) auto;gap:9px;align-items:end;margin:9px 0}
+.dailyLine button{padding:11px 15px}
+.dailyCashDecision,.dailyPhotoBox,.dailyCash{padding:14px;border:1px solid #526a82;background:#25394e;border-radius:12px;margin:14px 0}
+.dailyCheck{display:flex;flex-direction:row;align-items:center;gap:10px}
+.dailyCheck input{width:18px;height:18px}
+.dailyEntry{display:flex;justify-content:space-between;gap:12px;padding:9px 0;border-bottom:1px solid #385068}
+.dailyEntry span{color:#f0b38a;font-weight:800;white-space:nowrap}
+.dailyPhotoStrip{display:flex;gap:10px;flex-wrap:wrap;margin:13px 0}
+.dailyPhotoStrip img{width:90px;height:75px;object-fit:cover;border-radius:8px;border:1px solid #577490}
+.dailyPhotoWrap{position:relative}
+.dailyPhotoWrap button{position:absolute;top:0;right:0;padding:2px 7px;background:#563b48}
+#dailyEditorMessage{min-height:20px}
+@media(max-width:640px){.dailyLine{grid-template-columns:1fr auto}.dailyLine label:first-child{grid-column:1/-1}.dailyReport{padding:12px}.dailyEntry{flex-wrap:wrap}}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="/project-workspace.js"></script>
+<script defer src="/project-daily-reports.js"></script>
 </head>
 <body>
 <main class="wrap">
