@@ -128,19 +128,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   function wire(){
     document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
-    document.querySelectorAll("[data-stage-toggle]").forEach(b=>b.addEventListener("click",()=>{
-      const el=document.querySelector('[data-stage-body="'+b.dataset.stageToggle+'"]');
-      if(!el)return;el.hidden=!el.hidden;b.setAttribute("aria-expanded",String(!el.hidden));
-    }));
-    $("positionSearch")?.addEventListener("input",ev=>{
-      query=ev.target.value;
-      const el=$("panel-stages");el.innerHTML=renderStages();
-      document.querySelectorAll("[data-stage-toggle]").forEach(b=>b.onclick=()=>{
-        const body=document.querySelector('[data-stage-body="'+b.dataset.stageToggle+'"]');
-        if(body){body.hidden=!body.hidden;b.setAttribute("aria-expanded",String(!body.hidden))}
-      });
-      const input=$("positionSearch");input.focus();input.setSelectionRange(query.length,query.length);
-      input.addEventListener("input",arguments.callee);
+    const stagePanel=$("panel-stages");
+    stagePanel?.addEventListener("click",event=>{
+      const button=event.target.closest("[data-stage-toggle]");
+      if(!button||!stagePanel.contains(button))return;
+      const body=stagePanel.querySelector('[data-stage-body="'+button.dataset.stageToggle+'"]');
+      if(!body)return;
+      body.hidden=!body.hidden;
+      button.setAttribute("aria-expanded",String(!body.hidden));
+    });
+    stagePanel?.addEventListener("input",event=>{
+      if(event.target.id!=="positionSearch")return;
+      query=event.target.value;
+      const cursor=event.target.selectionStart;
+      stagePanel.innerHTML=renderStages();
+      const input=$("positionSearch");
+      input.focus();
+      input.setSelectionRange(cursor,cursor);
     });
     $("assignmentForm")?.addEventListener("submit",ev=>{
       ev.preventDefault();changeState("assign",$("foremanId").value||null,$("brigadeId").value||null);
