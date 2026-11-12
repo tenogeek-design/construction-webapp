@@ -51,7 +51,7 @@
       setOptions('projectBrigade',brigades,'Не назначена',x=>x.name);
       setOptions('projectForeman',employees,'Не назначен',displayName);
       render();
-      if(!b.error && !e.error) msg('Загружено объектов: '+projects.length);
+      if(!b.error && !e.error) msg('Загружено объектов: '+projects.length+(dynamics.size?' · динамика работ обновлена':' · динамика пока недоступна'));
     } catch(err) { msg(errorText(err),true); $('projectsTable').replaceChildren(); }
   }
   function render() {
