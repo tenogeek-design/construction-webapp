@@ -501,6 +501,29 @@ document.addEventListener("DOMContentLoaded", () => {
     '<div class="cg-hero-actions"><button type="button" data-go="reports" class="cg-primary-action">+ Отчёт за сегодня</button>'+
     '<button type="button" data-go="projects" class="cg-secondary-action">Мои объекты</button></div></div>';
   home.append(hero);
+  const metrics=document.createElement("div");
+  metrics.className="cg-home-metrics";
+  metrics.innerHTML='<div><span>Назначено объектов</span><strong id="cgMetricObjects">—</strong></div>'+
+    '<div><span>В работе</span><strong id="cgMetricActive">—</strong></div>'+
+    '<div><span>Ожидают старта</span><strong id="cgMetricPlanned">—</strong></div>';
+  home.append(metrics);
+  async function loadHomeMetrics(){
+    try{
+      if(!window.supabase)return;
+      const db=window.supabase.createClient("https://yepxskcfxyiyqqhmdpve.supabase.co",
+        "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH");
+      const {data:{session}}=await db.auth.getSession();
+      if(!session?.access_token)return;
+      const response=await fetch("/api/project-workspace",{headers:{Authorization:"Bearer "+session.access_token}});
+      if(!response.ok)return;
+      const result=await response.json();
+      const items=Array.isArray(result.items)?result.items:[];
+      metrics.querySelector("#cgMetricObjects").textContent=String(items.length);
+      metrics.querySelector("#cgMetricActive").textContent=String(items.filter(x=>x.status==="active").length);
+      metrics.querySelector("#cgMetricPlanned").textContent=String(items.filter(x=>x.status==="planned").length);
+    }catch(error){console.warn("Foreman metrics unavailable",error)}
+  }
+  loadHomeMetrics();
   const actionHeading = document.createElement("div");
   actionHeading.className = "cg-home-heading";
   actionHeading.innerHTML = '<div><span class="cg-eyebrow">БЫСТРЫЙ ДОСТУП</span><h2>Что делаем сегодня</h2></div>';
