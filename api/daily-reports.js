@@ -54,8 +54,16 @@ export default async function handler(req,res) {
         .eq("project_id",projectId).order("work_date",{ascending:false})
         .order("created_at",{ascending:false}).limit(60);
       if(error)throw error;
+      const {data:stages,error:stageError}=await db.from("project_work_stages").select("id,name").eq("project_id",projectId);
+      if(stageError)throw stageError;
+      const stageIds=(stages||[]).map(x=>x.id);
+      const {data:positions,error:positionError}=stageIds.length?
+        await db.from("project_work_positions").select("id,stage_id,name,unit,rate,quantity,completed_quantity").in("stage_id",stageIds):
+        {data:[],error:null};
+      if(positionError)throw positionError;
+      const workPositions=(positions||[]).map(p=>({...p,stage_name:(stages||[]).find(s=>s.id===p.stage_id)?.name||""}));
       const ids=(reports||[]).map(x=>x.id);
-      if(!ids.length)return res.status(200).json({success:true,items:[],isOwner:owner});
+      if(!ids.length)return res.status(200).json({success:true,items:[],isOwner:owner,positions:workPositions});
       const [entries,photos,history,extras]=await Promise.all([
         db.from("daily_work_report_items").select("id,report_id,position_id,quantity").in("report_id",ids),
         db.from("daily_work_report_photos").select("id,report_id,storage_path,original_name,mime_type,size_bytes,created_at").in("report_id",ids).order("created_at"),
@@ -67,7 +75,7 @@ export default async function handler(req,res) {
         const {data}=await db.storage.from(BUCKET).createSignedUrl(photo.storage_path,1200);
         return {...photo,url:data?.signedUrl||null};
       }));
-      return res.status(200).json({success:true,isOwner:owner,items:reports.map(r=>({
+      return res.status(200).json({success:true,isOwner:owner,positions:workPositions,items:reports.map(r=>({
         ...r,lines:(entries.data||[]).filter(x=>x.report_id===r.id),
         extras:(extras.data||[]).filter(x=>x.report_id===r.id),
         photos:photoLinks.filter(x=>x.report_id===r.id),
