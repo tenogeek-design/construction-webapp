@@ -39,13 +39,93 @@ document.addEventListener("DOMContentLoaded",()=>{
        esc(p.name)+' · '+num(p.completed_quantity||0)+'/'+num(p.quantity)+' '+esc(p.unit)+'</option>'
      ).join("");
  }
- function row(p={}) {
+
+ const aliases={
+   tile:"укладка плитки кладка плитка плиточные работы облицовка kafel kafle",
+   demoTile:"снятие плитки сбить плитку демонтаж плитки",
+   demoScreed:"снять стяжку демонтаж бетона стяжки",
+   demoFloor:"снять пол демонтаж пола",
+   demoWalls:"слом стен демонтаж перегородок",
+   demoPlaster:"сбить штукатурку штукатурки",
+   gkFrame:"гипсокартон гк каркас профиль каркаса stelaż",
+   gkCeiling:"потолок гк потолки гипсокартон",
+   gkPartition:"перегородки гк стена гипсокартон",
+   rubble:"мусор мусора винос вынос вывоз gruz wywoz smieci",
+   cleanup:"уборка мусора уборка после ремонта",
+   paint:"покраска покрасить стены малярка",
+   skim:"шпатлевка шпаклевка шпаклевание",
+   primer:"грунтовка грунтование"
+ };
+ const catalog=()=>Object.entries(window.CG_WORK_CATALOG||{}).map(([key,item])=>({key,...item}));
+ const norm=v=>String(v||"").toLocaleLowerCase().normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"").replace(/ł/g,"l").replace(/ґ/g,"г")
+    .replace(/[^\p{L}\p{N}]+/gu," ").trim();
+ function suggestions(line){
+   const input=line.querySelector(".dailySearch"),box=line.querySelector(".dailySuggestions");
+   if(!input||!box)return;
+   const term=norm(input.value);
+   if(term.length<2){box.hidden=true;box.innerHTML="";return;}
+   const words=term.split(/\s+/).filter(Boolean);
+   const matchesProject=(workspace?.stages||[]).flatMap(s=>(s.items||[])
+      .filter(p=>words.every(w=>norm(p.name+" "+s.name).includes(w)))
+      .map(p=>({type:"project",id:p.id,name:p.name,unit:p.unit,rate:p.rate,stageId:s.id})));
+   const matchesCatalog=catalog()
+     .filter(item=>words.every(w=>norm(item.pl+" "+item.ua+" "+(aliases[item.key]||"")).includes(w)))
+     .map(item=>({type:"catalog",id:item.key,name:item.ua||item.pl,
+       unit:item.unit,rate:item.price}));
+   const matches=[...matchesProject,...matchesCatalog].slice(0,9);
+   box.hidden=false;
+   box.innerHTML=matches.length?matches.map(m=>
+     '<button type="button" class="dailySuggestion" data-kind="'+esc(m.type)+
+      '" data-id="'+esc(m.id)+'"><b>'+esc(m.name)+'</b><small>'+
+      (m.type==="project"?"Согласовано в объекте · ":"Прайс · ")+
+      esc(m.unit)+(m.rate!==null&&m.rate!==undefined?" · "+money(m.rate):" · цена вручную")+
+      '</small></button>').join(""):
+     '<div class="note">Нет в прайсе — можно оставить своё название, указать единицу и цену.</div>';
+ }
+ function recalcLine(line){
+   const qtyRaw=line.querySelector(".dailyQty")?.value||"";
+   const qty=Number(qtyRaw),mode=line.querySelector(".dailyMode")?.value;
+   let rate=null,unit="",label="";
+   if(mode==="object"){
+      const p=findPosition(line.querySelector(".dailyPosition")?.value);
+      if(p){rate=Number(p.rate);unit=p.unit;label="Ставка по объекту";}
+   }else{
+      const raw=line.querySelector(".dailyRate")?.value||"";
+      if(raw!==""){rate=Number(raw);unit=line.querySelector(".dailyUnit")?.value||"";}
+      label=line.dataset.catalogKey?"Цена из прайса (ориентир)":"Указанная вручную цена";
+   }
+   const output=line.querySelector(".dailyCalc");
+   if(!output)return;
+   output.textContent=qtyRaw!==""&&qty>0&&rate!==null&&Number.isFinite(rate)?
+    label+": "+num(qty)+" "+unit+" × "+money(rate)+" = "+money(qty*rate):
+    "Расчёт появится после выбора работы, объёма и цены";
+ }
+ function row(p={}){
    const positionId=p.position_id||p.positionId||"";
    const stageId=stageForPosition(positionId);
-   return '<div class="dailyLine">'+
-    '<label>Этап<select class="dailyStage">'+stageOptions(stageId)+'</select></label>'+
-    '<label>Позиция<select class="dailyPosition">'+posOptions(positionId,stageId)+'</select></label>'+
+   const isExtra=Boolean(p.source||p.work_name);
+   const mode=isExtra?"extra":(positionId?"object":"extra");
+   const workName=p.work_name||p.name||"";
+   const rawPrice=p.unit_price??p.price??"";
+   return '<div class="dailyLine" data-catalog-key="'+esc(p.catalog_key||p.catalogKey||"")+'">'+
+    '<label>Вид работы<select class="dailyMode">'+
+    '<option value="extra"'+(mode==="extra"?" selected":"")+'>Поиск в прайсе / своя работа</option>'+
+    '<option value="object"'+(mode==="object"?" selected":"")+'>Позиция утверждённого объекта</option></select></label>'+
+    '<div class="dailyApprovedFields"'+(mode==="extra"?" hidden":"")+'>'+
+      '<div class="dailyFieldsGrid">'+
+      '<label>Этап<select class="dailyStage">'+stageOptions(stageId)+'</select></label>'+
+      '<label>Позиция<select class="dailyPosition">'+posOptions(positionId,stageId)+'</select></label></div>'+
+      '<p class="note">Для согласованных позиций ставка берётся из сметы объекта.</p></div>'+
+    '<div class="dailyExtraFields"'+(mode==="object"?" hidden":"")+'>'+
+      '<label>Название работы — начни вводить<input class="dailySearch" autocomplete="off" maxlength="160" placeholder="Плитка, демонтаж, GK, вывоз мусора..." value="'+esc(workName)+'"></label>'+
+      '<div class="dailySuggestions" role="group" aria-label="Подсказки из прайса" hidden></div>'+
+      '<div class="dailyFieldsGrid">'+
+        '<label>Единица<input class="dailyUnit" maxlength="24" placeholder="м² / м³ / шт." value="'+esc(p.unit||"")+'"></label>'+
+        '<label>Цена за единицу, zł<input class="dailyRate" type="number" min="0" max="10000000" step="0.01" placeholder="Можно не указывать" value="'+esc(rawPrice)+'"></label></div>'+
+      '<p class="note">Новая работа — отдельная позиция отчёта. Её цена попередня й не змінює затверджений кошторис автоматично.</p></div>'+
     '<label>Сделано за день<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="Например: 50"></label>'+
+    '<div class="dailyCalc" aria-live="polite">Расчёт по позиции</div>'+
     '<button type="button" data-remove-line aria-label="Удалить позицию">×</button></div>';
  }
  async function call(action,values={},method="POST") {
