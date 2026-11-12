@@ -86,6 +86,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   function renderTeam(){
     const e=employees.find(x=>x.id===project.foreman_id),b=brigades.find(x=>x.id===project.brigade_id);
+    const suggested=(!project.brigade_id&&project.foreman_id)
+      ?brigades.filter(x=>x.foreman_id===project.foreman_id):[];
+    const initialBrigade=project.brigade_id||(suggested.length===1?suggested[0].id:null);
     if(!isOwner)return '<div class="panel"><h2>Команда объекта</h2><div class="grid2">'+
       '<div class="data"><small>Ответственный бригадир</small><b>Назначен OWNER</b></div>'+
       '<div class="data"><small>Объект</small><b>'+html(status(project.status))+'</b></div></div>'+
@@ -93,8 +96,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const canEdit=!["completed","cancelled"].includes(project.status);
     return '<div class="panel"><h2>Управление объектом · OWNER</h2>'+
      '<p class="note">1. Выбери бригаду — её руководитель подставится автоматически. 2. Сохрани назначение. 3. Нажми «Начать работу» (для запланированного объекта). Зарплаты и расходы этим действием не меняются.</p>'+
+     (suggested.length===1?'<p class="note" style="color:#f4b77e">Найдена бригада этого ответственного: '+html(suggested[0].name)+'. Она предложена в списке, но ещё не записана в базу — нажми «Сохранить назначение».</p>':"")+
      '<form id="assignmentForm"><div class="grid2">'+
-       '<label>Бригада<select id="brigadeId" '+(!canEdit?'disabled':'')+'>'+option("","Не назначена",project.brigade_id)+brigades.map(x=>option(x.id,x.name,project.brigade_id)).join("")+'</select></label>'+
+       '<label>Бригада<select id="brigadeId" '+(!canEdit?'disabled':'')+'>'+option("","Не назначена",initialBrigade)+brigades.map(x=>option(x.id,x.name,initialBrigade)).join("")+'</select></label>'+
        '<label>Ответственный бригадир<select id="foremanId" '+(!canEdit?'disabled':'')+'>'+option("","Не назначен",project.foreman_id)+employees.map(x=>option(x.id,x.full_name,project.foreman_id)).join("")+'</select></label>'+
      '</div><div class="actions"><button type="submit" class="main" '+(!canEdit?'disabled':'')+'>Сохранить назначение</button></div></form>'+
      '<div class="warning" style="margin-top:17px">'+
