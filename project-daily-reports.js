@@ -81,7 +81,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       (m.type==="project"?"Согласовано в объекте · ":"Прайс · ")+
       esc(m.unit)+(m.rate!==null&&m.rate!==undefined?" · "+money(m.rate):" · цена вручную")+
       '</small></button>').join(""):
-     '<div class="note">Нет в прайсе — можно оставить своё название, указать единицу и цену.</div>';
+     '<div class="note">Нет в прайсе — впиши свою работу. Если это просто заметка, достаточно названия.</div>';
  }
  function recalcLine(line){
    const qtyRaw=line.querySelector(".dailyQty")?.value||"";
@@ -145,7 +145,7 @@ document.addEventListener("DOMContentLoaded",()=>{
       '<div class="dailyFieldsGrid">'+
         '<label>Единица<input class="dailyUnit" maxlength="24" placeholder="м² / м³ / шт." value="'+esc(p.unit||"")+'"></label>'+
         '<label>Цена за единицу, zł<input class="dailyRate" type="number" min="0" max="10000000" step="0.01" placeholder="Можно не указывать" value="'+esc(rawPrice)+'"></label></div>'+
-      '<p class="note">Новая работа — отдельная позиция отчёта. Её цена попередня й не змінює затверджений кошторис автоматично.</p></div>'+
+      '<p class="note">Новая робота — окремий запис. Ціна орієнтовна, кошторис не змінюється. Лише зауваження чи сміття? Можна залишити тільки назву без ціни та кількості.</p></div>'+
     '<label>Сделано за день<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="Например: 50"></label>'+
     '<div class="dailyCalc" aria-live="polite">Расчёт по позиции</div>'+
     '<button type="button" data-remove-line aria-label="Удалить позицию">×</button></div>';
@@ -353,9 +353,14 @@ document.addEventListener("DOMContentLoaded",()=>{
        const unit=e.querySelector(".dailyUnit")?.value?.trim()||"";
        const rateRaw=e.querySelector(".dailyRate")?.value?.trim()||"";
        if(!name&&!unit&&!quantityRaw&&!rateRaw)continue;
+       const noteOnly=name.length>=2 && !e.dataset.catalogKey && !unit && !quantityRaw && !rateRaw;
+       if(noteOnly){
+         extras.push({source:"manual",catalogKey:null,name,unit:"заметка",quantity:1,price:null});
+         continue;
+       }
        if(name.length<2||name.length>160||unit.length<1||unit.length>24||
           !quantityRaw||!Number.isFinite(quantity)||quantity<=0||quantity>1000000)
-         throw Error("Заполни название, единицу и объём новой работы");
+         throw Error("Заполни название, единицу и объём новой работы (или оставь только название для заметки)");
        const price=rateRaw===""?null:Number(rateRaw);
        if(price!==null&&(!Number.isFinite(price)||price<0||price>10000000))
          throw Error("Проверь цену за единицу");
