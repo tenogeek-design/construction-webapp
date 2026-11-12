@@ -12,19 +12,41 @@ document.addEventListener("DOMContentLoaded",()=>{
  let workspace=null,reports=[],active=false,editing=null,busy=false;
  const root=()=>document.getElementById(ROOT_ID);
  function msg(text,error=false){const el=root()?.querySelector("#dailyMessage");if(el){el.textContent=text;el.style.color=error?"#ffb6ad":"#b8d3e5";}}
- function posOptions(selected=""){
-   const all=workspace?.stages||[];
-   return '<option value="">Выбери работу из объекта</option>'+all.map(s=>
-     '<optgroup label="'+esc(s.name)+'">'+(s.items||[]).map(p=>
-       '<option value="'+esc(p.id)+'"'+(p.id===selected?' selected':'')+'>'+
-       esc(p.name)+' · '+num(p.completed_quantity||0)+'/'+num(p.quantity)+' '+esc(p.unit)+'</option>').join("")+
-     '</optgroup>').join("");
+ function findPosition(id){
+   for(const s of workspace?.stages||[]){
+     const p=(s.items||[]).find(x=>x.id===id);
+     if(p)return p;
+   }
+   return null;
  }
- function findPosition(id){for(const s of workspace?.stages||[]){const p=(s.items||[]).find(x=>x.id===id);if(p)return p;}return null;}
+ function stageForPosition(id){
+   for(const s of workspace?.stages||[]){
+     if((s.items||[]).some(p=>p.id===id))return s.id;
+   }
+   return "";
+ }
+ function stageOptions(selected=""){
+   return '<option value="">Выбери этап работ</option>'+
+     (workspace?.stages||[]).map(s=>
+       '<option value="'+esc(s.id)+'"'+(selected===s.id?' selected':'')+'>'+esc(s.name)+'</option>'
+     ).join("");
+ }
+ function posOptions(selected="",stageId=""){
+   const stage=(workspace?.stages||[]).find(s=>s.id===stageId);
+   return '<option value="">'+(stage?'Выбери позицию':'Сначала выбери этап')+'</option>'+
+     (stage?.items||[]).map(p=>
+       '<option value="'+esc(p.id)+'"'+(p.id===selected?' selected':'')+'>'+
+       esc(p.name)+' · '+num(p.completed_quantity||0)+'/'+num(p.quantity)+' '+esc(p.unit)+'</option>'
+     ).join("");
+ }
  function row(p={}) {
-   return '<div class="dailyLine"><label>Работа<select class="dailyPosition">'+posOptions(p.position_id||p.positionId||"")+'</select></label>'+
+   const positionId=p.position_id||p.positionId||"";
+   const stageId=stageForPosition(positionId);
+   return '<div class="dailyLine">'+
+    '<label>Этап<select class="dailyStage">'+stageOptions(stageId)+'</select></label>'+
+    '<label>Позиция<select class="dailyPosition">'+posOptions(positionId,stageId)+'</select></label>'+
     '<label>Сделано за день<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="Например: 50"></label>'+
-    '<button type="button" data-remove-line>×</button></div>';
+    '<button type="button" data-remove-line aria-label="Удалить позицию">×</button></div>';
  }
  async function call(action,values={},method="POST") {
    if(!db)throw Error("Не загрузилась авторизация");
@@ -44,7 +66,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    const foreman=!workspace.isOwner;
    root().innerHTML='<div class="panel" id="dailyPanel">'+
       '<div class="section-header"><div><h2>Рабочий день · отчёты</h2>'+
-      '<p class="note">Объект → позиция → выполненный объём → фотографии → OWNER. Деньги из кассы согласовываются отдельно.</p></div>'+
+      '<p class="note">Объект → этап → позиция → выполненный объём → фотографии → OWNER. Деньги из кассы согласовываются отдельно.</p></div>'+
       '<div class="actions">'+(foreman&&["active","paused"].includes(workspace.project.status)?
         '<button class="main" id="dailyNew" type="button">+ Вечерний отчёт</button>':"")+
       '<button id="dailyRefresh" type="button">↻ Обновить</button></div></div>'+
@@ -120,6 +142,12 @@ document.addEventListener("DOMContentLoaded",()=>{
    host.querySelector("#dailyClose").onclick=()=>{editing=null;host.replaceChildren()};
    host.querySelector("#dailyNeedCash").onchange=e=>host.querySelector("#dailyCashFields").hidden=!e.target.checked;
    host.querySelector("#dailyAddLine").onclick=()=>host.querySelector("#dailyLines").insertAdjacentHTML("beforeend",row());
+   host.querySelector("#dailyLines").addEventListener("change",event=>{
+     if(!event.target.matches(".dailyStage"))return;
+     const line=event.target.closest(".dailyLine");
+     const position=line?.querySelector(".dailyPosition");
+     if(position)position.innerHTML=posOptions("",event.target.value);
+   });
    host.querySelector("#dailyLines").onclick=e=>{if(e.target.matches("[data-remove-line]"))e.target.closest(".dailyLine").remove()};
    host.querySelector("#dailySaveDraft").onclick=()=>save(false);
    host.querySelector("#dailySend").onclick=()=>save(true);
@@ -130,7 +158,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    const lines=[...host.querySelectorAll(".dailyLine")].map(e=>({
      positionId:e.querySelector(".dailyPosition").value,quantity:Number(e.querySelector(".dailyQty").value)
    })).filter(x=>x.positionId||x.quantity);
-   if(lines.some(x=>!x.positionId||!Number.isFinite(x.quantity)||x.quantity<=0))throw Error("Выбери работу и объём больше нуля");
+   if(lines.some(x=>!x.positionId||!Number.isFinite(x.quantity)||x.quantity<=0))throw Error("Выбери этап, позицию и объём больше нуля");
    const need=host.querySelector("#dailyNeedCash").checked;
    const amount=Number(host.querySelector("#dailyCashAmount").value);
    if(need&&(!Number.isFinite(amount)||amount<=0||!host.querySelector("#dailyCashPurpose").value.trim()))
