@@ -56,18 +56,20 @@ export default async function handler(req,res) {
       if(error)throw error;
       const ids=(reports||[]).map(x=>x.id);
       if(!ids.length)return res.status(200).json({success:true,items:[],isOwner:owner});
-      const [entries,photos,history]=await Promise.all([
+      const [entries,photos,history,extras]=await Promise.all([
         db.from("daily_work_report_items").select("id,report_id,position_id,quantity").in("report_id",ids),
         db.from("daily_work_report_photos").select("id,report_id,storage_path,original_name,mime_type,size_bytes,created_at").in("report_id",ids).order("created_at"),
-        db.from("daily_work_report_history").select("id,report_id,event,details,created_at").in("report_id",ids).order("created_at")
+        db.from("daily_work_report_history").select("id,report_id,event,details,created_at").in("report_id",ids).order("created_at"),
+        db.from("daily_work_report_extras").select("id,report_id,source,catalog_key,work_name,unit,quantity,unit_price").in("report_id",ids).order("created_at")
       ]);
-      if(entries.error||photos.error||history.error)throw entries.error||photos.error||history.error;
+      if(entries.error||photos.error||history.error||extras.error)throw entries.error||photos.error||history.error||extras.error;
       const photoLinks=await Promise.all((photos.data||[]).map(async photo=>{
         const {data}=await db.storage.from(BUCKET).createSignedUrl(photo.storage_path,1200);
         return {...photo,url:data?.signedUrl||null};
       }));
       return res.status(200).json({success:true,isOwner:owner,items:reports.map(r=>({
         ...r,lines:(entries.data||[]).filter(x=>x.report_id===r.id),
+        extras:(extras.data||[]).filter(x=>x.report_id===r.id),
         photos:photoLinks.filter(x=>x.report_id===r.id),
         history:(history.data||[]).filter(x=>x.report_id===r.id)
       }))});
@@ -83,16 +85,24 @@ export default async function handler(req,res) {
         return res.status(409).json({error:"Object must be active to send the report"});
       if(body.reportId && !await reportAccess(body.reportId,true))
         return res.status(403).json({error:"Report is not your editable draft"});
-      if(!Array.isArray(body.lines)||body.lines.length>40)
+      if(!Array.isArray(body.lines)||!Array.isArray(body.extras)||body.lines.length+body.extras.length>40)
         return res.status(400).json({error:"Invalid work entries"});
       if(body.lines.some(x=>!validId(x.positionId)||!validAmount(Number(x.quantity))))
         return res.status(400).json({error:"Select a work position and valid quantity"});
+      if(body.extras.some(x=>!["catalog","manual"].includes(x.source)||!clean(x.name,160)||
+        !clean(x.unit,24)||!validAmount(Number(x.quantity))||
+        (x.price!==null&&x.price!==undefined&&x.price!==""&&
+          (!Number.isFinite(Number(x.price))||Number(x.price)<0||Number(x.price)>10000000))))
+        return res.status(400).json({error:"Invalid catalog or manual work"});
       if(body.cashRequested && (!validAmount(Number(body.cashAmount))||!clean(body.cashPurpose,500)))
         return res.status(400).json({error:"Enter cash amount and purpose"});
-      const {data,error}=await acting.rpc("save_daily_work_report",{
+      const {data,error}=await acting.rpc("save_daily_work_report_v2",{
         p_report_id:body.reportId||null,p_project_id:body.projectId,
         p_work_date:body.workDate,p_description:clean(body.description,2000),
         p_items:body.lines.map(x=>({positionId:x.positionId,quantity:Number(x.quantity)})),
+        p_extras:body.extras.map(x=>({source:x.source,catalogKey:clean(x.catalogKey,80)||null,
+          name:clean(x.name,160),unit:clean(x.unit,24),quantity:Number(x.quantity),
+          price:x.price===""||x.price===null||x.price===undefined?null:Number(x.price)})),
         p_cash_requested:body.cashRequested===true,
         p_cash_amount:body.cashRequested?Number(body.cashAmount):null,
         p_cash_purpose:body.cashRequested?clean(body.cashPurpose,500):null,
