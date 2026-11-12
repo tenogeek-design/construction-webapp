@@ -167,6 +167,109 @@ button:hover{transform:translateY(-1px)}
   .hero{padding-top:28px}
   .two{grid-template-columns:1fr}
 }
+
+/* === CONSTRUCTION GROUP | Branded calculator refresh === */
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{
+ --bg:#0b121b; --panel:rgba(17,27,39,.95); --panel2:#253648;
+ --line:rgba(164,190,215,.22);--muted:#b0bdca;
+ --orange:#f2a063;--blue:#56abf1;--text:#f5f8fb;
+}
+html{scroll-behavior:smooth}
+body{
+ font-family:'Manrope',Arial,sans-serif;
+ background:#0b121b;
+ position:relative;
+ background-image:linear-gradient(96deg,rgba(7,13,21,.93) 0%,rgba(9,19,29,.79) 56%,rgba(10,19,30,.61) 100%),url('/owner-facade.jpg');
+ background-attachment:fixed;
+ background-position:center top;
+ background-size:cover;
+}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;background:linear-gradient(0deg,rgba(6,11,17,.66),transparent 60%);z-index:-1}
+.shell{max-width:1280px;padding:24px 24px 65px}
+.top{padding:10px 0 18px;border-bottom:1px solid rgba(194,211,225,.19)}
+.logo{font-weight:800;letter-spacing:.095em;line-height:1.2;text-shadow:0 2px 14px rgba(0,0,0,.3)}
+.logo span{color:#5aafea}
+.tag{margin-top:6px;color:#9cafc2;font-weight:700}
+.lang button{min-width:45px;border-radius:10px;background:rgba(26,38,53,.84)}
+.lang button.active{color:#fff;background:#254c70;border-color:#68b4ed}
+.hero{max-width:865px;padding:82px 0 30px}
+.hero h1{font-size:clamp(32px,4.3vw,57px);font-weight:800;letter-spacing:-.037em;line-height:1.12;text-shadow:0 4px 30px rgba(0,0,0,.33)}
+.hero p{font-size:16px;max-width:650px;line-height:1.75;color:#c5d1df}
+.eyebrow{letter-spacing:.15em;color:#f5ae78}
+.choices{gap:20px;max-width:1060px}
+.choice{
+ min-height:248px;padding:29px 32px;position:relative;overflow:hidden;
+ background:linear-gradient(135deg,rgba(35,51,68,.95),rgba(17,28,41,.91));
+ border:1px solid rgba(160,183,206,.38);
+ border-radius:20px;box-shadow:0 23px 55px rgba(0,0,0,.31);
+ backdrop-filter:blur(14px);transition:transform .2s,border-color .2s,box-shadow .2s;
+}
+.choice:first-child{border-color:rgba(240,164,101,.55)}
+.choice:last-child{background:linear-gradient(135deg,rgba(26,56,82,.95),rgba(15,28,43,.91))}
+.choice:after{content:'↗';font-size:24px;position:absolute;right:24px;top:26px;color:#e8a46d}
+.choice:last-child:after{color:#79baf0}
+.choice .symbol{display:inline-grid;place-items:center;height:48px;width:48px;border:1px solid rgba(242,160,99,.38);border-radius:13px;background:rgba(242,160,99,.1);font-size:27px}
+.choice:last-child .symbol{color:#79baf0;border-color:rgba(90,170,238,.4);background:rgba(70,160,235,.1)}
+.choice h2{font-size:24px;font-weight:800;margin:22px 0 10px;letter-spacing:-.015em}
+.choice p{max-width:370px;font-size:14px;line-height:1.7;color:#c1cddd}
+.choice:hover{transform:translateY(-4px);border-color:#f6a569;box-shadow:0 26px 55px rgba(0,0,0,.37)}
+.notice{max-width:1060px;background:rgba(18,29,41,.89);border-color:rgba(180,200,218,.25);padding:16px 20px;backdrop-filter:blur(12px)}
+.notice strong{margin-right:7px}
+.panel{
+ background:rgba(15,24,36,.94);border:1px solid rgba(158,183,209,.25);
+ box-shadow:0 20px 55px rgba(0,0,0,.32);backdrop-filter:blur(18px);
+ border-radius:19px;padding:24px;
+}
+.workspace{grid-template-columns:minmax(0,1.63fr) minmax(315px,.95fr);gap:22px}
+.workspace>aside{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto;scrollbar-width:thin}
+.panel h2{font-weight:800;letter-spacing:-.015em}
+.tabs{gap:8px;margin-bottom:16px}
+.tabs button{font-size:13px;border-radius:11px;padding:10px 14px;background:rgba(41,56,73,.9)}
+.tabs .active{background:rgba(242,160,99,.14);border-color:#e89d63;color:#ffe1c7}
+.job{padding:13px 4px;min-height:62px}
+.job span{font-weight:600;line-height:1.4}
+.job button{width:42px;height:40px;display:grid;place-items:center;border-radius:11px;background:rgba(235,155,92,.1);border-color:rgba(234,153,88,.42)}
+.editor{background:rgba(37,51,68,.97);border:1px solid rgba(242,160,99,.56);border-radius:17px;padding:20px}
+.field label{color:#c1cbd7;font-weight:700;font-size:12px}
+input,select,textarea{background:#121e2b;border:1px solid #51667c;border-radius:10px}
+input:focus,select:focus,textarea:focus{border-color:#f2a063}
+button{border-radius:11px;font-weight:700}
+button.primary{background:linear-gradient(130deg,#f5b079,#de8444);border:1px solid #ffc08e;color:#1b1d20}
+button.primary:hover{box-shadow:0 5px 22px rgba(242,160,99,.2)}
+.back{border:1px solid rgba(188,206,224,.31);background:rgba(16,27,40,.72);margin:17px 0}
+.item{padding:15px 0}
+.item strong{font-size:13px}
+.item small{line-height:1.7}
+.amount{font-size:clamp(22px,2.7vw,30px)}
+.searchwrap{margin:2px 0 17px}
+.searchwrap label{display:block;font-size:12px;font-weight:700;color:#c8d5e1;margin-bottom:8px}
+.searchwrap input{background:rgba(18,29,41,.95);padding:13px 14px}
+.item-count{font-size:12px;color:#adc0d3;font-weight:700;padding:3px 0 9px}
+.request-form.show{display:block}
+.request-form .field label{font-size:12px}
+footer{border-top:1px solid rgba(171,195,219,.16);padding-top:20px}
+@media(max-width:850px){
+ body{background-attachment:scroll;background-position:60% top}
+ .workspace{grid-template-columns:1fr}
+ .workspace>aside{position:static;max-height:none;overflow:visible}
+ .hero{padding:46px 0 20px}
+ .shell{padding:16px 13px 48px}
+ .panel{padding:18px}
+ .choices{grid-template-columns:1fr}
+ .choice{min-height:190px}
+}
+@media(max-width:520px){
+ .hero h1{font-size:31px}
+ .hero p{font-size:14px}
+ .choice{padding:23px}
+ .choice h2{font-size:21px}
+ .logo{font-size:15px}
+ .tag{font-size:9px}
+ .request-grid,.two{grid-template-columns:1fr}
+}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;transition:none!important}}
+
 </style>
 </head>
 <body>
@@ -224,6 +327,8 @@ button:hover{transform:translateY(-1px)}
     <section class="panel">
       <h2 data-t="catalog"></h2>
       <div id="tabs" class="tabs"></div>
+      <div class="searchwrap"><label for="jobSearch" data-t="searchLabel"></label><input id="jobSearch" type="search" autocomplete="off" maxlength="100" data-placeholder-t="searchPlaceholder"></div>
+      <div class="item-count" id="jobCount"></div>
       <div id="jobs"></div>
       <div id="editor"></div>
       <div id="custom"></div>
@@ -231,6 +336,7 @@ button:hover{transform:translateY(-1px)}
 
     <aside class="panel">
       <h2 data-t="estimate"></h2>
+      <div class="item-count" id="estimateCount"></div>
       <div id="estimateItems"></div>
       <div class="divider"></div>
       <div class="row">
@@ -448,6 +554,7 @@ const tileRates = {
 
 const state = {
   lang:"pl",
+  query:"",
   mode:"start",
   category:"demo",
   editing:null,
@@ -471,11 +578,22 @@ function escapeHTML(text){
   }[ch]));
 }
 
+translations.pl.searchLabel="Szukaj pracy w katalogu";
+translations.ua.searchLabel="Пошук робіт у каталозі";
+translations.pl.searchPlaceholder="Np. GK, płytki, demontaż...";
+translations.ua.searchPlaceholder="Наприклад, ГК, плитка, демонтаж...";
+translations.pl.found="Prace w kategorii:";
+translations.ua.found="Робіт у категорії:";
+translations.pl.estimateCount="Pozycji w kosztorysie:";
+translations.ua.estimateCount="Позицій у кошторисі:";
+translations.pl.noResults="Brak pasujących prac. Wybierz inną kategorię lub zmień wyszukiwanie.";
+translations.ua.noResults="Робіт не знайдено. Оберіть іншу категорію або змініть пошук.";
 function translate(){
   document.documentElement.lang=state.lang;
   document.querySelectorAll("[data-t]").forEach(el=>{
     el.textContent=T(el.dataset.t);
   });
+  document.querySelectorAll("[data-placeholder-t]").forEach(el=>{el.placeholder=T(el.dataset.placeholderT);});
   $("langPL").classList.toggle("active",state.lang==="pl");
   $("langUA").classList.toggle("active",state.lang==="ua");
   if(!$("sendRequest").disabled && $("sendRequest").style.display!=="none") $("sendRequest").textContent=T("sendRequest");
@@ -485,6 +603,8 @@ function translate(){
 function enter(mode){
   state.mode=mode;
   state.category="demo";
+  state.query="";
+  $("jobSearch").value="";
   state.editing=null;
   $("start").classList.toggle("show",mode==="start");
   $("work").classList.toggle("show",mode!=="start");
@@ -518,16 +638,19 @@ function render(){
     };
   });
 
+  const q=state.query.trim().toLocaleLowerCase();
   const available=Object.entries(catalog)
     .filter(([,job])=>job.cat===state.category)
-    .filter(([id])=>partner||id!=="gkGlue");
+    .filter(([id])=>partner||id!=="gkGlue")
+    .filter(([,job])=>!q||job.pl.toLocaleLowerCase().includes(q)||job.ua.toLocaleLowerCase().includes(q));
+  $("jobCount").textContent=T("found")+" "+available.length;
 
-  $("jobs").innerHTML=available.map(([id,job])=>`
+  $("jobs").innerHTML=available.length?available.map(([id,job])=>`
     <div class="job">
       <span>${escapeHTML(job[state.lang])}</span>
       <button data-job="${id}" aria-label="${T("add")}">+</button>
     </div>
-  `).join("");
+  `).join(""):`<div class="empty">${T("noResults")}</div>`;
 
   $("jobs").querySelectorAll("[data-job]").forEach(btn=>{
     btn.onclick=()=>{
@@ -789,6 +912,7 @@ function renderCustom(){
 
 function renderEstimate(){
   const container=$("estimateItems");
+  $("estimateCount").textContent=T("estimateCount")+" "+state.items.length;
 
   if(!state.items.length){
     container.innerHTML=`<div class="empty">${T("empty")}</div>`;
@@ -822,6 +946,11 @@ function renderEstimate(){
   $("totalAmount").textContent=
     money(total)+(individual?" + "+T("indiv"):"");
 }
+
+$("jobSearch").addEventListener("input",event=>{
+  state.query=event.target.value;
+  render();
+});
 
 $("langPL").onclick=()=>{
   state.lang="pl";
