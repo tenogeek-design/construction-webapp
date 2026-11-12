@@ -287,10 +287,37 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
  function collect(){
    const host=root().querySelector("#dailyEditor");
-   const lines=[...host.querySelectorAll(".dailyLine")].map(e=>({
-     positionId:e.querySelector(".dailyPosition").value,quantity:Number(e.querySelector(".dailyQty").value)
-   })).filter(x=>x.positionId||x.quantity);
-   if(lines.some(x=>!x.positionId||!Number.isFinite(x.quantity)||x.quantity<=0))throw Error("Выбери этап, позицию и объём больше нуля");
+   const lines=[],extras=[];
+   const workRows=[...host.querySelectorAll(".dailyLine")];
+   for(const e of workRows){
+     const mode=e.querySelector(".dailyMode")?.value;
+     const quantityRaw=e.querySelector(".dailyQty")?.value?.trim()||"";
+     const quantity=Number(quantityRaw);
+     if(mode==="object"){
+       const positionId=e.querySelector(".dailyPosition")?.value||"";
+       if(!positionId&&!quantityRaw)continue;
+       if(!positionId||!quantityRaw||!Number.isFinite(quantity)||quantity<=0||quantity>1000000)
+         throw Error("Для работы из объекта выбери этап, позицию и положительный объём");
+       if(lines.some(x=>x.positionId===positionId))
+         throw Error("Позиция объекта повторяется — объедини объёмы в одну строку");
+       lines.push({positionId,quantity});
+     }else{
+       const name=e.querySelector(".dailySearch")?.value?.trim()||"";
+       const unit=e.querySelector(".dailyUnit")?.value?.trim()||"";
+       const rateRaw=e.querySelector(".dailyRate")?.value?.trim()||"";
+       if(!name&&!unit&&!quantityRaw&&!rateRaw)continue;
+       if(name.length<2||name.length>160||unit.length<1||unit.length>24||
+          !quantityRaw||!Number.isFinite(quantity)||quantity<=0||quantity>1000000)
+         throw Error("Заполни название, единицу и объём новой работы");
+       const price=rateRaw===""?null:Number(rateRaw);
+       if(price!==null&&(!Number.isFinite(price)||price<0||price>10000000))
+         throw Error("Проверь цену за единицу");
+       const catalogKey=e.dataset.catalogKey||null;
+       extras.push({source:catalogKey?"catalog":"manual",catalogKey,
+         name,unit,quantity,price});
+     }
+   }
+   if(lines.length+extras.length>40)throw Error("В одном отчёте максимум 40 позиций");
    const need=host.querySelector("#dailyNeedCash").checked;
    const amount=Number(host.querySelector("#dailyCashAmount").value);
    if(need&&(!Number.isFinite(amount)||amount<=0||!host.querySelector("#dailyCashPurpose").value.trim()))
@@ -302,7 +329,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    return {projectId:workspace.project.id,reportId:editing.id||null,
      workDate:host.querySelector("#dailyDate").value,
      description:host.querySelector("#dailyDescription").value.trim(),
-     lines,cashRequested:need,cashAmount:need?amount:null,
+     lines,extras,cashRequested:need,cashAmount:need?amount:null,
      cashPurpose:need?host.querySelector("#dailyCashPurpose").value.trim():null,files};
  }
  async function save(submit){
@@ -312,7 +339,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    buttons?.forEach(b=>b.disabled=true);
    try{
      const values=collect();
-     if(submit && !values.lines.length)throw Error("Добавь хотя бы одну позицию");
+     if(submit && !values.lines.length && !values.extras.length)throw Error("Добавь хотя бы одну позицию");
      status.textContent="Сохраняем...";
      const draft=await call("save",{...values,files:undefined,submit:false});
      editing.id=draft.reportId;
