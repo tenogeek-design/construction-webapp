@@ -318,3 +318,35 @@ body {
 .owner-review-empty{padding:25px;border:1px dashed #526e87;border-radius:12px;text-align:center;color:#c2d3e0}
 #projectsTable .owner-report-link{cursor:pointer;display:inline-flex;align-items:center;margin:5px 0 5px 7px;padding:10px 12px!important}
 @media(max-width:650px){.owner-review{margin:15px 0;padding:13px;scroll-margin-top:95px}.owner-review-head h3{font-size:18px}.owner-review-head button{white-space:nowrap}.owner-review-title>strong{font-size:15px}.owner-review-line{display:block}.owner-review-line span{display:block;text-align:left;margin-top:5px}.owner-review-actions button{flex:1 1 100%;min-height:46px}.owner-review-cash-actions{grid-template-columns:1fr}.owner-review-photos img{width:80px;height:80px}}
+
+/* OWNER project cards · replace horizontal spreadsheet on phones */
+#projectsTable{overflow:visible!important;padding:6px 16px 22px!important}
+.owner-project-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,370px),1fr));gap:15px}
+.owner-project-card{background:linear-gradient(150deg,#20354a,#162737);border:1px solid #43617d;border-radius:16px;padding:18px;min-width:0;color:#edf5fb;box-shadow:0 7px 24px #07111b35}
+.owner-project-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.owner-project-heading{min-width:0}
+.owner-project-heading h3{font-size:17px;line-height:1.3;margin:0 0 7px;color:#fff;overflow-wrap:anywhere}
+.owner-project-heading p{font-size:11px;color:#afc4d6;margin:0;line-height:1.5}
+.owner-project-status{flex-shrink:0;font-size:10px;font-weight:800;border:1px solid #56718a;border-radius:8px;background:#304b64;padding:8px 9px}
+.owner-project-status.status-active{background:#1d5647;color:#c4efdc;border-color:#398268}
+.owner-project-status.status-planned{color:#c8d5e1}
+.owner-project-status.status-completed{background:#244e65;color:#d3edfc}
+.owner-project-meta{display:flex;flex-wrap:wrap;gap:8px 14px;margin:15px 0;color:#c6d8e6;font-size:11px}
+.owner-project-meta span:before{content:"•";color:#f0a36e;margin-right:7px}
+.owner-project-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.owner-project-metric{background:#142638;border:1px solid #385771;border-radius:11px;padding:12px 10px;min-width:0}
+.owner-project-metric small{display:block;color:#9fb8cb;font-size:10px;line-height:1.4;margin-bottom:8px}
+.owner-project-metric strong{display:block;color:#f5f9fc;font-size:14px;overflow-wrap:anywhere}
+.owner-project-metric:nth-child(2) strong{color:#f3ae7b}
+.owner-project-progress{height:8px;background:#112333;border-radius:30px;overflow:hidden;margin:15px 0}
+.owner-project-progress-fill{height:100%;border-radius:30px;background:linear-gradient(90deg,#e38d4f,#f5bc88)}
+.owner-project-activity{display:flex;flex-wrap:wrap;justify-content:space-between;gap:5px 12px;font-size:10px;color:#abc2d4;margin-bottom:14px}
+.owner-project-alert{background:#754124;border:1px solid #d08a56;border-radius:9px;padding:10px 12px;font-size:11px;font-weight:800;margin:8px 0;color:#ffe1cb}
+.owner-project-alert.cash{background:#304b60;border-color:#6189a5;color:#d4eaf9}
+.owner-project-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.owner-project-actions>*{min-width:0;min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;border-radius:10px;padding:10px 12px!important;font-size:11px!important;font-weight:800!important;text-decoration:none!important;cursor:pointer;line-height:1.4}
+.owner-project-review{grid-column:1/-1;background:#b85e31!important;border:1px solid #f2a974!important;color:white!important}
+.owner-project-review:hover{background:#d27b44!important}
+.owner-project-open{background:#315574;border:1px solid #6389a7;color:#fff}
+.owner-project-edit{background:#263d53;border:1px solid #526f89;color:#e5f0f9}
+@media(max-width:650px){#projectsTable{padding:5px 11px 18px!important}.owner-project-grid{grid-template-columns:1fr;gap:12px}.owner-project-card{padding:14px}.owner-project-heading h3{font-size:16px}.owner-project-metric{padding:10px 7px}.owner-project-metric small{font-size:9px}.owner-project-metric strong{font-size:12px}.owner-project-status{font-size:9px}}
