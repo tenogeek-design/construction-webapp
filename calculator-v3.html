@@ -371,6 +371,7 @@ footer{border-top:1px solid rgba(171,195,219,.16);padding-top:20px}
 <footer>CONSTRUCTION GROUP · Warszawa</footer>
 </main>
 
+<script src="/cg-work-catalog.js"></script>
 <script>
 "use strict";
 
@@ -517,7 +518,7 @@ const translations = {
   }
 };
 
-const catalog = {
+const catalog = window.CG_WORK_CATALOG || {
   demoTile:{pl:"Skucie płytek",ua:"Демонтаж плитки",unit:"m²",price:45,cat:"demo"},
   demoFloor:{pl:"Demontaż podłogi",ua:"Демонтаж підлоги",unit:"m²",price:20,cat:"demo"},
   demoScreed:{pl:"Skucie wylewki",ua:"Демонтаж стяжки",unit:"m²",price:null,cat:"demo",thick:true},
