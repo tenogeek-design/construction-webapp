@@ -64,7 +64,12 @@
       const brigade=brigades.find(b=>b.id===p.brigade_id);
       const fields=[p.name,[p.city,p.street,p.building_number].filter(Boolean).join(', '),statuses[p.status]||p.status,brigade?.name||'—',money(p.contract_amount)];
       fields.forEach(s=>{const td=document.createElement('td');td.textContent=s||'—';td.style.padding='12px';tr.append(td);});
-      const td=document.createElement('td');td.style.padding='12px';const btn=document.createElement('button');btn.type='button';btn.textContent=access.update?'Редактировать':'Просмотр';btn.addEventListener('click',()=>edit(p));td.append(btn);tr.append(td);body.append(tr);
+      const td=document.createElement('td');td.style.padding='12px';const btn=document.createElement('button');btn.type='button';btn.textContent=access.update?'Редактировать':'Просмотр';btn.addEventListener('click',()=>edit(p));td.append(btn);
+      const workspace=document.createElement('a');
+      workspace.href='/project-workspace.html?id='+encodeURIComponent(p.id);
+      workspace.textContent='Открыть';
+      workspace.style.cssText='display:inline-block;margin-left:9px;padding:9px 12px;border:1px solid #668bb1;background:#24455e;border-radius:9px;color:#f6f9fc;text-decoration:none;font-weight:700;font-size:12px';
+      td.append(workspace);tr.append(td);body.append(tr);
     });table.append(body);host.append(table);
   }
   function edit(p=null) {
