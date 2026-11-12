@@ -79,8 +79,10 @@
     $('projectEditorTitle').textContent=p?(access.update?'Редактировать объект':'Просмотр объекта'):'Новый объект';
     const writable=p?access.update:access.create;
     $('projectForm').querySelectorAll('input,select,textarea').forEach(el=>{if(el.type!=='hidden')el.disabled=!writable;});
+    // Assignment and lifecycle are changed only via the audited OWNER workspace.
+    for(const id of ['projectStatus','projectBrigade','projectForeman']) $(id).disabled=true;
     $('projectSaveBtn').style.display=writable?'':'none';
-    formMsg('');$('projectEditorPanel').style.display='block';$('projectEditorPanel').scrollIntoView({behavior:'smooth',block:'start'});
+    formMsg('Статус, бригада и ответственный назначаются через кнопку «Открыть» → «Бригада и статус». Здесь редактируются только данные объекта и сумма договора.');$('projectEditorPanel').style.display='block';$('projectEditorPanel').scrollIntoView({behavior:'smooth',block:'start'});
   }
   async function save(ev) {
     ev.preventDefault();
@@ -88,12 +90,14 @@
     if(!(id?access.update:access.create)) return formMsg('Нет прав на сохранение.',true);
     const payload={};
     for(const [field,elementId] of Object.entries(ids)) {
-      if(field==='id')continue;
+      if(field==='id'||field==='status'||field==='brigade_id'||field==='foreman_id')continue;
       const raw=$(elementId).value.trim();
       payload[field]=raw===''?null:field==='contract_amount'?Number(raw):raw;
     }
     payload.name=$('projectName').value.trim();payload.city=$('projectCity').value.trim();
-    payload.status=$('projectStatus').value;
+    // New legacy projects start as planned, without assignments.
+    // Existing status and assigned team must never be overwritten here.
+    if(!id){payload.status='planned';payload.foreman_id=null;payload.brigade_id=null;}
     payload.currency='PLN';
     if(!payload.name||!payload.city)return formMsg('Название и город обязательны.',true);
     if(payload.start_date&&payload.end_date&&payload.end_date<payload.start_date)return formMsg('Дата окончания раньше начала.',true);
