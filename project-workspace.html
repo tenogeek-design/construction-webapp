@@ -94,9 +94,31 @@ select,input{background:#142639;color:#f3f7fb;border:1px solid #597793;border-ra
 #dailyEditorMessage{min-height:20px}
 @media(max-width:640px){.dailyLine{grid-template-columns:minmax(0,1fr) auto}.dailyLine label{grid-column:1/-1}.dailyLine button{grid-column:2;justify-self:end}.dailyReport{padding:12px}.dailyEntry{flex-wrap:wrap}}
 
+/* Work selector with catalog autocomplete — mobile first */
+.dailyLine{grid-template-columns:minmax(0,1fr) auto;gap:13px;background:#1d3146;border:1px solid #58728b;border-radius:13px;padding:16px;margin:14px 0;align-items:start}
+.dailyLine>label,.dailyLine>.dailyApprovedFields,.dailyLine>.dailyExtraFields{grid-column:1/-1;min-width:0}
+.dailyLine>.dailyCalc{grid-column:1;align-self:center;min-width:0}
+.dailyLine>button[data-remove-line]{grid-column:2;align-self:center;justify-self:end}
+.dailyFieldsGrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.dailyFieldsGrid label{min-width:0}
+.dailyLine .dailyExtraFields>label{display:grid;gap:8px}
+.dailySuggestions{display:grid;gap:6px;margin:8px 0 12px;max-height:310px;overflow-y:auto}
+.dailySuggestions[hidden]{display:none!important}
+.dailySuggestions button.dailySuggestion{display:flex;align-items:center;justify-content:space-between;gap:10px;text-align:left;background:#2b4964;color:#edf7ff;border:1px solid #4f7492;padding:12px}
+.dailySuggestions button.dailySuggestion:hover{background:#3b5d77}
+.dailySuggestion b{font-size:12px;line-height:1.4}
+.dailySuggestion small{color:#b9d4e6;font-size:10px;line-height:1.4;text-align:right}
+.dailyCalc,.dailyGrand{font-size:12px;font-weight:800;color:#f2b989;line-height:1.6}
+.dailyGrand{background:#253b50;border:1px solid #5c7b93;border-radius:11px;padding:13px;margin:12px 0 16px}
+.dailyEstimate{margin:10px 0;border-top:1px solid #445d77;padding:10px 0;color:#f1b98c;font-size:12px;line-height:1.5}
+.dailyEstimate strong{color:#fff}
+.dailyLine .note{font-size:11px;line-height:1.55}
+@media(max-width:640px){.dailyFieldsGrid{grid-template-columns:1fr}.dailyLine{padding:12px;gap:10px}.dailySuggestions button.dailySuggestion{align-items:flex-start;flex-direction:column}.dailySuggestion small{text-align:left}.dailyLine>.dailyCalc{grid-column:1}}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="/project-workspace.js"></script>
+<script defer src="/cg-work-catalog.js"></script>
 <script defer src="/project-daily-reports.js"></script>
 </head>
 <body>
