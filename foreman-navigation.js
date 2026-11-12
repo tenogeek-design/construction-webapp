@@ -379,6 +379,10 @@ document.addEventListener("DOMContentLoaded", () => {
   `;
 
   document.head.appendChild(style);
+  const premium = document.createElement("link");
+  premium.rel = "stylesheet";
+  premium.href = "/foreman-premium.css?v=2";
+  document.head.appendChild(premium);
 
   // ==================================
   // CREATE LAYOUT
@@ -392,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const sideTitle = document.createElement("div");
   sideTitle.className = "cg-side-title";
-  sideTitle.textContent = "УПРАВЛЕНИЕ";
+  sideTitle.innerHTML = '<span class="cg-brand-mark">C</span><span><b>CONSTRUCTION</b><small>GROUP · FOREMAN</small></span>';
 
   sidebar.appendChild(sideTitle);
 
@@ -425,8 +429,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const workspace = document.createElement("div");
   workspace.className = "cg-module";
+  const context = document.createElement("div");
+  context.className = "cg-context";
+  context.hidden = true;
 
-  content.append(mobileMenu, top, workspace);
+  content.append(mobileMenu, top, context, workspace);
   shell.append(sidebar, content);
 
   main.prepend(shell);
@@ -486,18 +493,27 @@ document.addEventListener("DOMContentLoaded", () => {
     return btn;
   }
 
-  for (const item of menu.filter(x => x.id !== "home")) {
-    home.append(makeDashboardCard(item));
+  const hero = document.createElement("section");
+  hero.className = "cg-hero";
+  hero.innerHTML = '<div class="cg-hero-content"><div class="cg-eyebrow">CONSTRUCTION GROUP · WORKSPACE</div>'+
+    '<h2>Рабочий день под контролем.</h2>'+
+    '<p>Объекты, отчёты, команда и деньги — в одном кабинете.</p>'+
+    '<div class="cg-hero-actions"><button type="button" data-go="reports" class="cg-primary-action">+ Отчёт за сегодня</button>'+
+    '<button type="button" data-go="projects" class="cg-secondary-action">Мои объекты</button></div></div>';
+  home.append(hero);
+  const actionHeading = document.createElement("div");
+  actionHeading.className = "cg-home-heading";
+  actionHeading.innerHTML = '<div><span class="cg-eyebrow">БЫСТРЫЙ ДОСТУП</span><h2>Что делаем сегодня</h2></div>';
+  home.append(actionHeading);
+  for (const id of ["projects","reports","tasks","workers","time","finance","expenses"]) {
+    const item = menu.find(x=>x.id===id);
+    if(item)home.append(makeDashboardCard(item));
   }
-
   const note = document.createElement("div");
   note.className = "cg-home-note";
-  note.textContent =
-    "Все рабочие модули сохранены. " +
-    "Новые действия проверки часов, корректировок " +
-    "и финансового контроля будем подключать поэтапно.";
-
+  note.innerHTML = '<strong>Порядок работы</strong><span>1. Выбери объект → 2. Открой рабочий день → 3. Укажи выполненные позиции и фото → 4. Отправь OWNER. Расходы и зарплаты учитываются отдельно.</span>';
   home.append(note);
+  home.querySelectorAll("[data-go]").forEach(btn=>btn.addEventListener("click",()=>openPage(btn.dataset.go)));
 
   // ==================================
   // EXISTING MODULES
@@ -629,6 +645,18 @@ document.addEventListener("DOMContentLoaded", () => {
         isActive ? "page" : "false");
     });
 
+    const contextual = {
+      projects:["Мои объекты","Открывай карточку объекта, чтобы управлять этапами, работами и дневными отчётами."],
+      reports:["Вечерние отчёты","Выбери назначенный объект и открой вкладку «Рабочий день». Там доступны черновики, фото, расчёт работ и запрос денег OWNER."],
+      workers:["Состав команды","Работники и назначения привязаны к объектам. Раскрой нужный объект для просмотра бригады."],
+      time:["Табели по объектам","Открой объект и выбери работников для просмотра рабочего времени и проверки часов."],
+      tasks:["Задачи и фото","Задачи и связанные с ними фото находятся в одном разделе. Отчёты по объёмам работ — в карточке объекта."],
+      finance:["Деньги бригады","Баланс, зарплаты, авансы и история операций. Согласование запроса денег в отчёте само по себе не означает выдачу."],
+      expenses:["Покупки и чеки","Создавай расходы по объектам, прикладывай чеки и следи за согласованием."]
+    };
+    const info=contextual[item.id];
+    context.hidden=!info;
+    if(info)context.innerHTML='<strong>'+info[0]+'</strong><span>'+info[1]+'</span>';
     showModules(item.id);
 
     refresh.hidden = item.id === "home";
