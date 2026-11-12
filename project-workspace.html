@@ -187,6 +187,36 @@ body{background:linear-gradient(105deg,rgba(10,20,31,.97),rgba(13,26,40,.93) 62%
 }
 @media(max-width:410px){.overview-details .grid2{grid-template-columns:1fr}.top .brand strong{font-size:11px}.top .brand small{font-size:8px}}
 
+
+/* Stage details: accessible accordion and itemized project estimate */
+.stage{overflow:hidden}
+.stage>button.stage-open{cursor:pointer;min-height:77px;align-items:center;gap:12px;background:linear-gradient(115deg,#28445e,#233c53);padding:17px 19px}
+.stage>button.stage-open:hover{background:#335879}
+.stage>button.stage-open:focus-visible{outline:3px solid #efa36e;outline-offset:-4px}
+.stage-open strong{font-size:15px;line-height:1.5}
+.stage-open small{display:block;margin-top:5px;color:#b6ccdc;font-size:11px;line-height:1.55}
+.stage-chevron{font-size:25px;transition:transform .18s}
+.stage.expanded .stage-chevron{transform:rotate(180deg)}
+.stage-summary{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin:4px 0 16px}
+.stage-summary>div{background:#263e54;border:1px solid #476580;border-radius:10px;padding:12px;min-width:0}
+.stage-summary small,.work-numbers small{display:block;font-size:10px;color:#afc3d4;margin-bottom:7px}
+.stage-summary strong,.work-numbers strong{font-size:13px;color:#f6f9fc;overflow-wrap:anywhere}
+.stage .body{padding:15px}
+.work.work-detail{display:block;padding:16px 3px;margin:0;border-top:1px solid #476079}
+.work-heading{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:13px}
+.work-heading b{font-size:15px}
+.work-badge{font-size:10px;color:#b7d6ef;background:#2b4c66;border:1px solid #4b7595;padding:7px 9px;border-radius:8px;white-space:nowrap}
+.work-numbers{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:13px}
+.work-numbers>div{min-width:0}
+.work-detail .progress{margin-bottom:15px}
+.work-pricing{display:flex;flex-wrap:wrap;gap:9px 18px;justify-content:space-between;padding:12px 0;border-top:1px solid #344d64;color:#bdd0df;font-size:11px;line-height:1.6}
+.work-pricing b{color:#f3b587;display:inline;font-size:12px}
+.work-actions{display:flex;gap:11px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.work-actions button{border:1px solid #e5a16c!important;background:#a7582e!important;color:#fff!important;padding:10px 15px!important;border-radius:9px!important;font-weight:800;font-size:11px}
+.work-actions button:hover{background:#bf6b38!important}
+.work-actions .note{flex:1 1 220px;font-size:10px;line-height:1.55}
+@media(max-width:650px){.stage-summary{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.stage-summary>div{padding:9px 7px}.stage-summary small,.work-numbers small{font-size:9px}.stage-summary strong,.work-numbers strong{font-size:11px}.stage .body{padding:10px}.stage>button.stage-open{padding:14px 12px}.stage-open strong{font-size:13px}.stage-open small{font-size:10px}.work-heading{align-items:flex-start}.work-badge{font-size:9px}.work-numbers{gap:5px}.work-pricing{display:grid;gap:5px}}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="/project-workspace.js"></script>
