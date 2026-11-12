@@ -89,8 +89,8 @@
       activity.append(el('span','',d?'Позиций: '+d.positions+' · Отчётов: '+d.reportCount:'Динамика загружается'));
       activity.append(el('span','',d?.lastReport?'Последний отчёт: '+d.lastReport:'Нет отправленных отчётов'));
       card.append(activity);
-      if(d?.pending){card.append(el('div','owner-project-alert','● '+d.pending+' отчёт(ов) ждут подтверждения'))}
-      if(d?.cashPending){card.append(el('div','owner-project-alert cash','● '+d.cashPending+' запрос(ов) из кассы'))}
+      if(d?.pending){card.append(el('div','owner-project-alert','● На проверке: '+money(d.pendingValue)+' · '+d.pending+' отчёт(ов) от бригадира'))}
+      if(d?.cashPending){card.append(el('div','owner-project-alert cash','● Запросы из кассы: '+money(d.cashRequested)+' · '+d.cashPending+' заявок'))}
       const actions=el('div','owner-project-actions');
       const review=el('button','owner-project-review','Проверить отчёты'+(d?.pending?' ('+d.pending+')':''));
       review.type='button';
