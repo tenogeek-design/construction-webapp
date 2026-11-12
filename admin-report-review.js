@@ -32,12 +32,8 @@
   notice("Загружаем отчёты...");
   try{
    const projectId=selected.id;
-   const [res,st]=await Promise.all([call(projectId),db.from("project_work_stages").select("id,name").eq("project_id",projectId)]);
-   if(st.error)throw st.error;
-   const stages=st.data||[],stageIds=stages.map(x=>x.id);
-   const positions=stageIds.length?await db.from("project_work_positions").select("id,name,unit,rate").in("stage_id",stageIds):{data:[],error:null};
-   if(positions.error)throw positions.error;
-   const byId=new Map((positions.data||[]).map(x=>[x.id,x]));
+   const res=await call(projectId);
+   const byId=new Map((res.positions||[]).map(x=>[x.id,x]));
    const items=(res.items||[]).filter(r=>r.status!=="draft");
    items.sort((a,b)=>(a.status==="submitted"?-1:1)-(b.status==="submitted"?-1:1));
    const pending=items.filter(x=>x.status==="submitted").length;
