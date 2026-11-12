@@ -67,9 +67,15 @@
       const td=document.createElement('td');td.style.padding='12px';const btn=document.createElement('button');btn.type='button';btn.textContent=access.update?'Редактировать':'Просмотр';btn.addEventListener('click',()=>edit(p));td.append(btn);
       const workspace=document.createElement('a');
       workspace.href='/project-workspace.html?id='+encodeURIComponent(p.id);
-      workspace.textContent='Открыть';
+      workspace.textContent='Объект';
       workspace.style.cssText='display:inline-block;margin-left:9px;padding:9px 12px;border:1px solid #668bb1;background:#24455e;border-radius:9px;color:#f6f9fc;text-decoration:none;font-weight:700;font-size:12px';
-      td.append(workspace);tr.append(td);body.append(tr);
+      td.append(workspace);
+      const reports=document.createElement('a');
+      reports.href='/project-workspace.html?id='+encodeURIComponent(p.id)+'#reports';
+      reports.textContent='Проверить отчёты';
+      reports.className='owner-report-link';
+      td.append(reports);
+      tr.append(td);body.append(tr);
     });table.append(body);host.append(table);
   }
   function edit(p=null) {
