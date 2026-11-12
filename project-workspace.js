@@ -51,11 +51,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     const address=[p.city,p.street,p.building_number,p.apartment_number].filter(Boolean).join(", ");
     return '<div class="overview-layout">'+
       '<div class="panel overview-start"><div class="section-header"><div><span class="panel-eyebrow">СЕГОДНЯ НА ОБЪЕКТЕ</span><h2>С чего начать</h2></div></div>'+
-      '<p class="note">Выбери действие — всё остальное откроется в нужном разделе.</p>'+
+      '<p class="note">Этапы и бригада находятся во вкладках выше. Здесь — главное действие на сегодня.</p>'+
       '<div class="overview-actions">'+
       '<button type="button" class="overview-action primary" data-tab-switch="reports"><span class="action-icon">▤</span><span><b>+ Вечерний отчёт</b><small>Объёмы, фотографии и запрос денег OWNER</small></span><span class="action-arrow">→</span></button>'+
-      '<button type="button" class="overview-action" data-tab-switch="stages"><span class="action-icon">▣</span><span><b>Этапы и позиции</b><small>План работ, количество, расценки и выполнение</small></span><span class="action-arrow">→</span></button>'+
-      '<button type="button" class="overview-action" data-tab-switch="team"><span class="action-icon">♙</span><span><b>Бригада и статус</b><small>Ответственный, назначение и состояние объекта</small></span><span class="action-arrow">→</span></button>'+
       '</div></div>'+
       '<div class="panel overview-details"><div class="section-header"><div><span class="panel-eyebrow">ИНФОРМАЦИЯ</span><h2>Данные объекта</h2></div></div>'+
       '<div class="grid2">'+
