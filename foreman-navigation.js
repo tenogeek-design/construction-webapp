@@ -44,9 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const menu = [
     {id:"home",icon:"⌂",label:"Главная",description:"Сегодня и быстрые действия"},
     {id:"projects",icon:"▣",label:"Объекты",description:"Объекты, этапы и позиции"},
-    {id:"reports",icon:"▤",label:"Рабочие дни",description:"Отчёты, фото и запросы OWNER"},
-    {id:"workers",icon:"♙",label:"Бригада",description:"Сотрудники на объектах"},
-    {id:"time",icon:"◷",label:"Табели",description:"Часы работников и проверка"},
+    {id:"workers",icon:"♙",label:"Бригада и табели",description:"Работники и учёт времени"},
     {id:"tasks",icon:"☑",label:"Задачи и фото",description:"Задания и фотографии"},
     {id:"finance",icon:"₴",label:"Касса и зарплаты",description:"Баланс, выплаты и история"},
     {id:"expenses",icon:"▧",label:"Расходы и чеки",description:"Покупки, чеки, согласования"}
@@ -498,7 +496,7 @@ document.addEventListener("DOMContentLoaded", () => {
   hero.innerHTML = '<div class="cg-hero-content"><div class="cg-eyebrow">CONSTRUCTION GROUP · WORKSPACE</div>'+
     '<h2>Рабочий день под контролем.</h2>'+
     '<p>Объекты, отчёты, команда и деньги — в одном кабинете.</p>'+
-    '<div class="cg-hero-actions"><button type="button" data-go="reports" class="cg-primary-action">+ Отчёт за сегодня</button>'+
+    '<div class="cg-hero-actions"><button type="button" data-go="projects" class="cg-primary-action">Выбрать объект и создать отчёт</button>'+
     '<button type="button" data-go="projects" class="cg-secondary-action">Мои объекты</button></div></div>';
   home.append(hero);
   const metrics=document.createElement("div");
@@ -528,7 +526,7 @@ document.addEventListener("DOMContentLoaded", () => {
   actionHeading.className = "cg-home-heading";
   actionHeading.innerHTML = '<div><span class="cg-eyebrow">БЫСТРЫЙ ДОСТУП</span><h2>Что делаем сегодня</h2></div>';
   home.append(actionHeading);
-  for (const id of ["projects","reports","tasks","workers","time","finance","expenses"]) {
+  for (const id of ["projects","tasks","workers","finance","expenses"]) {
     const item = menu.find(x=>x.id===id);
     if(item)home.append(makeDashboardCard(item));
   }
@@ -569,15 +567,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (
       page === "projects" ||
-      page === "reports" ||
-      page === "workers" ||
-      page === "time"
+      page === "workers"
     ) {
       setVisible(projects, true);
 
       // Раскрываем объекты для разделов работников
       // и табелей.
-      if (page === "workers" || page === "time") {
+      if (page === "workers") {
         projects
           ?.querySelectorAll(".cfp-project-head")
           .forEach(btn => {
@@ -670,9 +666,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const contextual = {
       projects:["Мои объекты","Открывай карточку объекта, чтобы управлять этапами, работами и дневными отчётами."],
-      reports:["Вечерние отчёты","Выбери назначенный объект и открой вкладку «Рабочий день». Там доступны черновики, фото, расчёт работ и запрос денег OWNER."],
-      workers:["Состав команды","Работники и назначения привязаны к объектам. Раскрой нужный объект для просмотра бригады."],
-      time:["Табели по объектам","Открой объект и выбери работников для просмотра рабочего времени и проверки часов."],
+      workers:["Бригада и табели","Выбери объект, чтобы открыть его работников и учёт времени."],
       tasks:["Задачи и фото","Задачи и связанные с ними фото находятся в одном разделе. Отчёты по объёмам работ — в карточке объекта."],
       finance:["Деньги бригады","Баланс, зарплаты, авансы и история операций. Согласование запроса денег в отчёте само по себе не означает выдачу."],
       expenses:["Покупки и чеки","Создавай расходы по объектам, прикладывай чеки и следи за согласованием."]
@@ -699,9 +693,7 @@ document.addEventListener("DOMContentLoaded", () => {
   refresh.addEventListener("click", () => {
     const ids = {
       projects: [],
-      reports: [],
       workers: [],
-      time: [],
       tasks: ["foremanRefreshTasks","foremanPhotoRefresh"],
       finance: ["refreshBalance", "foremanRefreshPayroll"],
       expenses: []
@@ -714,7 +706,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (
-      ["projects", "reports", "workers", "time"].includes(activePage)
+      ["projects", "workers"].includes(activePage)
     ) {
       document.querySelector(
         "#cgForemanProjects .cfp-refresh"
@@ -722,7 +714,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!actions.length &&
-        !["projects", "reports", "workers", "time"].includes(activePage)) {
+        !["projects", "workers"].includes(activePage)) {
       // Для модулей без кнопки обновления
       // повторно читаем страницу без изменения БД.
       window.location.reload();
@@ -730,7 +722,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   const initial = window.location.hash.slice(1);
-  openPage(menu.some(x => x.id === initial) ? initial : "home");
+  openPage(initial==="reports"?"projects":initial==="time"?"workers":(menu.some(x => x.id === initial) ? initial : "home"));
 
   window.addEventListener("hashchange", () => {
     const next = window.location.hash.slice(1);
@@ -752,7 +744,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       observer.disconnect();
       lateProjects.hidden =
-        !["projects", "reports", "workers", "time"].includes(activePage);
+        !["projects", "workers"].includes(activePage);
 
       workspace.append(lateProjects);
     });
