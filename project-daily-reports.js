@@ -191,7 +191,7 @@ document.addEventListener("DOMContentLoaded",()=>{
    if(busy)return;
    const note=decision==="return"||decision==="reject"?prompt(decision==="return"?"Что исправить бригадиру?":"Причина окончательного отказа:"):prompt("Комментарий к подтверждению (необязательно):","");
    if(note===null||["return","reject"].includes(decision)&&!note.trim())return;
-   if(decision==="approve"&&!confirm("Утвердить отчёт? Учётный объём и деньги этим действием не изменятся."))return;
+   if(decision==="approve"&&!confirm("Утвердить отчёт? Подтверждённый объём прибавится к прогрессу объекта. Деньги не спишутся."))return;
    busy=true;
    try{await call("review-work",{reportId:id,decision,note});await refresh();msg("Решение по выполненным работам сохранено.");}
    catch(e){msg(e.message,true)}finally{busy=false}
