@@ -135,6 +135,31 @@ input[type=checkbox]{width:auto;accent-color:var(--orange)}
 .empty{color:var(--muted);padding:20px 0}
 .wide{width:100%;margin-top:15px}
 footer{margin-top:35px;font-size:12px;color:var(--muted)}
+/* V3 — formularz zgłoszenia i spójna oprawa wizualna */
+:root{--orange:#f2a064;--blue:#73b6ed;--line:#4b5d70}
+body{background:radial-gradient(circle at 85% 0%,rgba(69,114,163,.28),transparent 42%),linear-gradient(135deg,#101821,#202c39 55%,#111922)}
+button{transition:border-color .18s,background .18s,transform .18s,box-shadow .18s}
+button:hover{transform:translateY(-1px)}
+.primary{box-shadow:0 7px 22px rgba(242,160,100,.12)}
+.primary:hover{box-shadow:0 9px 28px rgba(242,160,100,.23)}
+.choice{border:1px solid #52677b;box-shadow:0 16px 48px rgba(0,0,0,.17)}
+.choice:hover{border-color:var(--orange);background:linear-gradient(145deg,#354c62,#253646)}
+.panel{box-shadow:0 14px 40px rgba(0,0,0,.14)}
+.request-form{display:none;margin-top:18px;border-top:1px solid var(--line);padding-top:19px}
+.request-form.show{display:block}
+.request-form h3{font-size:18px;margin:0 0 7px}
+.request-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.request-form .field{margin-bottom:12px}
+.request-form label{display:block;color:var(--muted);font-size:12px;margin-bottom:5px}
+.request-form label .required{color:var(--orange)}
+.request-form input,.request-form textarea{font-size:14px}
+.request-form textarea{resize:vertical;min-height:85px}
+.request-form button:disabled{opacity:.6;cursor:wait;transform:none}
+.form-status{font-size:13px;margin-top:11px;white-space:pre-wrap}
+.form-status.ok{color:#93d9b4}
+.form-status.error{color:#ffb6a7}
+@media(max-width:520px){.request-grid{grid-template-columns:1fr}}
+
 @media(max-width:800px){
   .choices,.workspace{grid-template-columns:1fr}
   .choice{min-height:150px}
@@ -213,8 +238,24 @@ footer{margin-top:35px;font-size:12px;color:var(--muted)}
         <strong class="amount" id="totalAmount">0 zł</strong>
       </div>
       <p class="hint" data-t="priceNote"></p>
-      <button id="copy" class="primary wide" data-t="copy"></button>
-      <p class="hint" data-t="testNote"></p>
+      <button id="copy" class="wide" data-t="copy"></button>
+      <button id="openRequest" class="primary wide" data-t="openRequest"></button>
+      <form id="requestForm" class="request-form" autocomplete="on">
+        <h3 data-t="requestTitle"></h3>
+        <p class="hint" data-t="requestInfo"></p>
+        <div class="request-grid">
+          <div class="field"><label for="reqName" data-t="reqName"></label><input id="reqName" name="name" autocomplete="name" maxlength="120" required></div>
+          <div class="field"><label for="reqPhone" data-t="reqPhone"></label><input id="reqPhone" name="tel" type="tel" autocomplete="tel" maxlength="40" required></div>
+          <div class="field"><label for="reqCity" data-t="reqCity"></label><input id="reqCity" name="address-level2" autocomplete="address-level2" value="Warszawa" maxlength="100" required></div>
+          <div class="field"><label for="reqStreet" data-t="reqStreet"></label><input id="reqStreet" name="street-address" autocomplete="street-address" maxlength="150" required></div>
+          <div class="field"><label for="reqBuilding" data-t="reqBuilding"></label><input id="reqBuilding" maxlength="30" required></div>
+          <div class="field"><label for="reqApartment" data-t="reqApartment"></label><input id="reqApartment" maxlength="30"></div>
+        </div>
+        <div class="field"><label for="reqDescription" data-t="reqDescription"></label><textarea id="reqDescription" maxlength="3000" required></textarea></div>
+        <p class="hint" data-t="requestConsent"></p>
+        <button id="sendRequest" type="submit" class="primary wide" data-t="sendRequest"></button>
+        <div id="requestStatus" class="form-status" role="status" aria-live="polite"></div>
+      </form>
       <div id="status" role="status"></div>
     </aside>
   </div>
@@ -243,7 +284,23 @@ const translations = {
     total:"Razem",
     priceNote:"Ceny orientacyjne za robociznę, bez materiałów. Ostateczna wycena po weryfikacji zakresu.",
     copy:"Kopiuj kosztorys",
-    testNote:"Wersja testowa — zgłoszenia nie są wysyłane do bazy.",
+    openRequest:"Wyślij zapytanie",
+    requestTitle:"Dane do zgłoszenia",
+    requestInfo:"Dołączymy do zapytania wszystkie pozycje z kosztorysu.",
+    reqName:"Imię i nazwisko *",
+    reqPhone:"Numer telefonu *",
+    reqCity:"Miasto *",
+    reqStreet:"Ulica *",
+    reqBuilding:"Numer budynku *",
+    reqApartment:"Lokal (opcjonalnie)",
+    reqDescription:"Opis prac / dodatkowe informacje *",
+    requestConsent:"Wysyłając formularz, przekazujesz nam dane kontaktowe w celu obsługi zapytania.",
+    sendRequest:"Wyślij zgłoszenie",
+    sending:"Wysyłanie...",
+    requestEmpty:"Dodaj co najmniej jedną pracę do kosztorysu.",
+    requestSuccess:"Zgłoszenie wysłane. Numer: ",
+    requestFailure:"Nie udało się wysłać zgłoszenia. Spróbuj ponownie.",
+    testNote:"Zapytanie zostanie wysłane do CONSTRUCTION GROUP.",
     empty:"Nie dodano jeszcze prac.",
     add:"Dodaj",
     remove:"Usuń",
@@ -297,7 +354,23 @@ const translations = {
     total:"Разом",
     priceNote:"Орієнтовні ціни за роботу без матеріалів. Остаточна вартість після уточнення обсягів.",
     copy:"Копіювати кошторис",
-    testNote:"Тестова версія — заявки не надсилаються до бази.",
+    openRequest:"Надіслати заявку",
+    requestTitle:"Дані для заявки",
+    requestInfo:"Додамо до заявки всі позиції вашого кошторису.",
+    reqName:"Ім'я та прізвище *",
+    reqPhone:"Номер телефону *",
+    reqCity:"Місто *",
+    reqStreet:"Вулиця *",
+    reqBuilding:"Номер будинку *",
+    reqApartment:"Квартира (необов'язково)",
+    reqDescription:"Опис робіт / додаткова інформація *",
+    requestConsent:"Надсилаючи форму, ви передаєте контактні дані для опрацювання заявки.",
+    sendRequest:"Надіслати заявку",
+    sending:"Надсилання...",
+    requestEmpty:"Додайте хоча б одну роботу до кошторису.",
+    requestSuccess:"Заявку надіслано. Номер: ",
+    requestFailure:"Не вдалося надіслати заявку. Спробуйте ще раз.",
+    testNote:"Заявку буде надіслано до CONSTRUCTION GROUP.",
     empty:"Робіт поки не додано.",
     add:"Додати",
     remove:"Видалити",
@@ -405,6 +478,7 @@ function translate(){
   });
   $("langPL").classList.toggle("active",state.lang==="pl");
   $("langUA").classList.toggle("active",state.lang==="ua");
+  if(!$("sendRequest").disabled && $("sendRequest").style.display!=="none") $("sendRequest").textContent=T("sendRequest");
   render();
 }
 
@@ -414,6 +488,7 @@ function enter(mode){
   state.editing=null;
   $("start").classList.toggle("show",mode==="start");
   $("work").classList.toggle("show",mode!=="start");
+  $("requestForm").classList.remove("show");
   render();
   window.scrollTo({top:0,behavior:"smooth"});
 }
@@ -761,6 +836,80 @@ $("langUA").onclick=()=>{
 $("serviceButton").onclick=()=>enter("service");
 $("partnerButton").onclick=()=>enter("partner");
 $("back").onclick=()=>enter("start");
+
+$("openRequest").onclick=()=>{
+  if(!state.items.length){
+    $("status").textContent=T("requestEmpty");
+    return;
+  }
+  $("status").textContent="";
+  $("requestForm").classList.toggle("show");
+  if($("requestForm").classList.contains("show")){
+    $("requestForm").scrollIntoView({behavior:"smooth",block:"nearest"});
+  }
+};
+
+$("requestForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if($("sendRequest").disabled)return;
+  const status=$("requestStatus");
+  status.className="form-status";
+  if(!state.items.length){
+    status.classList.add("error");
+    status.textContent=T("requestEmpty");
+    return;
+  }
+  const works=state.items.map(item=>({
+    service_id:item.id||"custom",
+    name:item.id?catalog[item.id][state.lang]:item.label,
+    quantity:item.qty,
+    unit:item.unit,
+    rate:item.rate,
+    total:item.price,
+    details:item.details
+  }));
+  const hasIndividual=state.items.some(item=>item.price===null);
+  const total=hasIndividual?null:Math.round(state.items.reduce((sum,item)=>sum+(item.price||0),0)*100)/100;
+  const payload={
+    name:$("reqName").value.trim(),
+    phone:$("reqPhone").value.trim(),
+    address:{
+      city:$("reqCity").value.trim(),
+      street:$("reqStreet").value.trim(),
+      building:$("reqBuilding").value.trim(),
+      apartment:$("reqApartment").value.trim()
+    },
+    description:$("reqDescription").value.trim(),
+    calculator:{works,total,options:{}},
+    contactPreference:"phone",
+    source:"calculator-v3",
+    requestType:state.mode==="partner"?"cooperation":"service"
+  };
+  const sendButton=$("sendRequest");
+  sendButton.disabled=true;
+  sendButton.textContent=T("sending");
+  try{
+    const response=await fetch("/api/submit",{
+      method:"POST",
+      headers:{"Content-Type":"application/json"},
+      body:JSON.stringify(payload)
+    });
+    const result=await response.json().catch(()=>null);
+    if(!response.ok||!result?.success)throw new Error(result?.error||"Submit failed");
+    status.classList.add("ok");
+    status.textContent=T("requestSuccess")+(result.requestNumber??"—");
+    $("requestForm").querySelectorAll("input,textarea").forEach(el=>el.disabled=true);
+    sendButton.style.display="none";
+  }catch(error){
+    console.error("Request submission failed",error);
+    status.classList.add("error");
+    status.textContent=T("requestFailure");
+  }finally{
+    sendButton.disabled=false;
+    if(sendButton.style.display!=="none")sendButton.textContent=T("sendRequest");
+  }
+});
+
 
 $("copy").onclick=async()=>{
   const lines=[
