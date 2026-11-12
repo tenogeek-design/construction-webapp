@@ -98,7 +98,7 @@
         if(!window.ownerReportReview){msg('Модуль проверки ещё загружается. Обнови страницу.',true);return}
         window.ownerReportReview.open(p);
       });
-      const workspace=el('a','owner-project-open','Открыть объект');workspace.href='/project-workspace.html?id='+encodeURIComponent(p.id);
+      const workspace=el('a','owner-project-open','Открыть объект');workspace.href='/project-workspace.html?id='+encodeURIComponent(p.id)+'&from=owner';
       const editBtn=el('button','owner-project-edit',access.update?'Редактировать':'Просмотр');editBtn.type='button';editBtn.addEventListener('click',()=>edit(p));
       actions.append(review,workspace,editBtn);card.append(actions);grid.append(card);
     });
