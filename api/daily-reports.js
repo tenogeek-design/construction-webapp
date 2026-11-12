@@ -44,7 +44,7 @@ export default async function handler(req,res) {
         .select("*").eq("id",reportId).maybeSingle();
       if(error)throw error;
       if(!report||!await permission(report.project_id))return null;
-      if(edit && (report.created_by!==user.id || !foreman || !["draft","rejected"].includes(report.status))) return null;
+      if(edit && (report.created_by!==user.id || !foreman || !["draft","rejected","changes_requested"].includes(report.status))) return null;
       return report;
     }
     if(req.method==="GET") {
