@@ -86,3 +86,8 @@ body:has(#cgNav2026)>.cg-back-button{display:none!important}
  #projects .welcome #projectNewBtn{background:#2d5675!important;border:1px solid #6489a5!important;color:#fff!important;border-radius:10px!important;min-height:40px!important;font-size:12px!important}
  #projects #projectProposalsRefresh{background:#2d5675!important;color:#fff!important}
 }
+
+/* Controls inside OWNER cards must never fall back to browser white buttons */
+.admin-layout .dashboard-section button:not(.nav-item):not(.owner-request-open){font-family:inherit}
+.admin-layout .dashboard-section .panel button:not([class]):not([style*="background"]),.admin-layout .dashboard-section .welcome button:not([class]),.admin-layout #projects button#projectNewBtn{border-radius:10px;background:#2c4c67;color:#f1f6fa;border:1px solid #557b98;font-weight:750;padding:10px 14px}
+.admin-layout .dashboard-section .panel button:hover{filter:brightness(1.12)}
