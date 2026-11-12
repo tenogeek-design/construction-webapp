@@ -146,7 +146,8 @@ document.addEventListener("DOMContentLoaded",()=>{
         '<label>Единица<input class="dailyUnit" maxlength="24" placeholder="м² / м³ / шт." value="'+esc(p.unit||"")+'"></label>'+
         '<label>Цена за единицу, zł<input class="dailyRate" type="number" min="0" max="10000000" step="0.01" placeholder="Можно не указывать" value="'+esc(rawPrice)+'"></label></div>'+
       '<p class="note">Новая робота — окремий запис. Ціна орієнтовна, кошторис не змінюється. Лише зауваження чи сміття? Можна залишити тільки назву без ціни та кількості.</p></div>'+
-    '<label>Сделано за день<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="Например: 50"></label>'+
+    '<div class="dailyProgressEntry"><label>Сделано за день<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="Например: 50"></label>'+ 
+    (mode==="object"?'<label>Или укажи % от общего объёма<input class="dailyPercent" type="number" min="0.01" max="100" step="0.01" placeholder="Например: 15"><small class="dailyPercentHint">Процент переведём в объём по смете</small></label>':'')+'</div>'+
     '<div class="dailyCalc" aria-live="polite">Расчёт по позиции</div>'+
     '<button type="button" data-remove-line aria-label="Удалить позицию">×</button></div>';
  }
@@ -260,7 +261,7 @@ document.addEventListener("DOMContentLoaded",()=>{
     '<label>Сумма запроса, zł<input id="dailyCashAmount" type="number" min="0.01" step="0.01" value="'+esc(r.cash_requested_amount??"")+'" placeholder="500"></label>'+
     '<label>На что нужны деньги<input id="dailyCashPurpose" maxlength="500" value="'+esc(r.cash_purpose||"")+'" placeholder="Например: материалы на завтра"></label></div></div>'+
     '<div class="dailyPhotoBox"><label>Фотографии выполненной работы (JPG, PNG или WEBP, до 5 МБ каждая, максимум 50)<input id="dailyPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>'+
-    '<p class="note">При отправке OWNER нужна минимум одна фотография. Черновик можно сохранить без фото.</p>'+
+    '<p class="note">При отправке OWNER сейчас обязательна минимум одна фотография. Для закрытия работ свыше 500 zł фото обязательно по правилу компании. Черновик сохраняется без фото.</p>'+
     '<div class="dailyPhotoStrip">'+(r.photos||[]).map(p=>p.url?
       '<span class="dailyPhotoWrap"><a href="'+esc(p.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(p.url)+'" alt="Фото работы"></a>'+
       '<button type="button" data-delete-photo="'+esc(p.id)+'" title="Удалить фото">×</button></span>':"").join("")+'</div></div>'+
@@ -291,6 +292,22 @@ document.addEventListener("DOMContentLoaded",()=>{
    });
    linesHost.addEventListener("input",event=>{
      const line=event.target.closest(".dailyLine");if(!line)return;
+     if(event.target.matches(".dailyPercent")){
+       const p=findPosition(line.querySelector(".dailyPosition")?.value);
+       const pct=Number(event.target.value);
+       const quantity=line.querySelector(".dailyQty");
+       if(p&&quantity&&event.target.value!==""&&Number.isFinite(pct)&&pct>0&&pct<=100){
+         quantity.value=(Number(p.quantity)*pct/100).toFixed(2);
+         const hint=line.querySelector(".dailyPercentHint");
+         if(hint)hint.textContent=pct+"% от "+num(p.quantity)+" "+p.unit+" = "+num(quantity.value)+" "+p.unit+" · предложено OWNER";
+       }
+     }
+     if(event.target.matches(".dailyQty")){
+       const hint=line.querySelector(".dailyPercentHint");
+       if(hint)hint.textContent="Указан объём вручную — он отправится OWNER на проверку";
+       const pct=line.querySelector(".dailyPercent");
+       if(pct)pct.value="";
+     }
      if(event.target.matches(".dailySearch")){
        line.dataset.catalogKey="";
        suggestions(line);
