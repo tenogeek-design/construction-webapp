@@ -42,24 +42,14 @@ document.addEventListener("DOMContentLoaded", () => {
   ].filter(Boolean);
 
   const menu = [
-    { id: "home", icon: "▦", label: "Главная",
-      description: "Обзор управления" },
-    { id: "projects", icon: "▣", label: "Объекты",
-      description: "Объекты и работы" },
-    { id: "workers", icon: "♙", label: "Работники",
-      description: "Состав бригады" },
-    { id: "time", icon: "◷", label: "Табели",
-      description: "Проверка часов" },
-    { id: "tasks", icon: "☷", label: "Задачи",
-      description: "Задания бригады" },
-    { id: "photos", icon: "▧", label: "Фотоотчёты",
-      description: "Фотографии работ" },
-    { id: "finance", icon: "₿", label: "Финансы",
-      description: "Касса и выплаты" },
-    { id: "expenses", icon: "▤", label: "Расходы",
-      description: "Покупки и чеки" },
-    { id: "history", icon: "↺", label: "История",
-      description: "Операции кассы" }
+    {id:"home",icon:"⌂",label:"Главная",description:"Сегодня и быстрые действия"},
+    {id:"projects",icon:"▣",label:"Объекты",description:"Объекты, этапы и позиции"},
+    {id:"reports",icon:"▤",label:"Рабочие дни",description:"Отчёты, фото и запросы OWNER"},
+    {id:"workers",icon:"♙",label:"Бригада",description:"Сотрудники на объектах"},
+    {id:"time",icon:"◷",label:"Табели",description:"Часы работников и проверка"},
+    {id:"tasks",icon:"☑",label:"Задачи и фото",description:"Задания и фотографии"},
+    {id:"finance",icon:"₴",label:"Касса и зарплаты",description:"Баланс, выплаты и история"},
+    {id:"expenses",icon:"▧",label:"Расходы и чеки",description:"Покупки, чеки, согласования"}
   ];
 
   const style = document.createElement("style");
@@ -540,6 +530,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (
       page === "projects" ||
+      page === "reports" ||
       page === "workers" ||
       page === "time"
     ) {
@@ -560,31 +551,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (page === "tasks") {
       setVisible(tasks, true);
-      setVisible(photo, false);
-    }
-
-    if (page === "photos") {
-      setVisible(tasks, true);
       setVisible(photo, true);
-
-      // Остальное содержимое задач скрываем
-      // только визуально, без удаления.
-      if (tasks) tasks.classList.add("cg-photo-mode");
-    } else {
-      tasks?.classList.remove("cg-photo-mode");
     }
+    tasks?.classList.remove("cg-photo-mode");
 
     if (page === "finance") {
       setVisible(cash, true);
       setVisible(payroll, true);
+      setVisible(history, true);
     }
 
     if (page === "expenses") {
       setVisible(expenses, true);
-    }
-
-    if (page === "history") {
-      setVisible(history, true);
     }
 
     // Модули остались в исходном main, поэтому
@@ -670,13 +648,12 @@ document.addEventListener("DOMContentLoaded", () => {
   refresh.addEventListener("click", () => {
     const ids = {
       projects: [],
+      reports: [],
       workers: [],
       time: [],
-      tasks: ["foremanRefreshTasks"],
-      photos: ["foremanPhotoRefresh"],
+      tasks: ["foremanRefreshTasks","foremanPhotoRefresh"],
       finance: ["refreshBalance", "foremanRefreshPayroll"],
-      expenses: [],
-      history: []
+      expenses: []
     };
 
     const actions = ids[activePage] || [];
@@ -686,7 +663,7 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     if (
-      ["projects", "workers", "time"].includes(activePage)
+      ["projects", "reports", "workers", "time"].includes(activePage)
     ) {
       document.querySelector(
         "#cgForemanProjects .cfp-refresh"
@@ -694,7 +671,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (!actions.length &&
-        !["projects", "workers", "time"].includes(activePage)) {
+        !["projects", "reports", "workers", "time"].includes(activePage)) {
       // Для модулей без кнопки обновления
       // повторно читаем страницу без изменения БД.
       window.location.reload();
@@ -724,7 +701,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
       observer.disconnect();
       lateProjects.hidden =
-        !["projects", "workers", "time"].includes(activePage);
+        !["projects", "reports", "workers", "time"].includes(activePage);
 
       workspace.append(lateProjects);
     });
