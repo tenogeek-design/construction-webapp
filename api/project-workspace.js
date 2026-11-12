@@ -56,13 +56,18 @@ export default async function handler(req, res) {
         }
         const result={project,stages:(stages||[]).map(s=>({...s,items:positions.filter(x=>x.stage_id===s.id)})),isOwner:owner};
         if (owner) {
-          const [e,b]=await Promise.all([
-            db.from("employees").select("id,full_name,status").eq("status","active").order("full_name"),
-            db.from("brigades").select("id,name,foreman_id,status").eq("status","active").order("name")
-          ]);
-          if (e.error) throw e.error;
-          if (b.error) throw b.error;
-          result.employees=e.data||[];
+          const b=await db.from("brigades").select("id,name,foreman_id,status")
+            .eq("status","active").order("name");
+          if(b.error)throw b.error;
+          const {data:allowedRoles,error:allowedErr}=await db.from("app_user_roles")
+            .select("user_id").in("role_code",["foreman","owner"]).is("revoked_at",null);
+          if (allowedErr) throw allowedErr;
+          const permitted=new Set((allowedRoles||[]).map(x=>x.user_id));
+          const {data:staff,error:staffErr}=await db.from("employees")
+            .select("id,full_name,user_id,status").eq("status","active");
+          if(staffErr)throw staffErr;
+          result.employees=(staff||[]).filter(x=>permitted.has(x.user_id))
+            .map(x=>({id:x.id,full_name:x.full_name}));
           result.brigades=b.data||[];
         }
         return res.status(200).json({success:true,...result});
@@ -85,7 +90,6 @@ export default async function handler(req, res) {
     const f=nullableUuid(body.foremanId),b=nullableUuid(body.brigadeId);
     if (body.action==="assign"&&(f===undefined||b===undefined))
       return res.status(400).json({error:"Invalid assignment"});
-    const signed=db=>db;
     const acting=createClient(url,key,{global:{headers:{Authorization:"Bearer "+token}},
       auth:{autoRefreshToken:false,persistSession:false}});
     const {data:status,error:writeErr}=await acting.rpc("owner_update_project_workflow",{
