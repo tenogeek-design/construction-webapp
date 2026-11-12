@@ -70,10 +70,14 @@
       workspace.textContent='Объект';
       workspace.style.cssText='display:inline-block;margin-left:9px;padding:9px 12px;border:1px solid #668bb1;background:#24455e;border-radius:9px;color:#f6f9fc;text-decoration:none;font-weight:700;font-size:12px';
       td.append(workspace);
-      const reports=document.createElement('a');
-      reports.href='/project-workspace.html?id='+encodeURIComponent(p.id)+'#reports';
+      const reports=document.createElement('button');
+      reports.type='button';
       reports.textContent='Проверить отчёты';
       reports.className='owner-report-link';
+      reports.addEventListener('click',()=>{
+        if(!window.ownerReportReview){msg('Модуль отчётов загружается. Обнови страницу.',true);return;}
+        window.ownerReportReview.open(p);
+      });
       td.append(reports);
       tr.append(td);body.append(tr);
     });table.append(body);host.append(table);
