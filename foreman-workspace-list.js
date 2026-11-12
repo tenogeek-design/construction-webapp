@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded",()=>{
   function draw(items,error){
     host.innerHTML='<div class="cap"><div><h3>Мои назначенные объекты</h3><div class="small">Открой объект, чтобы увидеть утверждённые этапы, позиции и выполнение.</div></div><button type="button" id="cgWorkRefresh">↻ Обновить</button></div>'+
     (error?'<div class="empty">'+esc(error)+'</div>':items.length?
-      '<div class="grid">'+items.map(p=>'<article class="project"><span class="name">CONSTRUCTION GROUP · OBIEKT</span><h4>'+esc(p.name)+'</h4><div class="small">'+esc([p.city,p.street].filter(Boolean).join(", "))+'</div><div class="foot"><span>'+esc(status[p.status]||p.status)+'</span></div><div class="project-actions"><a href="/project-workspace.html?id='+encodeURIComponent(p.id)+'">Карточка объекта</a><a class="report" href="/project-workspace.html?id='+encodeURIComponent(p.id)+'#reports">+ Рабочий день</a></div></article>').join("")+'</div>':
+      '<div class="grid">'+items.map(p=>'<article class="project"><span class="name">CONSTRUCTION GROUP · OBIEKT</span><h4>'+esc(p.name)+'</h4><div class="small">'+esc([p.city,p.street].filter(Boolean).join(", "))+'</div><div class="foot"><span>'+esc(status[p.status]||p.status)+'</span></div><div class="project-actions"><a href="/project-workspace.html?from=foreman&id='+encodeURIComponent(p.id)+'">Карточка объекта</a><a class="report" href="/project-workspace.html?from=foreman&id='+encodeURIComponent(p.id)+'#reports">+ Рабочий день</a></div></article>').join("")+'</div>':
       '<div class="empty">У тебя пока нет назначенных объектов. После утверждения OWNER должен назначить бригадира и бригаду. Затем объект появится здесь.</div>');
     host.querySelector("#cgWorkRefresh").onclick=load;
   }
