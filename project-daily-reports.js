@@ -101,6 +101,28 @@ document.addEventListener("DOMContentLoaded",()=>{
     label+": "+num(qty)+" "+unit+" × "+money(rate)+" = "+money(qty*rate):
     "Расчёт появится после выбора работы, объёма и цены";
  }
+ function recalcEditor(){
+   const host=root()?.querySelector("#dailyEditor");
+   if(!host)return;
+   let total=0,unpriced=0,count=0;
+   host.querySelectorAll(".dailyLine").forEach(line=>{
+     const quantity=Number(line.querySelector(".dailyQty")?.value);
+     if(!Number.isFinite(quantity)||quantity<=0)return;
+     let rate=null;
+     if(line.querySelector(".dailyMode")?.value==="object"){
+       const p=findPosition(line.querySelector(".dailyPosition")?.value);
+       if(p)rate=Number(p.rate);
+     }else{
+       const rateRaw=line.querySelector(".dailyRate")?.value;
+       if(rateRaw!==""&&rateRaw!==undefined)rate=Number(rateRaw);
+     }
+     if(rate===null||!Number.isFinite(rate)){unpriced++;return}
+     total+=quantity*rate;count++;
+   });
+   const output=host.querySelector("#dailyGrand");
+   if(output)output.textContent=count?"Предварительный расчёт: "+money(total)+
+     (unpriced?" · "+unpriced+" поз. без цены":""):"Укажи объёмы и цены — увидишь общую сумму";
+ }
  function row(p={}){
    const positionId=p.position_id||p.positionId||"";
    const stageId=stageForPosition(positionId);
@@ -226,6 +248,7 @@ document.addEventListener("DOMContentLoaded",()=>{
      '<div id="dailyLines">'+(([...(r.lines||[]),...(r.extras||[])].length?
        [...(r.lines||[]),...(r.extras||[])]:[{}]).map(row).join(""))+'</div>'+
     '<button type="button" id="dailyAddLine">+ Добавить ещё работу</button>'+
+    '<div class="dailyGrand" id="dailyGrand" aria-live="polite">Расчёт по всем позициям</div>'+
     '<div class="dailyCashDecision"><label class="dailyCheck"><input type="checkbox" id="dailyNeedCash" '+(r.cash_requested?'checked':"")+'><span>Запросить деньги из кассы объекта</span></label>'+
     '<div id="dailyCashFields" '+(!r.cash_requested?'hidden':"")+' class="grid2">'+
     '<label>Сумма запроса, zł<input id="dailyCashAmount" type="number" min="0.01" step="0.01" value="'+esc(r.cash_requested_amount??"")+'" placeholder="500"></label>'+
@@ -240,7 +263,10 @@ document.addEventListener("DOMContentLoaded",()=>{
     '<p id="dailyEditorMessage" class="note" aria-live="polite"></p></div>';
    host.querySelector("#dailyClose").onclick=()=>{editing=null;host.replaceChildren()};
    host.querySelector("#dailyNeedCash").onchange=e=>host.querySelector("#dailyCashFields").hidden=!e.target.checked;
-   host.querySelector("#dailyAddLine").onclick=()=>host.querySelector("#dailyLines").insertAdjacentHTML("beforeend",row());
+   host.querySelector("#dailyAddLine").onclick=()=>{
+     host.querySelector("#dailyLines").insertAdjacentHTML("beforeend",row());
+     recalcEditor();
+   };
    const linesHost=host.querySelector("#dailyLines");
    linesHost.addEventListener("change",event=>{
      const line=event.target.closest(".dailyLine");if(!line)return;
@@ -255,6 +281,7 @@ document.addEventListener("DOMContentLoaded",()=>{
        if(position)position.innerHTML=posOptions("",event.target.value);
      }
      recalcLine(line);
+     recalcEditor();
    });
    linesHost.addEventListener("input",event=>{
      const line=event.target.closest(".dailyLine");if(!line)return;
@@ -263,6 +290,7 @@ document.addEventListener("DOMContentLoaded",()=>{
        suggestions(line);
      }
      recalcLine(line);
+     recalcEditor();
    });
    linesHost.addEventListener("focusin",event=>{
      const line=event.target.closest(".dailyLine");
@@ -292,12 +320,14 @@ document.addEventListener("DOMContentLoaded",()=>{
        }
        line.querySelector(".dailySuggestions").hidden=true;
        recalcLine(line);
+     recalcEditor();
        return;
      }
      const remove=event.target.closest("[data-remove-line]");
-     if(remove){remove.closest(".dailyLine")?.remove();return;}
+     if(remove){remove.closest(".dailyLine")?.remove();recalcEditor();return;}
    });
    linesHost.querySelectorAll(".dailyLine").forEach(recalcLine);
+   recalcEditor();
    host.querySelector("#dailySaveDraft").onclick=()=>save(false);
    host.querySelector("#dailySend").onclick=()=>save(true);
    host.querySelectorAll("[data-delete-photo]").forEach(b=>b.onclick=()=>deletePhoto(b.dataset.deletePhoto));
