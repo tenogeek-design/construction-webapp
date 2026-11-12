@@ -225,7 +225,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  }
  function connect(info){
    workspace=info;
-   if(!root()||active)return;
+   if(!root()||root().querySelector("#dailyPanel"))return;
    active=true;display();
    if(root().hidden===false)refresh();
  }
