@@ -1,0 +1,79 @@
+@import url('https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap');
+:root{--cg-bg:#101923;--cg-panel:#1c2a38;--cg-panel2:#23364a;--cg-border:#354c61;--cg-blue:#568dc5;--cg-text:#f4f7fa;--cg-muted:#afc0d0}
+body{font-family:Manrope,Arial,sans-serif!important;background:#101923!important;color:#edf4fa}
+body>header{background:#101923!important;border-bottom:1px solid #334659!important;padding:13px 25px!important}
+body>header .brand{font-size:17px!important;font-weight:800;letter-spacing:.09em}
+#cgControlCenter{grid-template-columns:255px minmax(0,1fr);min-height:calc(100vh - 69px);font-family:Manrope,Arial,sans-serif}
+#cgControlCenter button,#cgControlCenter input,#cgControlCenter select,#cgControlCenter textarea{font-family:inherit}
+#cgControlCenter button{transition:background .18s,border-color .18s,transform .18s}
+#cgControlCenter button:focus-visible,#cgControlCenter a:focus-visible{outline:3px solid #e69a60;outline-offset:3px}
+#cgControlCenter .cg-sidebar{background:linear-gradient(180deg,#162332,#121e2b);border-right:1px solid #30465a;padding:21px 12px;position:sticky;top:0;align-self:start;height:calc(100vh - 69px);overflow-y:auto}
+#cgControlCenter .cg-side-title{display:flex;align-items:center;gap:11px;padding:8px 10px 28px;color:#fff;letter-spacing:normal}
+.cg-side-title b{font-size:11px;letter-spacing:.06em;display:block;line-height:1.3}
+.cg-side-title small{font-size:9px;color:#8ab2d7;letter-spacing:.18em;display:block;margin-top:4px}
+.cg-brand-mark{width:41px;height:41px;display:grid;place-items:center;background:linear-gradient(145deg,#326da9,#19334e);border:1px solid #7b9ebf;border-radius:12px;font-size:24px;font-weight:800;color:#f4f8ff;box-shadow:0 8px 22px #0004}
+#cgControlCenter .cg-menu-button{border-radius:11px;min-height:47px;margin:3px 0;padding:12px 13px;color:#b9cad9;font-size:12px;font-weight:700;gap:13px}
+#cgControlCenter .cg-menu-button:hover{background:#293c50;border-color:#3b5b76}
+#cgControlCenter .cg-menu-button.active{background:linear-gradient(100deg,#324f6c,#253c54);border-color:#6288aa;color:white;box-shadow:inset 3px 0 #f59c56,0 5px 17px #0003}
+#cgControlCenter .cg-menu-icon{font-size:21px;color:#a8c9e9;width:22px}
+#cgControlCenter .cg-main{max-width:1500px;padding:29px clamp(15px,3vw,48px) 65px}
+#cgControlCenter .cg-top{margin-bottom:22px;align-items:center}
+#cgControlCenter .cg-page-title{font-size:clamp(23px,2.3vw,32px);font-weight:800;letter-spacing:-.04em;margin-bottom:6px}
+#cgControlCenter .cg-page-description{font-size:12px;color:#a7bacc}
+#cgControlCenter .cg-refresh{border-radius:11px;background:#263e56;border-color:#547592;padding:12px 17px;font-size:12px;font-weight:800}
+#cgControlCenter .cg-refresh:hover{background:#355979}
+#cgControlCenter .cg-dashboard{grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+#cgControlCenter .cg-hero{grid-column:1/-1;min-height:275px;border:1px solid #5a7184;border-radius:19px;overflow:hidden;position:relative;display:flex;align-items:center;background:linear-gradient(90deg,rgba(10,22,33,.97) 0%,rgba(12,28,44,.90) 44%,rgba(13,26,39,.35) 100%),url('/owner-facade.jpg') center 46%/cover no-repeat;box-shadow:0 17px 45px #0005}
+.cg-hero-content{position:relative;padding:clamp(22px,4vw,45px);max-width:700px}
+.cg-eyebrow{font-size:10px;font-weight:800;letter-spacing:.19em;color:#f4a96f}
+.cg-hero h2{font-size:clamp(25px,3.5vw,44px);line-height:1.14;letter-spacing:-.045em;color:#fff;margin:14px 0}
+.cg-hero p{font-size:13px;line-height:1.75;color:#c1d1df;max-width:440px}
+.cg-hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:23px}
+#cgControlCenter .cg-hero-actions button{border-radius:11px;padding:13px 20px;font-weight:800;font-size:12px}
+#cgControlCenter .cg-primary-action{background:linear-gradient(105deg,#e87f3b,#d56a2a)!important;border:1px solid #f4ad76!important;color:#141d25!important}
+#cgControlCenter .cg-primary-action:hover{background:#ffa25b!important}
+#cgControlCenter .cg-secondary-action{background:#20374b!important;border:1px solid #6c8ba6!important;color:#f4f9ff!important}
+.cg-home-heading{grid-column:1/-1;display:flex;justify-content:space-between;align-items:end;margin:13px 0 0}
+.cg-home-heading h2{font-size:20px;color:#f4f8ff;margin:7px 0 0}
+#cgControlCenter .cg-dashboard-card{min-height:144px;background:linear-gradient(155deg,#22364a,#1b2a39);border:1px solid #3c536a;border-radius:15px;padding:18px}
+#cgControlCenter .cg-dashboard-card:hover{transform:translateY(-2px);border-color:#ed9b62;background:linear-gradient(155deg,#2b4862,#1d3044)}
+#cgControlCenter .cg-dashboard-icon{font-size:23px;margin-bottom:13px;color:#f0aa79}
+#cgControlCenter .cg-dashboard-name{font-size:13px;margin-bottom:6px}
+#cgControlCenter .cg-dashboard-description{font-size:11px;color:#aabed0}
+#cgControlCenter .cg-home-note{grid-column:1/-1;display:flex;flex-wrap:wrap;gap:11px;background:#1d3043;border:1px solid #3c5770;border-radius:14px;padding:18px;font-size:12px;color:#c3d4e4}
+.cg-home-note strong{color:#f2a56d}
+#cgControlCenter .cg-context{display:flex;gap:11px;align-items:center;flex-wrap:wrap;background:#1d3042;border:1px solid #385772;border-left:3px solid #e68b4d;border-radius:12px;padding:14px 17px;margin-bottom:20px;font-size:12px;line-height:1.6;color:#c5d5e3}
+#cgControlCenter .cg-context[hidden]{display:none!important}
+.cg-context strong{font-weight:800;color:#f3f7fb}
+#cgControlCenter .cg-module>.card,#cgControlCenter .cg-module .card{background:linear-gradient(160deg,#1c2b3b,#1a2836);border:1px solid #38516a;border-radius:15px;padding:clamp(14px,2vw,24px)}
+#cgControlCenter .cg-module .card h2{font-size:18px;font-weight:800}
+#cgControlCenter .cg-module button:not(.secondary-button){background:#315c83;border:1px solid #5b85a8;border-radius:9px;padding:10px 14px;font-weight:700}
+#cgControlCenter .cg-module button:not(.secondary-button):hover{background:#42759e}
+#cgControlCenter .cg-module button:disabled{cursor:not-allowed}
+#cgControlCenter .cg-module input,#cgControlCenter .cg-module select,#cgControlCenter .cg-module textarea{max-width:100%;background:#172a3c;color:#f5faff;border:1px solid #526d86;border-radius:9px;padding:11px}
+#cgControlCenter .cg-module .payroll-metric,#cgControlCenter .cg-module .payroll-item{background:#203349;border-color:#49627a}
+#cgControlCenter .cg-module .balance{font-size:31px;color:#f2ad76}
+#cgControlCenter .cg-mobile-menu{scrollbar-width:none}
+@media(max-width:1190px){#cgControlCenter .cg-dashboard{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:850px){#cgControlCenter{grid-template-columns:205px minmax(0,1fr)}#cgControlCenter .cg-sidebar{padding:14px 8px}#cgControlCenter .cg-dashboard{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:720px){
+ #cgControlCenter{display:block}
+ #cgControlCenter .cg-sidebar{display:none}
+ #cgControlCenter .cg-main{padding:13px 12px 80px}
+ #cgControlCenter .cg-mobile-menu{display:flex;gap:7px;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x proximity;margin:0 -12px 19px;padding:5px 12px 9px;overscroll-behavior-x:contain}
+ #cgControlCenter .cg-mobile-menu .cg-menu-button{flex:0 0 auto;width:auto;min-width:91px;min-height:66px;display:flex;flex-direction:column;gap:5px;padding:10px 11px;scroll-snap-align:start;white-space:nowrap;font-size:10px;background:#23384c;border:1px solid #3e5973}
+ #cgControlCenter .cg-mobile-menu .cg-menu-button.active{background:#355878;border-color:#f0a06a}
+ #cgControlCenter .cg-mobile-menu .cg-menu-icon{font-size:19px}
+ #cgControlCenter .cg-top{margin-bottom:15px}
+ #cgControlCenter .cg-page-title{font-size:23px}
+ #cgControlCenter .cg-refresh{padding:10px 12px}
+ #cgControlCenter .cg-hero{min-height:295px;background-position:center}
+ .cg-hero-content{padding:23px}
+ #cgControlCenter .cg-dashboard{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+ #cgControlCenter .cg-dashboard-card{min-height:129px;padding:13px}
+ #cgControlCenter .cg-dashboard-name{font-size:12px}
+ #cgControlCenter .cg-dashboard-description{font-size:10px}
+ #cgControlCenter .cg-home-note{padding:13px}
+}
+@media(max-width:400px){#cgControlCenter .cg-hero-actions button{width:100%}#cgControlCenter .cg-dashboard{grid-template-columns:1fr 1fr}}
+@media(prefers-reduced-motion:reduce){#cgControlCenter button{transition:none!important}#cgControlCenter .cg-dashboard-card:hover{transform:none}}
