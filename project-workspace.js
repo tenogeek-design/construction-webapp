@@ -60,7 +60,7 @@ document.addEventListener("DOMContentLoaded", async () => {
      '<div class="actions" style="margin-top:18px"><button type="button" data-tab-switch="stages">Открыть этапы и позиции</button>'+
        (isOwner?'<button type="button" class="main" data-tab-switch="team">'+
        ((!project.brigade_id||!project.foreman_id)?"Завершить назначение команды":"Управление командой и статусом")+'</button>':"")+'</div>'+
-     '<p class="note" style="margin-top:17px">Следующий модуль: рабочий день, фотографии, отчёты по конкретным позициям и заявки на дополнительные работы. Здесь пока не создаются финансовые начисления.</p></div>';
+     '<p class="note" style="margin-top:17px">Открой «Рабочий день» для отчётов по позициям, фотографий и заявок на деньги из кассы. Выдача средств и зарплата учитываются отдельно.</p></div>';
   }
   function renderStages(){
     const picked=query.toLocaleLowerCase().trim();
@@ -119,7 +119,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       btn.classList.toggle("active",selected);
       btn.setAttribute("aria-selected",String(selected));
     });
-    for(const key of ["overview","stages","team"]){const panel=$("panel-"+key);if(panel)panel.hidden=key!==tab}
+    for(const key of ["overview","stages","team","reports"]){const panel=$("panel-"+key);if(panel)panel.hidden=key!==tab}
   }
   function updateOverviewNames(){
     const foreman=employees.find(x=>x.id===project.foreman_id),brigade=brigades.find(x=>x.id===project.brigade_id);
@@ -183,13 +183,17 @@ document.addEventListener("DOMContentLoaded", async () => {
         '<button data-tab="overview" type="button" role="tab">Обзор</button>'+
         '<button data-tab="stages" type="button" role="tab">Этапы и позиции</button>'+
         '<button data-tab="team" type="button" role="tab">Бригада и статус</button>'+
+        '<button data-tab="reports" type="button" role="tab">Рабочий день</button>'+
       '</div>'+
       '<section id="panel-overview">'+renderOverview()+'</section>'+
       '<section id="panel-stages">'+renderStages()+'</section>'+
-      '<section id="panel-team">'+renderTeam()+'</section>';
+      '<section id="panel-team">'+renderTeam()+'</section>'+ 
+      '<section id="panel-reports"></section>';
     updateOverviewNames();
     wire();
     showTab(activeTab);
+    window.cgProjectWorkspace={project,stages,isOwner};
+    document.dispatchEvent(new CustomEvent("cgWorkspaceReady",{detail:window.cgProjectWorkspace}));
     $("back").href=isOwner?"/admin.html#projects":"/foreman.html#projects";
   }
   async function loadDetail(){
