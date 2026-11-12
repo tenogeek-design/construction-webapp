@@ -77,3 +77,9 @@ body>header .brand{font-size:17px!important;font-weight:800;letter-spacing:.09em
 }
 @media(max-width:400px){#cgControlCenter .cg-hero-actions button{width:100%}#cgControlCenter .cg-dashboard{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){#cgControlCenter button{transition:none!important}#cgControlCenter .cg-dashboard-card:hover{transform:none}}
+
+#cgControlCenter .cg-home-metrics{grid-column:1/-1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+#cgControlCenter .cg-home-metrics>div{background:linear-gradient(150deg,#203347,#1a2a3a);border:1px solid #3d566e;border-radius:13px;padding:18px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+#cgControlCenter .cg-home-metrics span{color:#b8c9d8;font-size:11px;font-weight:700}
+#cgControlCenter .cg-home-metrics strong{font-size:27px;color:#f4f8ff;font-weight:800}
+@media(max-width:600px){#cgControlCenter .cg-home-metrics{gap:7px}#cgControlCenter .cg-home-metrics>div{padding:12px 9px;flex-direction:column;align-items:flex-start}#cgControlCenter .cg-home-metrics span{font-size:10px}#cgControlCenter .cg-home-metrics strong{font-size:23px}}
