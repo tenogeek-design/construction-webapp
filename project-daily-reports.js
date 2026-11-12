@@ -205,7 +205,9 @@ document.addEventListener("DOMContentLoaded",()=>{
     '<div class="section-header"><h3>'+(r.id?"Редактировать отчёт":"Новый вечерний отчёт")+'</h3><button id="dailyClose" type="button">Закрыть</button></div>'+
     '<div class="grid2"><label>Дата работы<input id="dailyDate" type="date" value="'+esc(r.work_date||localToday())+'" required></label>'+
     '<label>Краткий комментарий<input id="dailyDescription" maxlength="2000" value="'+esc(r.description||"")+'" placeholder="Например, смонтировали каркас"></label></div>'+
-    '<h4 style="margin:16px 0 6px">Что сделали</h4><div id="dailyLines">'+(r.lines||[{}]).map(row).join("")+'</div>'+
+    '<h4 style="margin:16px 0 6px">Что сделали</h4><p class="note">Пиши название — покажем совпадения из прайса или утверждённых позиций. Если это вывоз мусора чи інша нестандартна робота, напиши вручну.</p>'+
+     '<div id="dailyLines">'+(([...(r.lines||[]),...(r.extras||[])].length?
+       [...(r.lines||[]),...(r.extras||[])]:[{}]).map(row).join(""))+'</div>'+
     '<button type="button" id="dailyAddLine">+ Добавить ещё работу</button>'+
     '<div class="dailyCashDecision"><label class="dailyCheck"><input type="checkbox" id="dailyNeedCash" '+(r.cash_requested?'checked':"")+'><span>Запросить деньги из кассы объекта</span></label>'+
     '<div id="dailyCashFields" '+(!r.cash_requested?'hidden':"")+' class="grid2">'+
@@ -222,13 +224,63 @@ document.addEventListener("DOMContentLoaded",()=>{
    host.querySelector("#dailyClose").onclick=()=>{editing=null;host.replaceChildren()};
    host.querySelector("#dailyNeedCash").onchange=e=>host.querySelector("#dailyCashFields").hidden=!e.target.checked;
    host.querySelector("#dailyAddLine").onclick=()=>host.querySelector("#dailyLines").insertAdjacentHTML("beforeend",row());
-   host.querySelector("#dailyLines").addEventListener("change",event=>{
-     if(!event.target.matches(".dailyStage"))return;
-     const line=event.target.closest(".dailyLine");
-     const position=line?.querySelector(".dailyPosition");
-     if(position)position.innerHTML=posOptions("",event.target.value);
+   const linesHost=host.querySelector("#dailyLines");
+   linesHost.addEventListener("change",event=>{
+     const line=event.target.closest(".dailyLine");if(!line)return;
+     if(event.target.matches(".dailyMode")){
+       const manual=event.target.value==="extra";
+       line.querySelector(".dailyApprovedFields").hidden=manual;
+       line.querySelector(".dailyExtraFields").hidden=!manual;
+       line.querySelector(".dailySuggestions").hidden=true;
+     }
+     if(event.target.matches(".dailyStage")){
+       const position=line.querySelector(".dailyPosition");
+       if(position)position.innerHTML=posOptions("",event.target.value);
+     }
+     recalcLine(line);
    });
-   host.querySelector("#dailyLines").onclick=e=>{if(e.target.matches("[data-remove-line]"))e.target.closest(".dailyLine").remove()};
+   linesHost.addEventListener("input",event=>{
+     const line=event.target.closest(".dailyLine");if(!line)return;
+     if(event.target.matches(".dailySearch")){
+       line.dataset.catalogKey="";
+       suggestions(line);
+     }
+     recalcLine(line);
+   });
+   linesHost.addEventListener("focusin",event=>{
+     const line=event.target.closest(".dailyLine");
+     if(line&&event.target.matches(".dailySearch"))suggestions(line);
+   });
+   linesHost.addEventListener("click",event=>{
+     const pick=event.target.closest(".dailySuggestion");
+     if(pick){
+       const line=pick.closest(".dailyLine");
+       const key=pick.dataset.id;
+       if(pick.dataset.kind==="project"){
+         const stageId=stageForPosition(key);
+         line.querySelector(".dailyMode").value="object";
+         line.querySelector(".dailyApprovedFields").hidden=false;
+         line.querySelector(".dailyExtraFields").hidden=true;
+         line.querySelector(".dailyStage").value=stageId;
+         line.querySelector(".dailyPosition").innerHTML=posOptions(key,stageId);
+         line.dataset.catalogKey="";
+       }else{
+         const item=(window.CG_WORK_CATALOG||{})[key];
+         if(item){
+           line.querySelector(".dailySearch").value=item.ua||item.pl;
+           line.querySelector(".dailyUnit").value=item.unit||"";
+           line.querySelector(".dailyRate").value=item.price??"";
+           line.dataset.catalogKey=key;
+         }
+       }
+       line.querySelector(".dailySuggestions").hidden=true;
+       recalcLine(line);
+       return;
+     }
+     const remove=event.target.closest("[data-remove-line]");
+     if(remove){remove.closest(".dailyLine")?.remove();return;}
+   });
+   linesHost.querySelectorAll(".dailyLine").forEach(recalcLine);
    host.querySelector("#dailySaveDraft").onclick=()=>save(false);
    host.querySelector("#dailySend").onclick=()=>save(true);
    host.querySelectorAll("[data-delete-photo]").forEach(b=>b.onclick=()=>deletePhoto(b.dataset.deletePhoto));
