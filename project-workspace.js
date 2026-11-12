@@ -72,14 +72,35 @@ document.addEventListener("DOMContentLoaded", async () => {
     const results=stages.map((s,idx)=>{
       const items=(s.items||[]).filter(p=>!picked||s.name.toLocaleLowerCase().includes(picked)||p.name.toLocaleLowerCase().includes(picked));
       if(picked&&!items.length)return "";
-      const total=(s.items||[]).reduce((a,p)=>a+lineTotal(p),0),done=(s.items||[]).reduce((a,p)=>a+doneTotal(p),0),pct=total>0?Math.round(done/total*100):0;
+      const total=(s.items||[]).reduce((a,p)=>a+lineTotal(p),0);
+      const done=(s.items||[]).reduce((a,p)=>a+doneTotal(p),0);
+      const pct=total>0?Math.max(0,Math.min(100,Math.round(done/total*100))):0;
       const itemHtml=items.length?items.map(p=>{
-        const percent=Number(p.quantity)>0?Math.max(0,Math.min(100,Math.round(Number(p.completed_quantity)/Number(p.quantity)*100))):0;
-        return '<div class="work"><div><b>'+html(p.name)+'</b><small>План: '+num(p.quantity)+' '+html(p.unit)+' · Выполнено: '+num(p.completed_quantity)+' '+html(p.unit)+'</small><div class="progress"><div style="width:'+percent+'%"></div></div></div><div><small>Ставка за '+html(p.unit)+'</small><b>'+fmt(p.rate)+'</b></div><div class="money">'+fmt(lineTotal(p))+'</div></div>';
+        const quantity=Number(p.quantity)||0,completed=Number(p.completed_quantity)||0;
+        const percent=quantity>0?Math.max(0,Math.min(100,Math.round(completed/quantity*100))):0;
+        const remaining=Math.max(0,quantity-completed);
+        return '<div class="work work-detail">'+
+          '<div class="work-heading"><b>'+html(p.name)+'</b><span class="work-badge">'+percent+'% выполнено</span></div>'+
+          '<div class="work-numbers">'+
+          '<div><small>Общий объём</small><strong>'+num(quantity)+' '+html(p.unit)+'</strong></div>'+
+          '<div><small>Подтверждено</small><strong>'+num(completed)+' '+html(p.unit)+'</strong></div>'+
+          '<div><small>Осталось</small><strong>'+num(remaining)+' '+html(p.unit)+'</strong></div>'+
+          '</div><div class="progress"><div style="width:'+percent+'%"></div></div>'+
+          '<div class="work-pricing"><span>Цена за '+html(p.unit)+': <b>'+fmt(p.rate)+'</b></span>'+
+          '<span>Полная стоимость: <b>'+fmt(lineTotal(p))+'</b></span>'+
+          '<span>Подтверждено: <b>'+fmt(doneTotal(p))+'</b></span></div>'+
+          '<div class="work-actions"><button type="button" data-position-report="'+html(p.id)+'">+ Отчитаться по работе</button>'+
+          '<span class="note">Объём и процент меняются после подтверждения OWNER.</span></div></div>';
       }).join(""):'<div class="empty">В этом этапе пока нет позиций.</div>';
-      return '<article class="stage"><button type="button" data-stage-toggle="'+html(s.id)+'" aria-expanded="true"><span><strong>'+String(idx+1).padStart(2,"0")+' — '+html(s.name)+'</strong><small style="display:block;margin-top:5px;color:#b4c8d8">'+s.items.length+' позиций · '+pct+'% выполнено</small></span><span>⌄</span></button>'+
-        '<div class="body" data-stage-body="'+html(s.id)+'">'+itemHtml+
-        '<div class="stageTotal">Итого этапа: '+fmt(total)+'</div></div></article>';
+      return '<article class="stage"><button type="button" class="stage-open" data-stage-toggle="'+html(s.id)+'" aria-expanded="false">'+
+        '<span><strong>'+String(idx+1).padStart(2,"0")+' — '+html(s.name)+'</strong>'+
+        '<small>'+items.length+' позиций · '+pct+'% выполнено · '+fmt(total)+'</small></span>'+
+        '<span class="stage-chevron" aria-hidden="true">⌄</span></button>'+
+        '<div class="body" data-stage-body="'+html(s.id)+'" hidden>'+
+        '<div class="stage-summary"><div><small>Цена этапа</small><strong>'+fmt(total)+'</strong></div>'+
+        '<div><small>Подтверждено</small><strong>'+fmt(done)+'</strong></div>'+
+        '<div><small>Осталось по стоимости</small><strong>'+fmt(Math.max(0,total-done))+'</strong></div></div>'+
+        itemHtml+'<div class="stageTotal">Итого этапа: '+fmt(total)+'</div></div></article>';
     }).filter(Boolean).join("");
     return '<div class="panel"><div class="section-header"><h2>Этапы и позиции</h2><span class="note">'+stages.length+' этапов</span></div>'+
        '<p class="note">Согласованный план и цены. Новые позиции будем добавлять отдельной заявкой, сохраняя первоначальную смету и историю.</p>'+
@@ -158,6 +179,14 @@ document.addEventListener("DOMContentLoaded", async () => {
       if(!body)return;
       body.hidden=!body.hidden;
       button.setAttribute("aria-expanded",String(!body.hidden));
+      button.closest(".stage")?.classList.toggle("expanded",!body.hidden);
+    });
+    stagePanel?.addEventListener("click",event=>{
+      const button=event.target.closest("[data-position-report]");
+      if(!button)return;
+      const target=button.dataset.positionReport;
+      showTab("reports");
+      document.dispatchEvent(new CustomEvent("cg:daily-report-position",{detail:{positionId:target}}));
     });
     stagePanel?.addEventListener("input",event=>{
       if(event.target.id!=="positionSearch")return;
