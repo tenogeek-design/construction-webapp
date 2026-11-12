@@ -444,80 +444,30 @@ document.addEventListener("DOMContentLoaded", async () => {
 
     if (!rows.length) return;
 
-    const table = make("table");
-
-    table.style.cssText = `
-      width:100%;
-      border-collapse:collapse;
-      font-size:13px;
-      text-align:left;
-    `;
-
-    const header = make("tr");
-
-    [
-      "Номер",
-      "Клиент",
-      "Телефон",
-      "Адрес",
-      "Статус",
-      "Дата",
-      "Действие"
-    ].forEach(v => {
-      const th = make("th", v);
-
-      th.style.cssText = `
-        padding:12px;
-        border-bottom:1px solid #555;
-        white-space:nowrap;
-      `;
-
-      header.append(th);
+    const list=make("div");
+    list.className="owner-request-grid";
+    rows.forEach(r=>{
+      const card=make("article");
+      card.className="owner-request-card";
+      const top=make("div");top.className="owner-request-top";
+      const name=make("strong",r.customer_name||"Клиент не указан");
+      const status=make("span",labelStatus(r.status));status.className="owner-request-status status-"+String(r.status||"").toLowerCase();
+      top.append(name,status);card.append(top);
+      const info=make("div");info.className="owner-request-info";
+      const number=make("span","№ "+(r.request_number??"—"));
+      const date=make("span",formatDate(r.created_at));
+      info.append(number,date);card.append(info);
+      const place=make("p",address(r)||"Адрес не указан");place.className="owner-request-address";card.append(place);
+      if(r.phone){
+        const phone=make("a",r.phone);phone.className="owner-request-phone";
+        phone.href="tel:"+String(r.phone).replace(/[^\d+]/g,"");
+        card.append(phone);
+      }
+      const btn=make("button","Открыть заявку →");btn.type="button";btn.className="owner-request-open";
+      btn.addEventListener("click",()=>{selectedRequestId=r.id;renderDetails();document.getElementById("requestDetails")?.scrollIntoView({behavior:"smooth",block:"start"});});
+      card.append(btn);list.append(card);
     });
-
-    const head = make("thead");
-    head.append(header);
-    table.append(head);
-
-    const body = make("tbody");
-
-    rows.forEach(r => {
-      const tr = make("tr");
-
-      tableCell(tr, r.request_number ?? "—");
-      tableCell(tr, r.customer_name || "—");
-      tableCell(tr, r.phone || "—");
-      tableCell(tr, address(r));
-      tableCell(tr, labelStatus(r.status));
-      tableCell(tr, formatDate(r.created_at));
-
-      const action = make("td");
-      action.style.padding = "8px";
-
-      const btn = make("button", "Открыть");
-      btn.type = "button";
-
-      btn.style.cssText = `
-        padding:7px 10px;
-        background:#383c42;
-        color:#fff;
-        border:1px solid #666;
-        border-radius:6px;
-        cursor:pointer;
-      `;
-
-      btn.addEventListener("click", () => {
-        selectedRequestId = r.id;
-        renderDetails();
-      });
-
-      action.append(btn);
-      tr.append(action);
-      body.append(tr);
-    });
-
-    table.append(body);
-    container.append(table);
+    container.append(list);
   }
 
   // ==========================================
