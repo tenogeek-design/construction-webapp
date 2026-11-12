@@ -55,6 +55,8 @@ document.addEventListener("DOMContentLoaded", async () => {
      '<div class="data"><small>Описание</small><b>'+html(project.description||"—")+'</b></div>'+
      '</div>'+
      (project.status==="planned"&&!project.foreman_id?'<p class="warning" style="margin-top:15px">Объект подтверждён, но ответственный бригадир ещё не назначен. Для начала работ OWNER должен назначить бригаду.</p>':"")+
+     '<div class="actions" style="margin-top:18px"><button type="button" data-tab-switch="stages">Открыть этапы и позиции</button>'+
+       (isOwner&&project.status==="planned"?'<button type="button" class="main" data-tab-switch="team">Назначить бригаду / начать работу</button>':"")+'</div>'+
      '<p class="note" style="margin-top:17px">Следующий модуль: рабочий день, фотографии, отчёты по конкретным позициям и заявки на дополнительные работы. Здесь пока не создаются финансовые начисления.</p></div>';
   }
   function renderStages(){
@@ -128,6 +130,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
   function wire(){
     document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tab)));
+    document.querySelectorAll("[data-tab-switch]").forEach(b=>b.addEventListener("click",()=>showTab(b.dataset.tabSwitch)));
     const stagePanel=$("panel-stages");
     stagePanel?.addEventListener("click",event=>{
       const button=event.target.closest("[data-stage-toggle]");
