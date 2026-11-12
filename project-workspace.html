@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#0f1b27">
+<title>CONSTRUCTION GROUP — Карточка объекта</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:dark;--bg:#0d1722;--card:rgba(25,40,56,.97);--sub:#25384d;--line:#405c73;--muted:#b7c8d8;--blue:#85c7f3;--orange:#f6ad73;--text:#f4f7fb}
+*{box-sizing:border-box}
+body{margin:0;color:var(--text);font:14px Manrope,Arial,sans-serif;min-height:100vh;background:linear-gradient(90deg,#0b1520f3,#0e1b2ce5 70%,#0e1d2ab9),url('/owner-facade.jpg') center/cover fixed}
+button,input,select{font:inherit}
+button{border:1px solid #54738e;border-radius:11px;background:#2c465e;color:#eff6fd;padding:11px 17px;cursor:pointer;font-weight:700;transition:.15s}
+button:hover:not(:disabled){background:#385977;border-color:#e5a371}
+button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+button:disabled{opacity:.4;cursor:not-allowed}
+button.main{background:linear-gradient(120deg,#f8ba86,#df8d4f);border:1px solid #ffcd9e;color:#182531}
+button.danger{border-color:#ab6970;color:#ffb6b5;background:#4d2d39}
+a{color:inherit;text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1290px;margin:auto;padding:22px 24px 70px}
+.top{display:flex;justify-content:space-between;align-items:center;gap:18px;border-bottom:1px solid #60778b76;padding-bottom:20px;margin-bottom:30px}
+.brand{display:flex;align-items:center;gap:14px}
+.symbol{width:52px;height:50px;display:grid;place-items:center}
+.symbol svg{width:100%;height:100%}
+.brand strong{display:block;font-weight:800;letter-spacing:1px;font-size:15px}
+.brand strong span{color:#75bdfa}
+.brand small{display:block;color:#abc1d4;letter-spacing:2px;font-size:10px;margin-top:3px}
+.back{font-size:12px;color:#c7d9e9;border:1px solid #4f7189;padding:10px 13px;border-radius:10px;background:#20354bd4}
+.hero{display:flex;align-items:flex-start;justify-content:space-between;gap:18px;margin:25px 0}
+.kicker{font-weight:800;letter-spacing:1.7px;font-size:11px;color:var(--orange)}
+h1{font-size:clamp(27px,3.2vw,43px);margin:8px 0;line-height:1.2;letter-spacing:-1px}
+.hero p{color:#c1d0de;line-height:1.65;margin:5px 0}
+.chip{display:inline-flex;align-items:center;background:#254d3d;color:#afe3c5;padding:8px 12px;border-radius:11px;font-size:12px;font-weight:800;white-space:nowrap}
+.chip.planned{background:#384251;color:#c8d8e9}.chip.paused{background:#5a4a2e;color:#ffe5b2}.chip.completed{background:#245747;color:#aeeac7}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;margin:22px 0}
+.metric,.panel{background:var(--card);border:1px solid #46617b;border-radius:16px;padding:21px;box-shadow:0 15px 38px #0004;backdrop-filter:blur(14px)}
+.metric small{display:block;color:#afc1d2;font-size:12px;margin-bottom:8px}
+.metric strong{font-size:23px;color:white}
+.metric strong.orange{color:var(--orange)}
+.nav{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin:22px 0}
+.nav button{background:#263c50}
+.nav button.active{background:#355d7b;border-color:#9bc3db;color:#fff}
+.panel h2{font-size:21px;margin:0 0 11px}
+.note{color:#b6c9d9;font-size:12px;line-height:1.75}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:15px}
+.data{padding:15px;background:#22364c;border:1px solid #445f79;border-radius:12px;min-width:0}
+.data small{display:block;color:#b0c2d1;margin-bottom:7px}
+.data b{font-size:14px;overflow-wrap:anywhere}
+.section-header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.stage{border:1px solid #4b6883;border-radius:15px;background:#1c3044;margin:13px 0;overflow:hidden}
+.stage>button{display:flex;justify-content:space-between;align-items:center;width:100%;border:0;border-radius:0;padding:19px;text-align:left;background:#21374d;color:#fff;gap:12px}
+.stage>button strong{font-size:16px}
+.stage .body{padding:16px}
+.stage .body[hidden]{display:none}
+.progress{height:7px;border-radius:20px;background:#455871;overflow:hidden}
+.progress>div{height:100%;background:linear-gradient(90deg,#5c9ccc,#f2ac75);border-radius:20px}
+.work{padding:14px 8px;border-top:1px solid #40576f;display:grid;grid-template-columns:minmax(160px,1.7fr) minmax(110px,1fr) minmax(105px,1fr);gap:12px;align-items:center}
+.work:first-child{border-top:0}
+.work b{display:block;font-size:13px}
+.work small{display:block;color:#b9cbda;font-size:11px;line-height:1.75}
+.work .money{text-align:right;font-size:14px;font-weight:800;color:#f6b27d}
+.stageTotal{text-align:right;color:#f6b27d;font-weight:800;margin:17px 4px 0}
+form{display:grid;gap:12px}
+label{display:grid;gap:7px;font-weight:700;font-size:12px;color:#c4d4e2}
+select,input{background:#142639;color:#f3f7fb;border:1px solid #597793;border-radius:11px;padding:13px;width:100%;min-width:0}
+.actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+.warning{background:#3e302c;border:1px solid #86674d;border-radius:12px;padding:14px;color:#fbd4b4;font-size:12px;line-height:1.6}
+.empty{background:#23374a;border:1px dashed #5c7691;border-radius:12px;padding:22px;text-align:center;color:#bacddd;line-height:1.75}
+.status{margin-top:12px;color:#d7c3a9;min-height:20px}
+.listCard{display:flex;align-items:center;justify-content:space-between;gap:15px;background:#22374b;border:1px solid #49647d;border-radius:13px;padding:16px;margin:12px 0}
+.listCard h3{margin:0 0 7px;font-size:16px}
+.listCard p{margin:0;color:#bed0de;font-size:12px}
+@media(max-width:760px){.wrap{padding:16px 13px 44px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.metric,.panel{padding:15px}.metric strong{font-size:19px}.top{flex-wrap:wrap}.work{grid-template-columns:1fr 1fr}.work>div:first-child{grid-column:1/-1}.hero{flex-wrap:wrap}.listCard{flex-wrap:wrap}.grid2{grid-template-columns:1fr}}
+</style>
+<script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script defer src="/project-workspace.js"></script>
+</head>
+<body>
+<main class="wrap">
+<header class="top">
+ <a class="brand" href="/"><span class="symbol" aria-hidden="true"><svg viewBox="0 0 64 64"><path d="M32 5 L60 55 H4 Z" fill="none" stroke="#168ff1" stroke-width="4"/><text x="32" y="47" text-anchor="middle" fill="#dce8f4" font-size="40" font-weight="900">C</text></svg></span><span><strong>CONSTRUCTION <span>GROUP</span></strong><small>PROJECT WORKSPACE</small></span></a>
+ <a id="back" class="back" href="/foreman.html#projects">← К списку объектов</a>
+</header>
+<div id="message" class="panel" role="status">Загружаем информацию об объекте...</div>
+<section id="page" hidden></section>
+</main>
+</body>
+</html>
