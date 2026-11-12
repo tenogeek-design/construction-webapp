@@ -43,6 +43,12 @@ document.addEventListener("DOMContentLoaded", () => {
   #cg-object-wizard .ow-position{display:flex;justify-content:space-between;gap:10px;align-items:center;border-top:1px solid #445a6f;padding:10px 0}
   #cg-object-wizard .ow-position small{display:block;color:#adbed0;margin-top:4px}
   #cg-object-wizard .ow-pos-form{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:8px}
+
+  #cg-object-wizard .ow-catalog{margin:12px 0;padding:13px;background:#152839;border:1px solid #54718c;border-radius:12px}
+  #cg-object-wizard .ow-catalog-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+  #cg-object-wizard .ow-results{max-height:215px;overflow-y:auto;margin:8px 0;display:grid;gap:5px}
+  #cg-object-wizard button.ow-result{display:flex;align-items:center;justify-content:space-between;gap:8px;background:#293f56;text-align:left}
+  #cg-object-wizard .ow-result small{font-size:11px;color:#a6c7df}
   #cg-object-wizard .ow-actions{display:flex;justify-content:space-between;flex-wrap:wrap;gap:9px;border-top:1px solid #41576e;margin-top:16px;padding-top:17px}
   #cg-object-wizard .ow-notice{font-size:12px;color:#b9c9d9;line-height:1.6;margin:15px 0}
   #cg-object-wizard .ow-summary{background:#20364c;border:1px solid #4d6b87;border-radius:13px;padding:18px;margin:14px 0}
@@ -55,9 +61,35 @@ document.addEventListener("DOMContentLoaded", () => {
   function store(){try{localStorage.setItem(key,JSON.stringify(state));message=t("saved")}catch(e){message="Local storage unavailable"}}
   function field(id,type="text"){return '<div class="ow-field"><label for="ow-'+id+'">'+t(id)+'</label><input id="ow-'+id+'" type="'+type+'" value="'+esc(state[id])+'"></div>'}
   function sync(){if(!visible||step!==0)return;for(const id of ["name","address","start","finish"]){const el=section.querySelector("#ow-"+id);if(el)state[id]=el.value}const n=section.querySelector("#ow-note");if(n)state.note=n.value}
+
+  const catalog = window.CG_WORK_CATALOG || {};
+  const categories = {
+    demo:["Rozbiórki","Демонтаж"],gk:["Zabudowy GK","Монтаж ГК"],
+    prep:["Przygotowanie","Підготовка"],floors:["Posadzki","Підлоги"],
+    finish:["Wykończenie","Оздоблення"],install:["Instalacje","Комунікації"],
+    other:["Inne","Інше"]
+  };
+  function catalogSearch(i) {
+    return '<div class="ow-catalog" data-catalog="'+i+'"><label>'+(lang==="pl"?"Dodaj pracę z cennika":"Додати роботу з прайсу")+'</label><div class="ow-catalog-grid"><input type="search" data-work-search placeholder="'+(lang==="pl"?"Szukaj pracy...":"Пошук роботи...")+'"><select data-work-cat><option value="">'+(lang==="pl"?"Wszystkie":"Усі")+'</option>'+Object.entries(categories).map(([k,v])=>'<option value="'+k+'">'+esc(v[lang==="pl"?0:1])+'</option>').join("")+'</select></div><div data-work-results class="ow-results"></div></div>';
+  }
+  function drawCatalog(i) {
+    const box=section.querySelector('[data-catalog="'+i+'"]');if(!box)return;
+    const query=box.querySelector("[data-work-search]").value.trim().toLocaleLowerCase();
+    const cat=box.querySelector("[data-work-cat]").value;
+    const matches=Object.entries(catalog).filter(([id,x])=>(!cat||x.cat===cat)&&(!query||x.pl.toLocaleLowerCase().includes(query)||x.ua.toLocaleLowerCase().includes(query))).slice(0,12);
+    box.querySelector("[data-work-results]").innerHTML=matches.map(([id,x])=>'<button class="ow-result" type="button" data-select-work="'+esc(id)+'"><span>'+esc(x[lang])+'</span><small>'+esc(x.unit)+' · '+(x.price===null?"—":money(x.price))+'</small></button>').join("");
+    box.querySelectorAll("[data-select-work]").forEach(b=>b.onclick=()=>{
+      const job=catalog[b.dataset.selectWork],row=section.querySelector('[data-stage="'+i+'"]');
+      row.querySelector("[data-pname]").value=job[lang];
+      const unit=row.querySelector("[data-punit]");
+      if([...unit.options].some(x=>x.value===job.unit))unit.value=job.unit;
+      row.querySelector("[data-prate]").value=job.price===null?"":job.price;
+      row.querySelector("[data-pqty]").focus();
+    });
+  }
   function page(){
     if(step===0)return '<div class="ow-grid">'+field("name")+field("address")+field("start","date")+field("finish","date")+'</div><div class="ow-field"><label for="ow-note">'+t("note")+'</label><textarea id="ow-note">'+esc(state.note)+'</textarea></div>';
-    if(step===1)return state.stages.map((s,i)=>'<div class="ow-stage"><div class="ow-stage-title"><b>'+(i+1)+'. '+esc(s.name)+'</b><button data-remove-stage="'+i+'">'+t("remove")+'</button></div>'+s.items.map((p,j)=>'<div class="ow-position"><div><b>'+esc(p.name)+'</b><small>'+esc(p.qty)+' '+esc(p.unit)+' × '+money(p.rate)+'</small></div><button data-remove-position="'+i+':'+j+'">'+t("remove")+'</button></div>').join("")+'<div class="ow-pos-form" data-stage="'+i+'"><input data-pname placeholder="'+t("position")+'"><input data-pqty type="number" min=".01" step=".01" placeholder="'+t("qty")+'"><select data-punit><option>m²</option><option>mb</option><option>szt.</option><option>m³</option><option>kpl.</option></select><input data-prate type="number" min="0" step=".01" placeholder="'+t("rate")+'"></div><button style="margin-top:10px" data-add-position="'+i+'">'+t("addposition")+'</button></div>').join("")+'<div class="ow-stage"><label for="ow-new-stage">'+t("stage")+'</label><input id="ow-new-stage" maxlength="120"><button style="margin-top:10px" id="ow-add-stage">'+t("addstage")+'</button></div>';
+    if(step===1)return state.stages.map((s,i)=>'<div class="ow-stage"><div class="ow-stage-title"><b>'+(i+1)+'. '+esc(s.name)+'</b><button data-remove-stage="'+i+'">'+t("remove")+'</button></div>'+s.items.map((p,j)=>'<div class="ow-position"><div><b>'+esc(p.name)+'</b><small>'+esc(p.qty)+' '+esc(p.unit)+' × '+money(p.rate)+'</small></div><button data-remove-position="'+i+':'+j+'">'+t("remove")+'</button></div>').join("")+catalogSearch(i)+'<div class="ow-pos-form" data-stage="'+i+'"><input data-pname placeholder="'+t("position")+'"><input data-pqty type="number" min=".01" step=".01" placeholder="'+t("qty")+'"><select data-punit><option>m²</option><option>mb</option><option>szt.</option><option>m³</option><option>kpl.</option></select><input data-prate type="number" min="0" step=".01" placeholder="'+t("rate")+'"></div><button style="margin-top:10px" data-add-position="'+i+'">'+t("addposition")+'</button></div>').join("")+'<div class="ow-stage"><label for="ow-new-stage">'+t("stage")+'</label><input id="ow-new-stage" maxlength="120"><button style="margin-top:10px" id="ow-add-stage">'+t("addstage")+'</button></div>';
     return '<div class="ow-summary"><h3>'+esc(state.name)+'</h3><p>'+esc(state.address)+'</p><p>'+esc(state.start)+' — '+esc(state.finish)+'</p><p>'+esc(state.note)+'</p></div>'+state.stages.map(s=>'<div class="ow-stage"><b>'+esc(s.name)+'</b><div class="ow-notice">'+s.items.length+' · '+money(s.items.reduce((v,p)=>v+p.qty*p.rate,0))+'</div></div>').join("")+'<div class="ow-summary"><p>'+t("total")+'</p><strong>'+money(sum())+'</strong></div><div class="ow-notice"><b>'+t("approval")+'</b><p>'+t("blocked")+'</p></div>';
   }
   function render(){
@@ -69,6 +101,13 @@ document.addEventListener("DOMContentLoaded", () => {
     section.querySelector("#ow-back").onclick=()=>{sync();if(step===0)visible=false;else step--;render()};
     section.querySelector("#ow-next").onclick=()=>{sync();if(step===0&&(!state.name.trim()||!state.address.trim())){message=t("required");render();return}if(step<2){step++;message="";render()}};
     if(step===1){
+
+      section.querySelectorAll("[data-catalog]").forEach(el=>{
+        const i=Number(el.dataset.catalog);
+        el.querySelector("[data-work-search]").addEventListener("input",()=>drawCatalog(i));
+        el.querySelector("[data-work-cat]").addEventListener("change",()=>drawCatalog(i));
+        drawCatalog(i);
+      });
       section.querySelector("#ow-add-stage").onclick=()=>{const name=section.querySelector("#ow-new-stage").value.trim();if(!name){message=t("wrong");render();return}state.stages.push({name,items:[]});store();render()};
       section.querySelectorAll("[data-remove-stage]").forEach(b=>b.onclick=()=>{state.stages.splice(Number(b.dataset.removeStage),1);store();render()});
       section.querySelectorAll("[data-remove-position]").forEach(b=>b.onclick=()=>{const [i,j]=b.dataset.removePosition.split(":").map(Number);state.stages[i].items.splice(j,1);store();render()});
