@@ -222,11 +222,30 @@ body{background:linear-gradient(105deg,rgba(10,20,31,.97),rgba(13,26,40,.93) 62%
 .dailyProgressEntry .dailyPercentHint{display:block;margin-top:4px;color:#a9c8dd;font-size:10px;line-height:1.5;font-weight:500}
 @media(max-width:600px){.dailyProgressEntry{grid-template-columns:1fr;gap:10px}}
 
+
+/* Daily work totals and separate materials request */
+.dailyGrand{display:grid;gap:5px;padding:17px 19px!important;margin:15px 0;border:1px solid #e5a371!important;border-radius:14px;background:linear-gradient(125deg,#283e50,#3c3b40)!important;color:#f5e4d4!important}
+.dailyGrand span{font-size:13px;font-weight:750;color:#e9d1bb}
+.dailyGrand strong{font-size:clamp(24px,5vw,34px);font-weight:850;line-height:1.25;color:#ffbd85;overflow-wrap:anywhere}
+.dailyGrand small{font-size:11px;color:#c9d6e0;line-height:1.65}
+.dailyMaterials{border:1px solid #526e84;background:#172a3c;border-radius:13px;margin:20px 0;padding:0 15px}
+.dailyMaterials summary{cursor:pointer;list-style:none;padding:17px 2px;font-size:13px;font-weight:800;color:#dcecf8}
+.dailyMaterials summary::-webkit-details-marker{display:none}
+.dailyMaterials summary::before{content:"▸";display:inline-block;margin-right:10px;color:#f5b17c}
+.dailyMaterials[open] summary::before{content:"▾"}
+.dailyMaterials summary small{display:block;margin:5px 0 0 23px;color:#9db4c7;font-weight:500;font-size:11px}
+.dailyMaterials>.note{margin:0 0 12px}
+.dailyMaterials .dailyCashDecision{margin:0 0 15px}
+.dailySubmitGuide{border-left:3px solid #f2aa76;padding:12px 15px;background:#253b50;border-radius:0 11px 11px 0;font-size:12px;line-height:1.7;color:#d6e5f1}
+.dailySubmitGuide strong{font-size:13px;color:#ffbf8e}
+.dailySubmitGuide p{margin:5px 0 0}
+@media(max-width:650px){.dailyGrand{padding:15px!important}.dailyForm .actions button{flex:1 1 100%;min-height:47px}}
+
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script defer src="/project-workspace.js"></script>
 <script defer src="/cg-work-catalog.js"></script>
-<script defer src="/project-daily-reports.js"></script>
+<script defer src="/project-daily-reports.js?v=20261113-2"></script>
   <link rel="stylesheet" href="/cabinet-2026.css?v=1">
   <script defer src="/back-button.js?v=3"></script>
 </head>
