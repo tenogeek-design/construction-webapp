@@ -350,3 +350,12 @@ body {
 .owner-project-open{background:#315574;border:1px solid #6389a7;color:#fff}
 .owner-project-edit{background:#263d53;border:1px solid #526f89;color:#e5f0f9}
 @media(max-width:650px){#projectsTable{padding:5px 11px 18px!important}.owner-project-grid{grid-template-columns:1fr;gap:12px}.owner-project-card{padding:14px}.owner-project-heading h3{font-size:16px}.owner-project-metric{padding:10px 7px}.owner-project-metric small{font-size:9px}.owner-project-metric strong{font-size:12px}.owner-project-status{font-size:9px}}
+
+/* OWNER review clarity: price is not a payment; extras require separate approval. */
+.owner-review-extra-note{margin:12px 0;padding:12px 14px;border-radius:11px;background:#3c3540;border:1px solid #ae8468;color:#ffe1ca;font-size:12px}
+.owner-review-extra-note strong{display:block;margin-bottom:5px}
+.owner-review-extra-note p{margin:0;line-height:1.6;color:#e7cdb9}
+.owner-review-photo-warning{padding:12px;border-radius:10px;background:#54383a;border:1px solid #b87770;color:#ffe2de;font-weight:700;font-size:12px;line-height:1.6}
+.owner-review-line strong{color:#f4b27f}
+.owner-review-actions button:focus-visible,.owner-review-cash-actions button:focus-visible,.owner-project-actions>*:focus-visible{outline:3px solid #f4b27f;outline-offset:2px}
+@media(max-width:650px){.owner-review-extra-note{padding:11px}.owner-review-card{padding:14px}.owner-review-head{gap:9px}.owner-review-head button{padding:10px}}
