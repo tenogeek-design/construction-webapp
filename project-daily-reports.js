@@ -120,8 +120,11 @@ document.addEventListener("DOMContentLoaded",()=>{
      total+=quantity*rate;count++;
    });
    const output=host.querySelector("#dailyGrand");
-   if(output)output.textContent=count?"Предварительный расчёт: "+money(total)+
-     (unpriced?" · "+unpriced+" поз. без цены":""):"Укажи объёмы и цены — увидишь общую сумму";
+   if(output){
+     output.innerHTML='<span>Стоимость выполненных работ</span><strong>'+money(total)+'</strong>'+
+       '<small>'+(unpriced?unpriced+' поз. без цены · ':'')+
+       'Предварительная сумма. После отправки её проверит OWNER; это не выплата.</small>';
+   }
  }
  function row(p={}){
    const positionId=p.position_id||p.positionId||"";
@@ -143,10 +146,10 @@ document.addEventListener("DOMContentLoaded",()=>{
       '<label>Название работы — начни вводить<input class="dailySearch" autocomplete="off" maxlength="160" placeholder="Плитка, демонтаж, GK, вывоз мусора..." value="'+esc(workName)+'"></label>'+
       '<div class="dailySuggestions" role="group" aria-label="Подсказки из прайса" hidden></div>'+
       '<div class="dailyFieldsGrid">'+
-        '<label>Единица<input class="dailyUnit" maxlength="24" placeholder="м² / м³ / шт." value="'+esc(p.unit||"")+'"></label>'+
+        '<label>Единица измерения<input class="dailyUnit" maxlength="24" placeholder="м² / м³ / шт. (без числа)" value="'+esc(p.unit||"")+'"></label>'+
         '<label>Цена за единицу, zł<input class="dailyRate" type="number" min="0" max="10000000" step="0.01" placeholder="Можно не указывать" value="'+esc(rawPrice)+'"></label></div>'+
       '<p class="note">Новая робота — окремий запис. Ціна орієнтовна, кошторис не змінюється. Лише зауваження чи сміття? Можна залишити тільки назву без ціни та кількості.</p></div>'+
-    '<div class="dailyProgressEntry"><label>Сделано за день<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="Например: 50"></label>'+ 
+    '<div class="dailyProgressEntry"><label>Количество выполнено (например, 20)<input class="dailyQty" type="number" min="0.01" step="0.01" value="'+esc(p.quantity??"")+'" placeholder="20"></label>'+ 
     (mode==="object"?'<label>Или укажи % от общего объёма<input class="dailyPercent" type="number" min="0.01" max="100" step="0.01" placeholder="Например: 15"><small class="dailyPercentHint">Процент переведём в объём по смете</small></label>':'')+'</div>'+
     '<div class="dailyCalc" aria-live="polite">Расчёт по позиции</div>'+
     '<button type="button" data-remove-line aria-label="Удалить позицию">×</button></div>';
@@ -258,17 +261,20 @@ document.addEventListener("DOMContentLoaded",()=>{
        [...(r.lines||[]),...(r.extras||[])]:[{}]).map(row).join(""))+'</div>'+
     '<button type="button" id="dailyAddLine">+ Добавить ещё работу</button>'+
     '<div class="dailyGrand" id="dailyGrand" aria-live="polite">Расчёт по всем позициям</div>'+
-    '<div class="dailyCashDecision"><label class="dailyCheck"><input type="checkbox" id="dailyNeedCash" '+(r.cash_requested?'checked':"")+'><span>Запросить деньги из кассы объекта</span></label>'+
+    '<details class="dailyMaterials" '+(r.cash_requested?'open':"")+'><summary>Материалы · доставка · деньги из кассы <small>Открыть при необходимости</small></summary>'+
+    '<p class="note">Тут запрашивают средства на закупку или доставку. Это не оплата выполненной работы.</p>'+
+    '<div class="dailyCashDecision"><label class="dailyCheck"><input type="checkbox" id="dailyNeedCash" '+(r.cash_requested?'checked':"")+'><span>Нужны деньги из кассы объекта</span></label>'+
     '<div id="dailyCashFields" '+(!r.cash_requested?'hidden':"")+' class="grid2">'+
     '<label>Сумма запроса, zł<input id="dailyCashAmount" type="number" min="0.01" step="0.01" value="'+esc(r.cash_requested_amount??"")+'" placeholder="500"></label>'+
-    '<label>На что нужны деньги<input id="dailyCashPurpose" maxlength="500" value="'+esc(r.cash_purpose||"")+'" placeholder="Например: материалы на завтра"></label></div></div>'+
+    '<label>На что нужны деньги<input id="dailyCashPurpose" maxlength="500" value="'+esc(r.cash_purpose||"")+'" placeholder="Материалы, доставка, аренда..."></label></div></div></details>'+
     '<div class="dailyPhotoBox"><label>Фотографии выполненной работы (JPG, PNG или WEBP, до 5 МБ каждая, максимум 50)<input id="dailyPhotos" type="file" accept="image/jpeg,image/png,image/webp" multiple></label>'+
     '<p class="note">При отправке OWNER сейчас обязательна минимум одна фотография. Для закрытия работ свыше 500 zł фото обязательно по правилу компании. Черновик сохраняется без фото.</p>'+
     '<div class="dailyPhotoStrip">'+(r.photos||[]).map(p=>p.url?
       '<span class="dailyPhotoWrap"><a href="'+esc(p.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(p.url)+'" alt="Фото работы"></a>'+
       '<button type="button" data-delete-photo="'+esc(p.id)+'" title="Удалить фото">×</button></span>':"").join("")+'</div></div>'+
-    '<div class="actions"><button type="button" id="dailySaveDraft">Сохранить черновик</button>'+
-    '<button type="button" id="dailySend" class="main">Отправить OWNER</button></div>'+
+    '<div class="dailySubmitGuide"><strong>Как записать работу?</strong><p><b>Сохранить сделанное</b> — оставить запись за день без отправки. <b>Отправить OWNER</b> — передать объёмы и предварительную стоимость на подтверждение. Например: залито 20 ям × 140 zł = 2 800 zł к согласованию.</p></div>'+
+    '<div class="actions"><button type="button" id="dailySaveDraft">Сохранить сделанное</button>'+
+    '<button type="button" id="dailySend" class="main">Отправить работы и сумму OWNER</button></div>'+
     '<p id="dailyEditorMessage" class="note" aria-live="polite"></p></div>';
    host.querySelector("#dailyClose").onclick=()=>{editing=null;host.replaceChildren()};
    host.querySelector("#dailyNeedCash").onchange=e=>host.querySelector("#dailyCashFields").hidden=!e.target.checked;
@@ -277,6 +283,18 @@ document.addEventListener("DOMContentLoaded",()=>{
      recalcEditor();
    };
    const linesHost=host.querySelector("#dailyLines");
+   // Common mobile input: "20м²" typed into the unit field. Split it into
+   // quantity=20 and unit=м², only if quantity has not already been entered.
+   linesHost.addEventListener("focusout",event=>{
+     if(!event.target.matches(".dailyUnit"))return;
+     const input=event.target,line=input.closest(".dailyLine");
+     const quantity=line?.querySelector(".dailyQty");
+     const match=input.value.trim().match(/^(\\d+(?:[.,]\\d+)?)\\s*(м²|м2|m²|m2|м³|м3|m³|m3|шт\\.?|szt\\.?|mb|мп)$/iu);
+     if(!match||!quantity||quantity.value.trim())return;
+     quantity.value=match[1].replace(",",".");
+     input.value=match[2];
+     recalcLine(line);recalcEditor();
+   },true);
    linesHost.addEventListener("change",event=>{
      const line=event.target.closest(".dailyLine");if(!line)return;
      if(event.target.matches(".dailyMode")){
