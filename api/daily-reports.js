@@ -121,7 +121,25 @@ export default async function handler(req,res) {
     }
     if(action==="review-work"||action==="review-cash"){
       if(!owner)return res.status(403).json({error:"OWNER role required"});
-      if(!await reportAccess(body.reportId))return res.status(404).json({error:"Report not found"});
+      const report=await reportAccess(body.reportId);
+      if(!report)return res.status(404).json({error:"Report not found"});
+      if(action==="review-work"&&body.decision==="approve"){
+        // Enforce the photo requirement on the server, not just in the OWNER interface.
+        const [lines,extras,photos]=await Promise.all([
+          db.from("daily_work_report_items").select("position_id,quantity").eq("report_id",report.id),
+          db.from("daily_work_report_extras").select("quantity,unit_price").eq("report_id",report.id),
+          db.from("daily_work_report_photos").select("id").eq("report_id",report.id).limit(1)
+        ]);
+        if(lines.error||extras.error||photos.error)throw lines.error||extras.error||photos.error;
+        const positionIds=[...new Set((lines.data||[]).map(x=>x.position_id))];
+        const rates=positionIds.length?await db.from("project_work_positions").select("id,rate").in("id",positionIds):{data:[],error:null};
+        if(rates.error)throw rates.error;
+        const priceById=new Map((rates.data||[]).map(x=>[x.id,Number(x.rate)||0]));
+        const workAmount=(lines.data||[]).reduce((s,x)=>s+(Number(x.quantity)||0)*(priceById.get(x.position_id)||0),0)
+          +(extras.data||[]).reduce((s,x)=>s+(Number(x.quantity)||0)*(Number(x.unit_price)||0),0);
+        if(workAmount>500&&!(photos.data||[]).length)
+          return res.status(400).json({error:"Для подтверждения работ свыше 500 zł нужен фотоотчёт. Верните отчёт бригадиру."});
+      }
       const note=clean(body.note,1000);
       const method=action==="review-work"?"review_daily_work_report":"review_daily_work_cash";
       const args=action==="review-work"
