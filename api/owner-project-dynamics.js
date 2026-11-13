@@ -40,11 +40,16 @@ export default async function handler(req,res){
     estimate+=(Number(w.quantity)||0)*rate;completed+=(Number(w.completed_quantity)||0)*rate;
    }
    const reports=(rs.data||[]).filter(r=>r.project_id===p.id);
+   const awaiting=reports.filter(r=>r.status==="submitted");
+   const pendingValue=awaiting.reduce((total,r)=>total+(pendingValues.get(r.id)||0),0);
+   // Cash authorization is possible only after work approval.
+   const cashWaiting=reports.filter(r=>r.status==="approved"&&r.cash_requested&&r.cash_status==="pending");
+   const cashRequested=cashWaiting.reduce((total,r)=>total+(Number(r.cash_requested_amount)||0),0);
    const latest=reports.find(r=>r.status!=="draft");
    return {id:p.id,estimate:Math.round(estimate*100)/100,completed:Math.round(completed*100)/100,
     progress:estimate>0?Math.min(100,Math.max(0,Math.round(completed/estimate*100))):null,
     positions,pending:awaiting.length,pendingValue:Math.round(pendingValue*100)/100,cashRequested:Math.round(cashRequested*100)/100,
-    cashPending:reports.filter(r=>r.cash_requested&&r.cash_status==="pending").length,
+    cashPending:cashWaiting.length,
     lastReport:latest?.work_date||null,reportCount:reports.filter(r=>r.status!=="draft").length};
   });
   return res.status(200).json({success:true,items:result});
