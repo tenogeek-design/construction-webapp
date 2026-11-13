@@ -8,7 +8,7 @@
   <title>CONSTRUCTION GROUP — Admin</title>
   <link rel="stylesheet" href="admin.css">
   <link rel="stylesheet" href="admin-mobile.css">
-  <link rel="stylesheet" href="owner-premium.css?v=20261113-1">
+  <link rel="stylesheet" href="owner-premium.css?v=20261113-menu">
   <link rel="stylesheet" href="/cabinet-2026.css?v=20261112-3">
   <script defer src="/back-button.js?v=20261113-1"></script>
 </head>
@@ -56,6 +56,7 @@
   <main class="main-content">
 
     <header class="topbar">
+      <button type="button" id="ownerMenuToggle" class="owner-menu-toggle" aria-controls="ownerSidebar" aria-expanded="false">☰ <span>Меню</span></button>
       <div class="owner-topbar-title">
         <div>
           <div class="breadcrumb">CONSTRUCTION GROUP / OWNER PANEL</div>
@@ -63,6 +64,7 @@
         </div>
       </div>
       <div class="topbar-actions">
+        <button type="button" id="ownerSignOut" class="owner-signout" title="Выйти из аккаунта">Выйти</button>
         <div class="profile">
           <div class="avatar">C</div>
           <div><strong>Владелец</strong><small>OWNER</small></div>
