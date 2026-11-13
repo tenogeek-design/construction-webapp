@@ -204,32 +204,13 @@ document.addEventListener("DOMContentLoaded", async () => {
       }
     }
 
-    const signOut = make("button", "Выйти");
-    signOut.type = "button";
-
-    signOut.style.cssText = `
-      padding:9px 13px;
-      border:1px solid #555;
-      border-radius:8px;
-      background:#30343a;
-      color:#fff;
-      cursor:pointer;
-    `;
-
-    signOut.addEventListener("click", async () => {
+    const signOut = $("ownerSignOut");
+    if(signOut) signOut.addEventListener("click", async () => {
       signOut.disabled = true;
-
-      const { error } = await db.auth.signOut();
-
-      if (error) {
-        alert("Не удалось выйти: " + error.message);
-        signOut.disabled = false;
-      } else {
-        window.location.replace("/login.html");
-      }
+      const {error} = await db.auth.signOut();
+      if(error){alert("Не удалось выйти: "+error.message);signOut.disabled=false;}
+      else location.replace("/login.html");
     });
-
-    document.querySelector(".topbar-actions")?.append(signOut);
     return true;
   }
 
@@ -269,10 +250,17 @@ document.addEventListener("DOMContentLoaded", async () => {
       loadRequests();
     }
 
+    document.body.classList.remove("owner-menu-open");
+    $("ownerMenuToggle")?.setAttribute("aria-expanded","false");
     window.scrollTo(0, 0);
   }
 
   function setupNavigation() {
+    const toggle=$("ownerMenuToggle");
+    toggle?.addEventListener("click",()=>{
+      const open=document.body.classList.toggle("owner-menu-open");
+      toggle.setAttribute("aria-expanded",String(open));
+    });
     navItems.forEach(item => {
       const href = item.getAttribute("href") || "";
       const section = href.startsWith("#")
@@ -826,8 +814,23 @@ document.addEventListener("DOMContentLoaded", async () => {
       main.append(notice);
     }
 
-    navItems.forEach(item => {
-      item.style.display = "none";
+    // Keep navigation to login and logout available even if the session is
+    // authenticated as a worker/client or has missing OWNER permissions.
+    const notice=document.createElement("div");
+    notice.className="owner-access-recovery";
+    notice.innerHTML='<strong>Не тот аккаунт или нет прав OWNER</strong><p>Войдите под аккаунтом владельца. Данные компании и разрешения не изменены.</p><button type="button" id="ownerSwitchAccount">Выйти и сменить аккаунт</button><a href="/">На главную сайта</a>';
+    main?.append(notice);
+    document.getElementById("ownerSwitchAccount")?.addEventListener("click",async()=>{
+      const btn=document.getElementById("ownerSwitchAccount");btn.disabled=true;
+      try{await db.auth.signOut();location.replace("/login.html");}
+      catch(e){btn.disabled=false;alert("Не удалось выйти: "+(e.message||e));}
     });
+    const exit=$("ownerSignOut");
+    if(exit)exit.addEventListener("click",async()=>{
+      exit.disabled=true;
+      try{await db.auth.signOut();location.replace("/login.html");}
+      catch(e){exit.disabled=false;alert(e.message||e);}
+    });
+    navItems.forEach(item => { item.style.display = "none"; });
   }
 });
