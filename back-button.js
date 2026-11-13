@@ -23,9 +23,34 @@
   return "/foreman.html#projects";
  }
  const destination=workspace?workspaceHome():home;
+ // Remember OWNER sections, so Back returns to the previous in-app tab.
+ const ownerSections=new Set(["dashboard","requests","projects","tasks","employees","time","payroll","finance"]);
+ let ownerCurrent=ownerSections.has(location.hash.slice(1))?location.hash.slice(1):"dashboard";
+ const ownerHistory=[];
+ if(owner){
+  window.addEventListener("hashchange",()=>{
+   const next=location.hash.slice(1);
+   if(!ownerSections.has(next)||next===ownerCurrent)return;
+   ownerHistory.push(ownerCurrent);
+   if(ownerHistory.length>25)ownerHistory.shift();
+   ownerCurrent=next;
+  });
+ }
  function goBack(){
   const ref=safeRef();
   if(workspace){location.assign(destination);return}
+  if(owner){
+   const previous=ownerHistory.pop();
+   if(previous){
+    // hashchange will fire; avoid adding the current tab again.
+    ownerCurrent=previous;
+    location.hash=previous;
+    return;
+   }
+   if(location.hash!=="#dashboard"){ownerCurrent="dashboard";location.hash="dashboard";return}
+   location.assign("/");
+   return;
+  }
   if(ref&&isInternal(ref.href)&&history.length>1){history.back();return}
   if(owner&&location.hash&&location.hash!=="#dashboard"){location.hash="dashboard";return}
   if(foreman&&location.hash&&location.hash!=="#home"){location.hash="home";return}
@@ -37,7 +62,7 @@
   const bar=document.createElement("nav");bar.id="cgNav2026";bar.setAttribute("aria-label","Навигация CONSTRUCTION GROUP");
   const back=document.createElement("button");back.type="button";back.className="cg-nav-back";back.innerHTML='<span aria-hidden="true">←</span> Назад';back.addEventListener("click",goBack);
   bar.append(back);
-  if(!auth){
+  if(!auth&&!owner){
    const homeLink=document.createElement("a");homeLink.className="cg-nav-home";homeLink.href=destination;
    homeLink.textContent=workspace?"Все объекты":"Главная";bar.append(homeLink);
   }
