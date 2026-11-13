@@ -42,11 +42,16 @@
    (items.length?items.map(r=>{
     const lines=(r.lines||[]).map(x=>{const p=byId.get(x.position_id);return '<div class="owner-review-line"><b>'+esc(p?.name||"Работа по смете")+'</b><span>'+num(x.quantity)+' '+esc(p?.unit||"")+(p?.rate!=null?' · '+money(Number(x.quantity)*Number(p.rate)):'')+'</span></div>'}).join("");
     const extras=(r.extras||[]).map(x=>'<div class="owner-review-line"><b>'+esc(x.work_name)+' <small>Дополнительная работа</small></b><span>'+num(x.quantity)+' '+esc(x.unit)+(x.unit_price!=null?' · '+money(Number(x.quantity)*Number(x.unit_price)):'')+'</span></div>').join("");
-    const estimate=(r.lines||[]).reduce((s,x)=>s+Number(x.quantity)*(Number(byId.get(x.position_id)?.rate)||0),0)+(r.extras||[]).reduce((s,x)=>s+Number(x.quantity)*(Number(x.unit_price)||0),0);
+    const plannedAmount=(r.lines||[]).reduce((s,x)=>s+Number(x.quantity)*(Number(byId.get(x.position_id)?.rate)||0),0);
+    const extraAmount=(r.extras||[]).reduce((s,x)=>s+Number(x.quantity)*(Number(x.unit_price)||0),0);
+    const estimate=plannedAmount+extraAmount;
     const photos=(r.photos||[]).filter(x=>x.url).map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(x.url)+'" loading="lazy" alt="Фото выполненных работ"></a>').join("");
-    return '<article class="owner-review-card"><div class="owner-review-title"><div><b>'+esc(r.work_date)+'</b><span>'+esc(labels[r.status]||r.status)+'</span></div><strong>'+money(estimate)+'</strong></div>'+
-     (r.description?'<p>'+esc(r.description)+'</p>':'')+lines+extras+
+    return '<article class="owner-review-card" data-report-id="'+esc(r.id)+'" data-estimate="'+estimate+'" data-cash-requested="'+Number(r.cash_requested_amount||0)+'" data-has-photo="'+(r.photos||[]).some(x=>x.url)+'"><div class="owner-review-title"><div><b>'+esc(r.work_date)+'</b><span>'+esc(labels[r.status]||r.status)+'</span></div><strong>'+money(estimate)+'</strong></div>'+
+     (r.description?'<p>'+esc(r.description)+'</p>':'')+
+     '<div class="owner-review-line"><b>По согласованной смете</b><strong>'+money(plannedAmount)+'</strong></div>'+lines+
+     (r.extras?.length?'<div class="owner-review-extra-note"><strong>Вне сметы: '+money(extraAmount)+'</strong><p>Дополнительные позиции НЕ включаются в утверждённую смету автоматически. Для их оплаты нужно отдельное согласование.</p></div>':'')+extras+
      (photos?'<div class="owner-review-photos">'+photos+'</div>':'<p class="owner-review-muted">Фото не приложены</p>')+
+     (r.status==="submitted"&&estimate>500&&!(r.photos||[]).some(x=>x.url)?'<p class="owner-review-photo-warning">⚠ Для подтверждения работ свыше 500 zł требуется фотоотчёт. Верните отчёт на исправление.</p>':'')+
      (r.cash_requested?'<div class="owner-review-cash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b><p>'+esc(r.cash_purpose||"")+'</p><small>Статус: '+esc(r.cash_status||"pending")+'</small></div>':'')+
      (r.review_note?'<p class="owner-review-muted">Комментарий: '+esc(r.review_note)+'</p>':'')+
      (r.status==="submitted"?'<div class="owner-review-actions"><button type="button" class="approve" data-review="approve" data-id="'+esc(r.id)+'">✓ Подтвердить работы</button><button type="button" data-review="return" data-id="'+esc(r.id)+'">↩ Вернуть на исправление</button><button type="button" class="reject" data-review="reject" data-id="'+esc(r.id)+'">Отклонить</button></div>':'')+
@@ -63,7 +68,13 @@
   const promptText=decision==="return"?"Что нужно исправить?":decision==="reject"?"Причина отказа:":"Комментарий (необязательно):";
   const note=prompt(promptText,"");
   if(note===null||decision!=="approve"&&!note.trim())return;
-  if(decision==="approve"&&!confirm("Подтвердить выполненные работы? Объём добавится к прогрессу объекта. Деньги НЕ спишутся."))return;
+  if(decision==="approve"){
+   const card=root.querySelector('[data-report-id="'+id+'"]');
+   const amount=Number(card?.dataset.estimate||0);
+   const hasPhoto=card?.dataset.hasPhoto==="true";
+   if(amount>500&&!hasPhoto){notice("Для подтверждения работ свыше 500 zł нужен фотоотчёт. Верни отчёт бригадиру.",true);return}
+   if(!confirm("Подтвердить объёмы по смете? Дополнительные работы не утверждаются автоматически. Деньги НЕ списываются."))return;
+  }
   busy=true;try{await call(selected.id,"review-work",{reportId:id,decision,note});await refresh();notice("Решение сохранено.")}catch(e){notice(e.message,true)}finally{busy=false}
  }
  async function cash(id,decision){
@@ -71,7 +82,10 @@
   const amount=Number(root.querySelector('[data-cash-amount="'+id+'"]')?.value);
   const note=root.querySelector('[data-cash-note="'+id+'"]')?.value.trim()||"";
   if(decision==="approve"&&(!Number.isFinite(amount)||amount<=0)){notice("Укажи корректную сумму",true);return}
-  if((decision==="reject"||decision==="approve"&&note==="")&&decision==="reject"){if(!note){notice("При отказе укажи причину",true);return}}
+  const card=root.querySelector('[data-report-id="'+id+'"]');
+  const requested=Number(card?.dataset.cashRequested||0);
+  if(decision==="reject"&&!note){notice("При отказе укажи причину",true);return}
+  if(decision==="approve"&&Math.abs(amount-requested)>0.005&&!note){notice("При изменении суммы укажи причину",true);return}
   if(decision==="approve"&&!confirm("Согласовать "+money(amount)+"? Это не списание денег."))return;
   busy=true;try{await call(selected.id,"review-cash",{reportId:id,decision,approvedAmount:amount,note});await refresh();notice("Решение по кассе сохранено.")}catch(e){notice(e.message,true)}finally{busy=false}
  }
