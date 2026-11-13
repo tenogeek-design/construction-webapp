@@ -37,14 +37,16 @@
    const items=(res.items||[]).filter(r=>r.status!=="draft");
    items.sort((a,b)=>(a.status==="submitted"?-1:1)-(b.status==="submitted"?-1:1));
    const pending=items.filter(x=>x.status==="submitted").length;
+   const pendingValue=items.filter(x=>x.status==="submitted").reduce((sum,r)=>sum+(r.lines||[]).reduce((s,x)=>s+Number(x.quantity||0)*Number(byId.get(x.position_id)?.rate||0),0),0);
    const list=root.querySelector("#ownerReviewList");
-   list.innerHTML='<div class="owner-review-summary"><strong>'+pending+' на подтверждении</strong><span>'+items.length+' отправленных отчётов</span></div>'+
+   list.innerHTML='<div class="owner-review-summary"><strong>'+pending+' на подтверждении · '+money(pendingValue)+'</strong><span>'+items.length+' отправленных отчётов · сумма только по согласованной смете, без дополнительных работ и запросов кассы</span></div>'+
    (items.length?items.map(r=>{
     const lines=(r.lines||[]).map(x=>{const p=byId.get(x.position_id);return '<div class="owner-review-line"><b>'+esc(p?.name||"Работа по смете")+'</b><span>'+num(x.quantity)+' '+esc(p?.unit||"")+(p?.rate!=null?' · '+money(Number(x.quantity)*Number(p.rate)):'')+'</span></div>'}).join("");
     const extras=(r.extras||[]).map(x=>'<div class="owner-review-line"><b>'+esc(x.work_name)+' <small>Дополнительная работа</small></b><span>'+num(x.quantity)+' '+esc(x.unit)+(x.unit_price!=null?' · '+money(Number(x.quantity)*Number(x.unit_price)):'')+'</span></div>').join("");
     const plannedAmount=(r.lines||[]).reduce((s,x)=>s+Number(x.quantity)*(Number(byId.get(x.position_id)?.rate)||0),0);
     const extraAmount=(r.extras||[]).reduce((s,x)=>s+Number(x.quantity)*(Number(x.unit_price)||0),0);
     const estimate=plannedAmount+extraAmount;
+    const pendingExtra=extraAmount>0&&r.status==='submitted';
     const photos=(r.photos||[]).filter(x=>x.url).map(x=>'<a href="'+esc(x.url)+'" target="_blank" rel="noopener noreferrer"><img src="'+esc(x.url)+'" loading="lazy" alt="Фото выполненных работ"></a>').join("");
     return '<article class="owner-review-card" data-report-id="'+esc(r.id)+'" data-estimate="'+estimate+'" data-cash-requested="'+Number(r.cash_requested_amount||0)+'" data-has-photo="'+(r.photos||[]).some(x=>x.url)+'"><div class="owner-review-title"><div><b>'+esc(r.work_date)+'</b><span>'+esc(labels[r.status]||r.status)+'</span></div><strong>'+money(estimate)+'</strong></div>'+
      (r.description?'<p>'+esc(r.description)+'</p>':'')+
@@ -73,7 +75,7 @@
    const amount=Number(card?.dataset.estimate||0);
    const hasPhoto=card?.dataset.hasPhoto==="true";
    if(amount>500&&!hasPhoto){notice("Для подтверждения работ свыше 500 zł нужен фотоотчёт. Верни отчёт бригадиру.",true);return}
-   if(!confirm("Подтвердить объёмы по смете? Дополнительные работы не утверждаются автоматически. Деньги НЕ списываются."))return;
+   if(!confirm("Подтвердить отчёт о выполненных объёмах? Это НЕ подтверждение оплаты дополнительных работ и НЕ выдача денег из кассы."))return;
   }
   busy=true;try{await call(selected.id,"review-work",{reportId:id,decision,note});await refresh();notice("Решение сохранено.")}catch(e){notice(e.message,true)}finally{busy=false}
  }
