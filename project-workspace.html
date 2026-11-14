@@ -241,9 +241,22 @@ body{background:linear-gradient(105deg,rgba(10,20,31,.97),rgba(13,26,40,.93) 62%
 .dailySubmitGuide p{margin:5px 0 0}
 @media(max-width:650px){.dailyGrand{padding:15px!important}.dailyForm .actions button{flex:1 1 100%;min-height:47px}}
 
+
+/* Clear object financial overview and mobile workflow */
+.project-financial-explain{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 12px}
+.project-financial-explain>div{padding:19px;background:#1d3042;border:1px solid #47647d;border-radius:14px;min-width:0}
+.project-financial-explain small{display:block;color:#aac4d8;font-size:11px;letter-spacing:.06em;font-weight:800}
+.project-financial-explain strong{display:block;font-size:clamp(21px,3.5vw,31px);margin:12px 0;color:#fff;overflow-wrap:anywhere}
+.project-financial-explain>div:first-child strong{color:#ffb17d}
+.project-financial-explain p{font-size:12px;line-height:1.65;color:#bbcede;margin:0}
+.project-progress-summary{display:flex;flex-wrap:wrap;justify-content:space-between;gap:10px 20px;padding:12px 16px;margin-bottom:23px;border:1px solid #3a5369;border-radius:11px;background:#17293a;color:#bed0df;font-size:12px}
+.project-progress-summary b{color:#fff}
+.overview-actions{gap:9px}
+.overview-action{min-height:76px}
+@media(max-width:650px){.project-financial-explain{grid-template-columns:1fr;gap:9px}.project-financial-explain>div{padding:15px}.project-financial-explain strong{margin:6px 0;font-size:24px}.project-financial-explain p{font-size:11px}.project-progress-summary{font-size:11px}}
 </style>
 <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script defer src="/project-workspace.js"></script>
+<script defer src="/project-workspace.js?v=20261114-clear"></script>
 <script defer src="/cg-work-catalog.js"></script>
 <script defer src="/project-daily-reports.js?v=20261113-2"></script>
   <link rel="stylesheet" href="/cabinet-2026.css?v=1">
