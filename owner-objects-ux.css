@@ -1,0 +1,47 @@
+/* CONSTRUCTION GROUP · OWNER mobile object workflow, 2026-11-14 */
+#projects .welcome{align-items:center}
+#projects button,#projects a.owner-project-open,#projects a.owner-project-edit{font-family:inherit}
+#projects .welcome #projectNewBtn,
+#projects #projectsRefreshBtn,
+#projects #cg-review-refresh,
+#projects .owner-project-actions button,
+#projects .owner-project-actions a,
+#projects #projectEditorCloseBtn,
+#projects #projectSaveBtn,
+#projects #projectCancelBtn,
+#projects #ownerReviewClose{
+ appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;
+ min-height:44px;padding:11px 16px;border-radius:11px;
+ background:#2c506e;border:1px solid #527d9e;color:#f3f8ff;
+ font:700 13px/1.35 'Manrope',Arial,sans-serif;text-decoration:none;
+ cursor:pointer;box-shadow:none;transition:background .15s,border-color .15s;
+}
+#projects .welcome #projectNewBtn,#projects #projectSaveBtn{background:#a9592f;border-color:#e7a273;color:#fff}
+#projects .owner-project-actions .owner-project-review{background:#9e552f;border-color:#e6a373;color:white}
+#projects #projectsRefreshBtn,#projects #cg-review-refresh{background:#233d54;border-color:#476d8d;color:#eaf4ff}
+#projects button:hover:not(:disabled),#projects .owner-project-actions a:hover{background:#416583;border-color:#93b8d5;color:white}
+#projects button:focus-visible,#projects a:focus-visible{outline:3px solid #f3ad73;outline-offset:2px}
+#projects .owner-project-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:16px}
+#projects .owner-project-actions>*{width:100%;min-width:0;text-align:center;white-space:normal}
+#projects .owner-project-actions .owner-project-review{grid-column:1/-1}
+#projects .owner-project-actions .owner-project-edit{grid-column:1/-1;background:#243748}
+#projects .owner-project-grid{gap:15px}
+#projects #projectsSearch,#projects #projectsStatusFilter{background:#1c3043;color:#fff;border:1px solid #4b6c87;border-radius:11px!important;min-height:46px}
+#projects #projectsMessage{color:#b7c9d8!important}
+#projects #cg-owner-proposals{border-radius:16px}
+#projects #cg-owner-proposals button{color:#fff;background:#315675;border:1px solid #6388a6;border-radius:10px;min-height:44px;padding:10px 16px;font-weight:700}
+#projects #cg-owner-proposals button[data-decision="rejected"]{background:#58333e}
+@media(max-width:680px){
+ #projects .welcome{display:flex;flex-direction:column;align-items:stretch;gap:15px}
+ #projects .welcome #projectNewBtn{width:100%;min-height:48px}
+ #projects .stats-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+ #projects .stat-card{min-width:0;padding:14px}
+ #projects .panel-header{display:flex;flex-direction:column;align-items:stretch;gap:12px}
+ #projects #projectsRefreshBtn{width:100%}
+ #projects #cg-owner-proposals>div:first-child{align-items:stretch!important}
+ #projects #cg-review-refresh{width:100%}
+ #projects .owner-project-actions{grid-template-columns:1fr 1fr}
+ #projects .owner-project-actions>*{padding:12px 9px;font-size:12px}
+ #projects #projectForm{padding:15px!important;grid-template-columns:1fr!important}
+ #projects #projectForm input,#projects #projectForm select,#projects #projectForm textarea{max-width:100%}
+}
