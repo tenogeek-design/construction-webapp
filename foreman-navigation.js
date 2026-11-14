@@ -680,14 +680,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const hash = "#" + item.id;
     if (window.location.hash !== hash) {
-      historyReplace(hash);
+      historyPush(hash);
     }
 
     window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function historyReplace(hash) {
-    window.history.replaceState(null, "", hash);
+  function historyPush(hash) {
+    // Preserve in-cabinet navigation so browser Back returns to the previous section.
+    window.history.pushState({ cgForemanPage: hash.slice(1) }, "", hash);
   }
 
   refresh.addEventListener("click", () => {
@@ -724,13 +725,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const initial = window.location.hash.slice(1);
   openPage(initial==="reports"?"projects":initial==="time"?"workers":(menu.some(x => x.id === initial) ? initial : "home"));
 
-  window.addEventListener("hashchange", () => {
+  function restoreFromHistory() {
     const next = window.location.hash.slice(1);
-
     if (menu.some(x => x.id === next)) {
+      // openPage does not create a new entry when the URL already matches.
       openPage(next);
+    } else if (!next) {
+      openPage("home");
     }
-  });
+  }
+  window.addEventListener("popstate", restoreFromHistory);
+  window.addEventListener("hashchange", restoreFromHistory);
 
   // Раздел проектов создаётся отдельным скриптом.
   // Если он добавлен чуть позже, подключаем его
