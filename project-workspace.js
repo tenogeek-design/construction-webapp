@@ -40,20 +40,22 @@ document.addEventListener("DOMContentLoaded", async () => {
     return '<div class="hero"><div class="hero-text"><div class="kicker">CONSTRUCTION GROUP <span class="kicker-dot">/</span> ОБЪЕКТ</div>'+
       '<h1>'+html(p.name)+'</h1><p class="hero-address">'+html(address||"Адрес не указан")+'</p></div>'+
       '<span class="chip '+html(p.status)+'">'+html(status(p.status))+'</span></div>'+
-      '<div class="metrics">'+
-      '<div class="metric metric-primary"><small>Смета по позициям</small><strong class="orange">'+fmt(t.plan)+'</strong><span>Плановая стоимость работ</span></div>'+
-      '<div class="metric"><small>Подтверждено работ</small><strong>'+fmt(t.done)+'</strong><span>По учтённым объёмам</span></div>'+
-      '<div class="metric"><small>Выполнение сметы</small><strong>'+t.perc+'%</strong><span>По стоимости работ</span></div>'+
-      '<div class="metric"><small>Этапы / позиции</small><strong>'+stages.length+' / '+t.pieces+'</strong><span>В смете объекта</span></div></div>';
+      '<div class="project-financial-explain"><div><small>ЗАПЛАНИРОВАНО ПО СМЕТЕ</small><strong>'+fmt(t.plan)+'</strong><p>Стоимость всех работ, внесённых в этапы. Это не счёт к оплате и не долг.</p></div>'+
+      '<div><small>ПОДТВЕРЖДЕНО OWNER</small><strong>'+fmt(t.done)+'</strong><p>Стоимость проверенных выполненных работ. Не означает, что деньги выплачены.</p></div></div>'+
+      '<div class="project-progress-summary"><span>Выполнено по смете: <b>'+t.perc+'%</b></span><span>Этапов: <b>'+stages.length+'</b> · Работ: <b>'+t.pieces+'</b></span></div>';
   }
     function renderOverview(){
     const p=project,hasTeam=Boolean(p.foreman_id&&p.brigade_id);
     const address=[p.city,p.street,p.building_number,p.apartment_number].filter(Boolean).join(", ");
     return '<div class="overview-layout">'+
-      '<div class="panel overview-start"><div class="section-header"><div><span class="panel-eyebrow">СЕГОДНЯ НА ОБЪЕКТЕ</span><h2>С чего начать</h2></div></div>'+
-      '<p class="note">Этапы и бригада находятся во вкладках выше. Здесь — главное действие на сегодня.</p>'+
+      '<div class="panel overview-start"><div class="section-header"><div><span class="panel-eyebrow">КАРТОЧКА ОБЪЕКТА</span><h2>Что нужно сделать?</h2></div></div>'+
+      '<p class="note">Выбери раздел. Все суммы относятся только к этому объекту.</p>'+
       '<div class="overview-actions">'+
-      '<button type="button" class="overview-action primary" data-tab-switch="reports"><span class="action-icon">▤</span><span><b>+ Вечерний отчёт</b><small>Объёмы, фотографии и запрос денег OWNER</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action" data-tab-switch="stages"><span class="action-icon">▤</span><span><b>1. Этапы и смета</b><small>Какие работы запланированы, сколько стоят и что уже сделано</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action primary" data-tab-switch="reports"><span class="action-icon">✓</span><span><b>2. Отчёты по работам</b><small>Выполненные объёмы, фото и подтверждение OWNER</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action" data-tab-switch="reports"><span class="action-icon">＋</span><span><b>3. Дополнительные работы</b><small>Добавляются к дневному отчёту и согласовываются отдельно</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action" data-tab-switch="reports"><span class="action-icon">₴</span><span><b>4. Материалы и запрос денег</b><small>В отчёте: расходы и отдельная заявка из кассы</small></span><span class="action-arrow">→</span></button>'+
+      '<button type="button" class="overview-action" data-tab-switch="team"><span class="action-icon">♙</span><span><b>5. Бригада и статус</b><small>Кто отвечает за объект и в каком он состоянии</small></span><span class="action-arrow">→</span></button>'+
       '</div></div>'+
       '<div class="panel overview-details"><div class="section-header"><div><span class="panel-eyebrow">ИНФОРМАЦИЯ</span><h2>Данные объекта</h2></div></div>'+
       '<div class="grid2">'+
@@ -218,10 +220,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     section.innerHTML=renderHeader()+
       '<div class="workspace-label">УПРАВЛЕНИЕ ОБЪЕКТОМ</div>'+
       '<div class="nav" role="tablist" aria-label="Раздел объекта">'+
-        '<button data-tab="overview" type="button" role="tab">Обзор</button>'+
-        '<button data-tab="stages" type="button" role="tab">Этапы и позиции</button>'+
-        '<button data-tab="team" type="button" role="tab">Бригада и статус</button>'+
-        '<button data-tab="reports" type="button" role="tab">Рабочий день</button>'+
+        '<button data-tab="overview" type="button" role="tab">Главная</button>'+
+        '<button data-tab="stages" type="button" role="tab">Этапы и смета</button>'+
+        '<button data-tab="team" type="button" role="tab">Бригада</button>'+
+        '<button data-tab="reports" type="button" role="tab">Отчёты и расходы</button>'+
       '</div>'+
       '<section id="panel-overview">'+renderOverview()+'</section>'+
       '<section id="panel-stages">'+renderStages()+'</section>'+
