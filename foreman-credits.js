@@ -24,6 +24,7 @@
  .daily-credit-note button{border-radius:8px;padding:10px 14px}
  @media(max-width:650px){.cg-credit-panel{padding:14px 13px}.cg-credit-header{align-items:flex-start}}
  `;
+ css.textContent += "\n.cg-credit-editor{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:16px;margin:15px 0;background:#19374b;border:1px solid #6789a3;border-radius:13px;color:#f0f7fd}\n.cg-credit-editor>strong,.cg-credit-editor>p,.cg-credit-editor>small{grid-column:1/-1}\n.cg-credit-editor>strong{font-size:15px;color:#ffbb8b}\n.cg-credit-editor>p{margin:0;color:#c3d3e0;font-size:12px;line-height:1.6}\n.cg-credit-editor>small{font-size:11px;color:#b4d5c2}\n.cg-credit-editor label{display:grid;gap:7px;font-size:12px;font-weight:700;color:#e4edf5}\n.cg-credit-editor input{width:100%;min-height:46px;border:1px solid #557b9b;background:#112737;border-radius:9px;padding:11px 12px;color:#fff;font:inherit}\n.cg-credit-editor input:focus-visible{outline:2px solid #ffae75;outline-offset:1px}\n@media(max-width:650px){.cg-credit-editor{grid-template-columns:1fr;padding:13px}}\n";
  document.head.append(css);
  let projectId=null, host=null;
  async function load(){
