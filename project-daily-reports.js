@@ -221,7 +221,10 @@ document.addEventListener("DOMContentLoaded",()=>{
        (canEdit?'<button type="button" data-edit="'+esc(r.id)+'">Продолжить черновик</button>':
        '<span class="chip '+(r.status==="approved"?"":"planned")+'">'+esc(workStatus[r.status]||r.status)+'</span>')+'</div>'+
        (r.description?'<p class="note" style="margin:8px 0">'+esc(r.description)+'</p>':"")+
-       lines+extras+lineEstimate+creditInfo+'<div class="dailyPhotoStrip">'+photos+'</div>'+
+       lines+extras+lineEstimate+creditInfo+
+       (workspace.isOwner&&r.extras?.length&&!r.credit&&(r.status==="submitted"||r.status==="approved")?
+          '<div class="cg-credit-editor"><strong>Начисление за дополнительные работы</strong><p>Ставка бригадира указана выше. OWNER может уменьшить начисление с обязательной причиной.</p><label>Начислить бригадиру, zł<input type="number" min="0" step="0.01" max="'+pricedExtra+'" value="'+pricedExtra.toFixed(2)+'" data-credit-amount="'+esc(r.id)+'"></label><label>Причина изменения суммы<input type="text" maxlength="500" data-credit-reason="'+esc(r.id)+'" placeholder="Например: недоделка или замечания к качеству"></label><small>Зачисление сразу на внутренний баланс, без перевода на карту.</small></div>':"")+
+       '<div class="dailyPhotoStrip">'+photos+'</div>'+
        (r.cash_requested?'<div class="dailyCash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b>'+
         '<div class="note">'+esc(r.cash_purpose||"")+' · '+esc(cashStatus[r.cash_status]||r.cash_status)+
          (r.cash_approved_amount!==null?' · Решение OWNER: '+money(r.cash_approved_amount):"")+
@@ -482,17 +485,12 @@ document.addEventListener("DOMContentLoaded",()=>{
    const unpriced=r.extras.some(x=>x.unit_price===null||x.unit_price===undefined);
    if(unpriced){msg("Не у всех дополнительных работ есть согласованная цена. Верни на исправление.",true);return;}
    const original=r.extras.reduce((n,x)=>n+Number(x.quantity)*Number(x.unit_price),0);
-   const entered=prompt("Сумма внутреннего начисления бригадиру, zł (максимум "+money(original)+"). При необходимости уменьши её:",String(original.toFixed(2)));
-   if(entered===null)return;
-   const amount=Number(entered.replace(",",".").trim());
-   if(!Number.isFinite(amount)||amount<0||amount>original){msg("Неверная сумма. Можно от 0 до "+money(original),true);return;}
-   let reason="";
-   if(Math.abs(amount-original)>0.004){
-     const response=prompt("Причина изменения выплаты (например, недочёт работы):","");
-     if(response===null)return;
-     reason=response.trim();
-     if(reason.length<3){msg("Для корректировки суммы обязательна причина.",true);return;}
-   }
+   const amountField=root().querySelector('[data-credit-amount="'+id+'"]');
+   const reasonField=root().querySelector('[data-credit-reason="'+id+'"]');
+   const amount=Number(amountField?.value);
+   if(!amountField||!Number.isFinite(amount)||amount<0||amount>original){msg("Укажи корректную сумму от 0 до "+money(original),true);return;}
+   const reason=reasonField?.value.trim()||"";
+   if(Math.abs(amount-original)>0.004&&reason.length<3){msg("Для изменения суммы укажи причину минимум из 3 символов.",true);reasonField?.focus();return;}
    if(!confirm((existing?"Зачислить уже принятую дополнительную работу?":"Принять отчёт и зачислить допработу?")+
       "\\nНачислить: "+money(amount)+" на ВНУТРЕННИЙ баланс бригадира. Это не реальная выплата."))return;
    busy=true;
