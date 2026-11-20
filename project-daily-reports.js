@@ -214,18 +214,21 @@ document.addEventListener("DOMContentLoaded",()=>{
       const canEdit=!workspace.isOwner&&["draft","rejected","changes_requested"].includes(r.status)&&["active","paused"].includes(workspace.project.status);
       const canReview=workspace.isOwner&&r.status==="submitted";
       const canCash=workspace.isOwner&&r.status==="approved"&&r.cash_status==="pending";
+      const canRetroCredit=workspace.isOwner&&r.status==="approved"&&r.extras?.length&&!r.credit;
+      const creditInfo=r.credit?'<div class="daily-credit"><strong>✓ Зачислено бригадиру на внутренний баланс: '+money(r.credit.credited_amount)+'</strong><small>Это не банковская выплата.'+(r.credit.adjustment_reason?' Причина изменения: '+esc(r.credit.adjustment_reason):'')+'</small></div>':"";
       return '<article class="dailyReport"><div class="section-header"><div><b>'+esc(r.work_date)+'</b>'+
        '<p class="note">'+esc(workStatus[r.status]||r.status)+(r.review_note?' · '+esc(r.review_note):"")+'</p></div>'+
        (canEdit?'<button type="button" data-edit="'+esc(r.id)+'">Продолжить черновик</button>':
        '<span class="chip '+(r.status==="approved"?"":"planned")+'">'+esc(workStatus[r.status]||r.status)+'</span>')+'</div>'+
        (r.description?'<p class="note" style="margin:8px 0">'+esc(r.description)+'</p>':"")+
-       lines+extras+lineEstimate+'<div class="dailyPhotoStrip">'+photos+'</div>'+
+       lines+extras+lineEstimate+creditInfo+'<div class="dailyPhotoStrip">'+photos+'</div>'+
        (r.cash_requested?'<div class="dailyCash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b>'+
         '<div class="note">'+esc(r.cash_purpose||"")+' · '+esc(cashStatus[r.cash_status]||r.cash_status)+
          (r.cash_approved_amount!==null?' · Решение OWNER: '+money(r.cash_approved_amount):"")+
          (r.cash_note?' · '+esc(r.cash_note):"")+'</div></div>':"")+
        (canReview?'<div class="actions"><button class="main" data-work-action="approve" data-report="'+esc(r.id)+'">Утвердить отчёт</button>'+
          '<button data-work-action="return" data-report="'+esc(r.id)+'">Вернуть на исправление</button><button data-work-action="reject" data-report="'+esc(r.id)+'" class="danger">Отклонить</button></div>':"")+
+       (canRetroCredit?'<div class="daily-credit-note"><p>Дополнительная работа уже принята ранее, но начисления ещё нет. Зачислить можно один раз после проверки суммы.</p><button type="button" class="main" data-credit-existing="'+esc(r.id)+'">Зачислить допработу бригадиру</button></div>':"")+
        (canCash?'<div class="dailyCashDecision"><label>Сколько согласовать, zł<input type="number" data-cash-amount="'+esc(r.id)+'" min="0.01" max="1000000" step="0.01" value="'+esc(r.cash_requested_amount)+'"></label>'+
          '<label>Комментарий при изменении суммы или отказе<input data-cash-note="'+esc(r.id)+'" placeholder="Причина изменения или отказа"></label>'+
          '<div class="actions"><button data-cash-action="approve" data-report="'+esc(r.id)+'" class="main">Согласовать сумму</button>'+
@@ -235,6 +238,7 @@ document.addEventListener("DOMContentLoaded",()=>{
      }).join(""):'<div class="empty">Отчётов пока нет. Бригадир может сохранить первый черновик за рабочий день.</div>');
    holder.querySelectorAll("[data-edit]").forEach(b=>b.onclick=()=>openEditor(reports.find(r=>r.id===b.dataset.edit)));
    holder.querySelectorAll("[data-work-action]").forEach(b=>b.onclick=()=>reviewWork(b.dataset.report,b.dataset.workAction));
+   holder.querySelectorAll("[data-credit-existing]").forEach(b=>b.onclick=()=>approveExtraCredit(b.dataset.creditExisting,true));
    holder.querySelectorAll("[data-cash-action]").forEach(b=>b.onclick=()=>reviewCash(b.dataset.report,b.dataset.cashAction));
  }
  document.addEventListener("cg:daily-report-position",event=>{
@@ -470,8 +474,34 @@ document.addEventListener("DOMContentLoaded",()=>{
      openEditor(reports.find(x=>x.id===editing.id)||null);
    }catch(e){msg(e.message,true)}
  }
+ async function approveExtraCredit(id,existing=false){
+   if(busy)return;
+   const r=reports.find(x=>x.id===id);
+   if(!r||!r.extras?.length)return;
+   if(r.credit){msg("Эта работа уже зачислена. Двойное начисление запрещено.",true);return;}
+   const unpriced=r.extras.some(x=>x.unit_price===null||x.unit_price===undefined);
+   if(unpriced){msg("Не у всех дополнительных работ есть согласованная цена. Верни на исправление.",true);return;}
+   const original=r.extras.reduce((n,x)=>n+Number(x.quantity)*Number(x.unit_price),0);
+   const entered=prompt("Сумма внутреннего начисления бригадиру, zł (максимум "+money(original)+"). При необходимости уменьши её:",String(original.toFixed(2)));
+   if(entered===null)return;
+   const amount=Number(entered.replace(",",".").trim());
+   if(!Number.isFinite(amount)||amount<0||amount>original){msg("Неверная сумма. Можно от 0 до "+money(original),true);return;}
+   let reason="";
+   if(Math.abs(amount-original)>0.004){
+     const response=prompt("Причина изменения выплаты (например, недочёт работы):","");
+     if(response===null)return;
+     reason=response.trim();
+     if(reason.length<3){msg("Для корректировки суммы обязательна причина.",true);return;}
+   }
+   if(!confirm((existing?"Зачислить уже принятую дополнительную работу?":"Принять отчёт и зачислить допработу?")+
+      "\\nНачислить: "+money(amount)+" на ВНУТРЕННИЙ баланс бригадира. Это не реальная выплата."))return;
+   busy=true;
+   try{await call(existing?"credit-approved-extra":"approve-extra",{reportId:id,creditAmount:amount,note:reason});await refresh();msg("Работа принята. Начисление "+money(amount)+" зачислено сразу на внутренний баланс бригадира.");}
+   catch(e){msg(e.message,true)}finally{busy=false}
+ }
  async function reviewWork(id,decision){
    if(busy)return;
+   if(decision==="approve"&&reports.find(r=>r.id===id)?.extras?.length){await approveExtraCredit(id);return;}
    const note=decision==="return"||decision==="reject"?prompt(decision==="return"?"Что исправить бригадиру?":"Причина окончательного отказа:"):prompt("Комментарий к подтверждению (необязательно):","");
    if(note===null||["return","reject"].includes(decision)&&!note.trim())return;
    if(decision==="approve"&&!confirm("Утвердить отчёт? Подтверждённый объём прибавится к прогрессу объекта. Деньги не спишутся."))return;
