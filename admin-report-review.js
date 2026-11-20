@@ -55,18 +55,48 @@
      (photos?'<div class="owner-review-photos">'+photos+'</div>':'<p class="owner-review-muted">Фото не приложены</p>')+
      (r.status==="submitted"&&estimate>500&&!(r.photos||[]).some(x=>x.url)?'<p class="owner-review-photo-warning">⚠ Для подтверждения работ свыше 500 zł требуется фотоотчёт. Верните отчёт на исправление.</p>':'')+
      (r.cash_requested?'<div class="owner-review-cash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b><p>'+esc(r.cash_purpose||"")+'</p><small>Статус: '+esc(r.cash_status||"pending")+'</small></div>':'')+
+     (r.credit?'<div class="owner-review-extra-note"><b>✓ Зачислено на внутренний баланс бригадира: '+money(r.credit.credited_amount)+'</b><p>Не банковская выплата.'+(r.credit.adjustment_reason?' Корректировка: '+esc(r.credit.adjustment_reason):'')+'</p></div>':'')+
+     (r.status==="approved"&&r.extras?.length&&!r.credit?'<div class="owner-review-extra-note"><p>Работа принята ранее, начисления ещё нет.</p><button type="button" data-credit-existing="'+esc(r.id)+'">Зачислить допработу бригадиру</button></div>':'')+
      (r.review_note?'<p class="owner-review-muted">Комментарий: '+esc(r.review_note)+'</p>':'')+
      (r.status==="submitted"?'<div class="owner-review-actions"><button type="button" class="approve" data-review="approve" data-id="'+esc(r.id)+'">✓ Подтвердить работы</button><button type="button" data-review="return" data-id="'+esc(r.id)+'">↩ Вернуть на исправление</button><button type="button" class="reject" data-review="reject" data-id="'+esc(r.id)+'">Отклонить</button></div>':'')+
      (r.status==="approved"&&r.cash_requested&&r.cash_status==="pending"?'<div class="owner-review-cash-actions"><label>Согласовать из кассы, zł<input type="number" min="0.01" step="0.01" data-cash-amount="'+esc(r.id)+'" value="'+esc(r.cash_requested_amount)+'"></label><label>Причина изменения или отказа<input data-cash-note="'+esc(r.id)+'" placeholder="Комментарий"></label><button type="button" data-cash="approve" data-id="'+esc(r.id)+'">Согласовать деньги</button><button type="button" data-cash="reject" data-id="'+esc(r.id)+'">Отказать в деньгах</button><small>Согласование не означает фактическую выдачу денег.</small></div>':'')+
      '</article>';
    }).join(""):'<p class="owner-review-empty">Отправленных отчётов пока нет.</p>');
    list.querySelectorAll("[data-review]").forEach(b=>b.onclick=()=>decide(b.dataset.id,b.dataset.review));
+   list.querySelectorAll("[data-credit-existing]").forEach(b=>b.onclick=()=>extraCredit(b.dataset.creditExisting,true));
    list.querySelectorAll("[data-cash]").forEach(b=>b.onclick=()=>cash(b.dataset.id,b.dataset.cash));
    notice("Загружено. Ожидают решения: "+pending);
   }catch(e){notice(e.message,true)}
  }
+ async function extraCredit(id,existing=false){
+  if(busy||!selected)return;
+  const card=root.querySelector('[data-report-id="'+id+'"]');
+  if(!card)return;
+  const response=await call(selected.id);
+  const report=(response.items||[]).find(r=>r.id===id);
+  if(!report||!report.extras?.length||report.credit){notice("Начисление уже создано или дополнительных работ нет.",true);return}
+  if(report.extras.some(x=>x.unit_price==null)){notice("Сначала установи цену каждой дополнительной работы.",true);return}
+  const total=report.extras.reduce((s,x)=>s+Number(x.quantity)*Number(x.unit_price),0);
+  const promptValue=prompt("Сумма к зачислению бригадиру, zł (от 0 до "+money(total)+"):",total.toFixed(2));
+  if(promptValue===null)return;
+  const amount=Number(promptValue.replace(",",".").trim());
+  if(!Number.isFinite(amount)||amount<0||amount>total){notice("Укажи сумму от 0 до "+money(total),true);return}
+  let reason="";
+  if(Math.abs(amount-total)>0.004){
+    const n=prompt("Причина корректировки суммы (обязательно):","");
+    if(n===null)return;
+    reason=n.trim();
+    if(reason.length<3){notice("Нужна причина корректировки.",true);return}
+  }
+  if(!confirm((existing?"Зачислить по уже принятому отчёту?":"Подтвердить отчёт и зачислить допработу?")+"\\n"+
+    money(amount)+" — на внутренний баланс. Реальная выплата НЕ проводится."))return;
+  busy=true;
+  try{await call(selected.id,existing?"credit-approved-extra":"approve-extra",{reportId:id,creditAmount:amount,note:reason});await refresh();notice("Зачислено "+money(amount)+" на внутренний баланс бригадира.")}
+  catch(e){notice(e.message,true)}finally{busy=false}
+ }
  async function decide(id,decision){
   if(busy||!selected)return;
+  if(decision==="approve"){const result=await call(selected.id);const report=(result.items||[]).find(r=>r.id===id);if(report?.extras?.length){await extraCredit(id);return;}}
   const promptText=decision==="return"?"Что нужно исправить?":decision==="reject"?"Причина отказа:":"Комментарий (необязательно):";
   const note=prompt(promptText,"");
   if(note===null||decision!=="approve"&&!note.trim())return;
