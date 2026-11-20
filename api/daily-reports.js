@@ -64,13 +64,14 @@ export default async function handler(req,res) {
       const workPositions=(positions||[]).map(p=>({...p,stage_name:(stages||[]).find(s=>s.id===p.stage_id)?.name||""}));
       const ids=(reports||[]).map(x=>x.id);
       if(!ids.length)return res.status(200).json({success:true,items:[],isOwner:owner,positions:workPositions});
-      const [entries,photos,history,extras]=await Promise.all([
+      const [entries,photos,history,extras,credits]=await Promise.all([
         db.from("daily_work_report_items").select("id,report_id,position_id,quantity").in("report_id",ids),
         db.from("daily_work_report_photos").select("id,report_id,storage_path,original_name,mime_type,size_bytes,created_at").in("report_id",ids).order("created_at"),
         db.from("daily_work_report_history").select("id,report_id,event,details,created_at").in("report_id",ids).order("created_at"),
-        db.from("daily_work_report_extras").select("id,report_id,source,catalog_key,work_name,unit,quantity,unit_price").in("report_id",ids).order("created_at")
+        db.from("daily_work_report_extras").select("id,report_id,source,catalog_key,work_name,unit,quantity,unit_price").in("report_id",ids).order("created_at"),
+        db.from("foreman_extra_work_credits").select("report_id,credited_amount,original_amount,adjustment_reason,created_at").in("report_id",ids)
       ]);
-      if(entries.error||photos.error||history.error||extras.error)throw entries.error||photos.error||history.error||extras.error;
+      if(entries.error||photos.error||history.error||extras.error||credits.error)throw entries.error||photos.error||history.error||extras.error||credits.error;
       const photoLinks=await Promise.all((photos.data||[]).map(async photo=>{
         const {data}=await db.storage.from(BUCKET).createSignedUrl(photo.storage_path,1200);
         return {...photo,url:data?.signedUrl||null};
@@ -79,7 +80,8 @@ export default async function handler(req,res) {
         ...r,lines:(entries.data||[]).filter(x=>x.report_id===r.id),
         extras:(extras.data||[]).filter(x=>x.report_id===r.id),
         photos:photoLinks.filter(x=>x.report_id===r.id),
-        history:(history.data||[]).filter(x=>x.report_id===r.id)
+        history:(history.data||[]).filter(x=>x.report_id===r.id),
+        credit:(credits.data||[]).find(x=>x.report_id===r.id)||null
       }))});
     }
 
