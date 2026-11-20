@@ -119,6 +119,25 @@ export default async function handler(req,res) {
       if(error)return res.status(400).json({error:error.message});
       return res.status(200).json({success:true,reportId:data,status:body.submit?"submitted":"draft"});
     }
+    if(action==="approve-extra"||action==="credit-approved-extra"){
+      if(!owner)return res.status(403).json({error:"OWNER role required"});
+      const report=await reportAccess(body.reportId);
+      if(!report)return res.status(404).json({error:"Report not found"});
+      if(action==="approve-extra"&&report.status!=="submitted" ||
+         action==="credit-approved-extra"&&report.status!=="approved")
+        return res.status(409).json({error:"Report status changed. Refresh first."});
+      const amount=Number(body.creditAmount);
+      if(!Number.isFinite(amount)||amount<0||amount>10000000)
+        return res.status(400).json({error:"Invalid credit amount"});
+      const {data,error}=await acting.rpc("owner_accept_extra_work_credit",{
+        p_report_id:report.id,
+        p_credit_amount:amount,
+        p_reason:clean(body.note,1000)||null,
+        p_accept_existing:action==="credit-approved-extra"
+      });
+      if(error)return res.status(400).json({error:error.message});
+      return res.status(200).json({success:true,creditId:data,internalCredit:true,paid:false});
+    }
     if(action==="review-work"||action==="review-cash"){
       if(!owner)return res.status(403).json({error:"OWNER role required"});
       const report=await reportAccess(body.reportId);
