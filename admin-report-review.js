@@ -3,6 +3,7 @@
  const root=document.getElementById("ownerReportReview");
  if(!root||!window.supabase)return;
  const db=window.supabase.createClient("https://yepxskcfxyiyqqhmdpve.supabase.co","sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH");
+ const parseCreditAmount=raw=>{const t=String(raw??"").trim().replace(/\u00a0/g," ").replace(/\s/g,"");if(!/^\d+(?:[.,]\d{1,2})?$/.test(t))return NaN;return Number(t.replace(",","."));};
  const money=n=>new Intl.NumberFormat("pl-PL",{style:"currency",currency:"PLN"}).format(Number(n||0));
  const num=n=>new Intl.NumberFormat("pl-PL",{maximumFractionDigits:2}).format(Number(n||0));
  const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -56,7 +57,7 @@
      (r.status==="submitted"&&estimate>500&&!(r.photos||[]).some(x=>x.url)?'<p class="owner-review-photo-warning">⚠ Для подтверждения работ свыше 500 zł требуется фотоотчёт. Верните отчёт на исправление.</p>':'')+
      (r.cash_requested?'<div class="owner-review-cash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b><p>'+esc(r.cash_purpose||"")+'</p><small>Статус: '+esc(r.cash_status||"pending")+'</small></div>':'')+
      (r.extras?.length&&!r.credit&&(r.status==="submitted"||r.status==="approved")?
-       '<div class="cg-credit-editor"><strong>Начисление бригадиру за допработы</strong><p>OWNER может уменьшить сумму, указав причину (например, недоделка). Основные работы в это начисление не входят.</p><label>Начислить, zł<input type="number" min="0" step="0.01" max="'+extraAmount+'" value="'+extraAmount.toFixed(2)+'" data-credit-amount="'+esc(r.id)+'"></label><label>Причина корректировки<input type="text" maxlength="500" data-credit-reason="'+esc(r.id)+'" placeholder="Причина уменьшения начисления"></label><small>Начисление на внутренний баланс сразу; не перевод на карту.</small></div>':'')+
+       '<div class="cg-credit-editor"><strong>Начисление бригадиру за допработы</strong><p>OWNER может уменьшить сумму или добавить премию с обязательной причиной. Основные работы в это начисление не входят.</p><label>Начислить, zł<input type="text" inputmode="decimal" autocomplete="off" value="'+extraAmount.toFixed(2)+'" data-credit-amount="'+esc(r.id)+'"></label><label>Причина корректировки<input type="text" maxlength="500" data-credit-reason="'+esc(r.id)+'" placeholder="Причина изменения: недоделка или премия"></label><small>Вводи 1100 или 1100,00 (без разделителей тысяч). Не перевод на карту.</small></div>':'')+
      (r.credit?'<div class="owner-review-extra-note"><b>✓ Зачислено на внутренний баланс бригадира: '+money(r.credit.credited_amount)+'</b><p>Не банковская выплата.'+(r.credit.adjustment_reason?' Корректировка: '+esc(r.credit.adjustment_reason):'')+'</p></div>':'')+
      (r.status==="approved"&&r.extras?.length&&!r.credit?'<div class="owner-review-extra-note"><p>Работа принята ранее, начисления ещё нет.</p><button type="button" data-credit-existing="'+esc(r.id)+'">Зачислить допработу бригадиру</button></div>':'')+
      (r.review_note?'<p class="owner-review-muted">Комментарий: '+esc(r.review_note)+'</p>':'')+
@@ -81,8 +82,8 @@
   const total=report.extras.reduce((s,x)=>s+Number(x.quantity)*Number(x.unit_price),0);
   const amountField=root.querySelector('[data-credit-amount="'+id+'"]');
   const reasonField=root.querySelector('[data-credit-reason="'+id+'"]');
-  const amount=Number(amountField?.value);
-  if(!amountField||!Number.isFinite(amount)||amount<0||amount>total){notice("Укажи сумму от 0 до "+money(total),true);return}
+  const amount=parseCreditAmount(amountField?.value);
+  if(!amountField||!Number.isFinite(amount)||amount<0||amount>10000000){notice("Укажи сумму от 0 до "+money(total),true);return}
   const reason=reasonField?.value.trim()||"";
   if(Math.abs(amount-total)>0.004&&reason.length<3){notice("Нужна причина корректировки суммы (минимум 3 символа).",true);reasonField?.focus();return}
   if(!confirm((existing?"Зачислить по уже принятому отчёту?":"Подтвердить отчёт и зачислить допработу?")+"\\n"+
