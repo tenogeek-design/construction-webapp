@@ -4,6 +4,7 @@ document.addEventListener("DOMContentLoaded",()=>{
  const db=window.supabase?.createClient("https://yepxskcfxyiyqqhmdpve.supabase.co",
    "sb_publishable_2C4bPGasaBUDx-GJ_8ibDA_ct7LUZTH");
  const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+ const parseCreditAmount=raw=>{const t=String(raw??"").trim().replace(/\u00a0/g," ").replace(/\s/g,"");if(!/^\d+(?:[.,]\d{1,2})?$/.test(t))return NaN;return Number(t.replace(",","."));};
  const money=v=>new Intl.NumberFormat("pl-PL",{style:"currency",currency:"PLN"}).format(Number(v||0));
  const num=v=>new Intl.NumberFormat("pl-PL",{maximumFractionDigits:2}).format(Number(v||0));
  const localToday=()=>{const d=new Date();return [d.getFullYear(),String(d.getMonth()+1).padStart(2,"0"),String(d.getDate()).padStart(2,"0")].join("-")};
@@ -223,7 +224,7 @@ document.addEventListener("DOMContentLoaded",()=>{
        (r.description?'<p class="note" style="margin:8px 0">'+esc(r.description)+'</p>':"")+
        lines+extras+lineEstimate+creditInfo+
        (workspace.isOwner&&r.extras?.length&&!r.credit&&(r.status==="submitted"||r.status==="approved")?
-          '<div class="cg-credit-editor"><strong>Начисление за дополнительные работы</strong><p>Ставка бригадира указана выше. OWNER может уменьшить начисление с обязательной причиной.</p><label>Начислить бригадиру, zł<input type="number" min="0" step="0.01" max="'+pricedExtra+'" value="'+pricedExtra.toFixed(2)+'" data-credit-amount="'+esc(r.id)+'"></label><label>Причина изменения суммы<input type="text" maxlength="500" data-credit-reason="'+esc(r.id)+'" placeholder="Например: недоделка или замечания к качеству"></label><small>Зачисление сразу на внутренний баланс, без перевода на карту.</small></div>':"")+
+          '<div class="cg-credit-editor"><strong>Начисление за дополнительные работы</strong><p>Ставка бригадира указана выше. OWNER может изменить сумму: удержание или премия. Причина обязательна.</p><label>Начислить бригадиру, zł<input type="text" inputmode="decimal" autocomplete="off" value="'+pricedExtra.toFixed(2)+'" data-credit-amount="'+esc(r.id)+'"></label><label>Причина изменения суммы<input type="text" maxlength="500" data-credit-reason="'+esc(r.id)+'" placeholder="Например: премия 200 zł или недоделка"></label><small>Зачисление сразу на внутренний баланс, без перевода на карту.</small></div>':"")+
        '<div class="dailyPhotoStrip">'+photos+'</div>'+
        (r.cash_requested?'<div class="dailyCash"><b>Запрос из кассы: '+money(r.cash_requested_amount)+'</b>'+
         '<div class="note">'+esc(r.cash_purpose||"")+' · '+esc(cashStatus[r.cash_status]||r.cash_status)+
@@ -487,8 +488,8 @@ document.addEventListener("DOMContentLoaded",()=>{
    const original=r.extras.reduce((n,x)=>n+Number(x.quantity)*Number(x.unit_price),0);
    const amountField=root().querySelector('[data-credit-amount="'+id+'"]');
    const reasonField=root().querySelector('[data-credit-reason="'+id+'"]');
-   const amount=Number(amountField?.value);
-   if(!amountField||!Number.isFinite(amount)||amount<0||amount>original){msg("Укажи корректную сумму от 0 до "+money(original),true);return;}
+   const amount=parseCreditAmount(amountField?.value);
+   if(!amountField||!Number.isFinite(amount)||amount<0||amount>10000000){msg("Укажи корректную сумму от 0 до "+money(original),true);return;}
    const reason=reasonField?.value.trim()||"";
    if(Math.abs(amount-original)>0.004&&reason.length<3){msg("Для изменения суммы укажи причину минимум из 3 символов.",true);reasonField?.focus();return;}
    if(!confirm((existing?"Зачислить уже принятую дополнительную работу?":"Принять отчёт и зачислить допработу?")+
